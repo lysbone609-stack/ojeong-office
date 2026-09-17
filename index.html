@@ -70,6 +70,26 @@
   .cal-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:14px;}
   .no-meal{color:var(--ink-dim);font-size:14px;padding-block:8px;}
 
+    .week-meal-scroll{overflow-x:auto;padding-block:2px 4px;margin:0 -2px;}
+    .week-meal-grid{display:grid;grid-auto-flow:column;grid-auto-columns:200px;gap:10px;min-width:min-content;}
+    @media (min-width:760px){
+          .week-meal-grid{grid-auto-flow:row;grid-template-columns:repeat(5,1fr);grid-auto-columns:unset;}
+    }
+    .meal-day{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent;}
+    .meal-day.today{border-color:var(--accent);background:var(--accent-soft);}
+    .meal-day-head{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px;border-bottom:1px dashed var(--line);}
+    .meal-day-head .mdw{font-weight:800;font-size:13px;}
+    .meal-day.today .meal-day-head .mdw{color:var(--accent);}
+    .meal-day-head .mdd{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
+    .menu-list-sm{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;}
+    .menu-list-sm li{font-size:12.5px;font-weight:500;line-height:1.35;}
+    .nutri-wrap{display:flex;align-items:center;gap:10px;margin-top:2px;}
+    .nutri-donut{flex:none;transform:rotate(-90deg);}
+    .seg-carb{stroke:var(--accent);}
+    .seg-protein{stroke:var(--good);}
+    .seg-fat{stroke:var(--danger);}
+    .nutri-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+
   .tt-selects{display:flex;gap:8px;margin-bottom:12px;}
   .tt-selects select{font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);
     background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
@@ -224,7 +244,7 @@
 /* ---------------- section configs & seed data ---------------- */
 
 var SECTIONS = [
-  { key:"meal", title:"오늘의 급식", icon:"🍚", kind:"meal" },
+  { key:"meal", title:"이번 주 급식", icon:"🍚", kind:"meal" },
   { key:"timetable", title:"시간표", icon:"🕘", kind:"timetable" },
   { key:"upcoming", title:"다가오는 일정", icon:"📅", kind:"upcoming" },
   { key:"schedule", title:"직원 일정표", icon:"🗓️", kind:"schedule" },
@@ -425,6 +445,23 @@ var STATUS_SEED = {
     menu: ["단호박카레라이스","통새우꼬치","감자빵","깍두기","오미자에이드"],
     calorie: "516.4 Kcal"
   },
+    weekMeals: [
+      {date:"2026-09-14", weekday:"월", shortDate:"9/14", hasMeal:true, name:"중식",
+            menu:["보리밥","계란찌개","돈까스","실곤약야채무침","배추김치"],
+            calorie:"620.5 Kcal", nutrients:{carbs:98.2, protein:24.6, fat:15.3}},
+      {date:"2026-09-15", weekday:"화", shortDate:"9/15", hasMeal:true, name:"중식",
+            menu:["흑미밥","순두부찌개","제육볶음","콩나물무침","깍두기"],
+            calorie:"598.1 Kcal", nutrients:{carbs:88.4, protein:27.1, fat:18.9}},
+      {date:"2026-09-16", weekday:"수", shortDate:"9/16", hasMeal:true, name:"중식",
+            menu:["단호박카레라이스","통새우꼬치","감자빵","깍두기","오미자에이드"],
+            calorie:"516.4 Kcal", nutrients:{carbs:82.7, protein:18.5, fat:12.4}},
+      {date:"2026-09-17", weekday:"목", shortDate:"9/17", hasMeal:true, name:"중식",
+            menu:["잡곡밥","어묵국","닭갈비","시금치나물","백김치"],
+            calorie:"605.8 Kcal", nutrients:{carbs:92.0, protein:26.3, fat:16.7}},
+      {date:"2026-09-18", weekday:"금", shortDate:"9/18", hasMeal:true, name:"중식",
+            menu:["짜장밥","계란탕","치즈스틱","단무지","요구르트"],
+            calorie:"572.3 Kcal", nutrients:{carbs:95.5, protein:19.8, fat:14.1}}
+        ],
   classList: {"1":[1,2,3],"2":[1,2,3],"3":[1,2,3],"4":[1,2,3],"5":[1,2,3],"6":[1,2,3,4]},
   timetable: {
     "1-1": ["즐거운생활","수학","수학","슬기로운생활","자율·자치활동"],
@@ -598,30 +635,102 @@ function buildPanels(){
   });
 }
 
-/* ---- 오늘의 급식 (나이스 자동 갱신, 조회 전용) ---- */
-function renderMealSection(panel, cfg){
-  var data = STATUS_SEED;
+/* ---- 이번 주 급식 (나이스 자동 갱신, 조회 전용) : 요일별 칼로리 + 영양소 원 다이어그램 ---- */
+  var MEAL_WEEKDAY_KO = ['일','월','화','수','목','금','토'];
 
-  function paint(){
-    var meal = data.meal;
-    var body;
-    if (meal && meal.menu && meal.menu.length){
-      body = '<span class="meal-badge">'+escapeHtml(meal.name || "중식")+'</span>' +
-        '<ul class="menu-list">' + meal.menu.map(function(m){ return '<li>'+escapeHtml(m)+'</li>'; }).join("") + '</ul>' +
-        (meal.calorie ? '<div class="cal-row"><span>열량</span><b>'+escapeHtml(meal.calorie)+'</b></div>' : "");
-    } else {
-      body = '<div class="no-meal">오늘은 급식이 없는 날입니다.</div>';
-    }
-    panel.innerHTML =
-      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
-      '<p class="desc">'+escapeHtml(data.dateDisplay || "")+' 기준</p>' +
-      body +
-      syncLineHtml(data);
+  function donutSvg(n){
+      var carbs = n ? Number(n.carbs)||0 : 0;
+      var protein = n ? Number(n.protein)||0 : 0;
+      var fat = n ? Number(n.fat)||0 : 0;
+      var total = carbs + protein + fat;
+      if (!n || total <= 0) return '<div class="no-nutri">영양정보 없음</div>';
+      var r = 15.9155, circ = 2 * Math.PI * r;
+      var parts = [["carb",carbs],["protein",protein],["fat",fat]];
+      var acc = 0;
+      var circles = parts.map(function(p){
+            var pct = p[1] / total * 100;
+            var dash = (pct / 100 * circ).toFixed(2) + ' ' + circ.toFixed(2);
+            var dashoffset = (-acc / 100 * circ).toFixed(2);
+            acc += pct;
+            return '<circle class="seg-'+p[0]+'" cx="18" cy="18" r="'+r+'" fill="none" stroke-width="5" stroke-dasharray="'+dash+'" stroke-dashoffset="'+dashoffset+'"/>';
+      }).join("");
+      return '<svg class="nutri-donut" viewBox="0 0 36 36" width="70" height="70" aria-hidden="true">'+circles+'</svg>';
   }
 
-  paint();
-  subscribeStatusDoc(function(d){ data = d; paint(); });
-}
+  function nutriLegendHtml(n){
+      if (!n) return "";
+      var carbs = Number(n.carbs)||0, protein = Number(n.protein)||0, fat = Number(n.fat)||0;
+      if (carbs+protein+fat <= 0) return "";
+      return '<ul class="nutri-legend">' +
+            '<li class="nl carb"><span>탄수화물</span><b>'+carbs.toFixed(1)+'g</b></li>' +
+            '<li class="nl protein"><span>단백질</span><b>'+protein.toFixed(1)+'g</b></li>' +
+            '<li class="nl fat"><span>지방</span><b>'+fat.toFixed(1)+'g</b></li>' +
+          '</ul>';
+  }
+
+  function dayCardHtml(day, isToday){
+      var body;
+      if (day.hasMeal && day.menu && day.menu.length){
+            body = '<ul class="menu-list-sm">' + day.menu.map(function(m){ return '<li>'+escapeHtml(m)+'</li>'; }).join("") + '</ul>' +
+                    (day.calorie ? '<div class="cal-row"><span>열량</span><b>'+escapeHtml(day.calorie)+'</b></div>' : "") +
+                    '<div class="nutri-wrap">' + donutSvg(day.nutrients) + nutriLegendHtml(day.nutrients) + '</div>';
+      } else {
+            body = '<div class="no-meal">급식 없음</div>';
+      }
+      return '<div class="meal-day'+(isToday?' today':'')+'">' +
+            '<div class="meal-day-head"><span class="mdw">'+escapeHtml(day.weekday)+'요일</span><span class="mdd">'+escapeHtml(day.shortDate)+'</span></div>' +
+            body +
+          '</div>';
+  }
+
+  /* 이전 버전(오늘 급식 하나만 있던) Firestore 데이터와의 호환을 위한 대체 함수 —
+     weekMeals가 없으면 오늘 하루만 채운 5일치 뼈대를 만들어 보여줍니다. */
+  function weekMealsFromSeed(data){
+      if (data && data.weekMeals && data.weekMeals.length) return data.weekMeals;
+      var todayIso = data ? data.date : null;
+      var d = todayIso ? new Date(todayIso) : new Date();
+      var day = d.getDay();
+      var diff = (day === 0) ? -6 : (1 - day);
+      var monday = new Date(d);
+      monday.setDate(d.getDate() + diff);
+      var days = [];
+      for (var i = 0; i < 5; i++){
+            var dt = new Date(monday);
+            dt.setDate(monday.getDate() + i);
+            var iso = dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+            var isToday = iso === todayIso;
+            var m = isToday ? (data && data.meal) : null;
+            days.push({
+                    date: iso,
+                    weekday: MEAL_WEEKDAY_KO[dt.getDay()],
+                    shortDate: (dt.getMonth()+1) + "/" + dt.getDate(),
+                    hasMeal: !!(m && m.menu && m.menu.length),
+                    name: m ? m.name : null,
+                    menu: m ? m.menu : [],
+                    calorie: m ? m.calorie : "",
+                    nutrients: null
+            });
+      }
+      return days;
+  }
+
+  function renderMealSection(panel, cfg){
+      var data = STATUS_SEED;
+
+      function paint(){
+            var weekMeals = weekMealsFromSeed(data);
+            var todayIso = data ? data.date : null;
+            var cards = weekMeals.map(function(day){ return dayCardHtml(day, day.date === todayIso); }).join("");
+            panel.innerHTML =
+                    '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+                    '<p class="desc">'+escapeHtml(data.dateDisplay || "")+' 기준 · 월~금</p>' +
+                    '<div class="week-meal-scroll"><div class="week-meal-grid">' + cards + '</div></div>' +
+                    syncLineHtml(data);
+      }
+
+      paint();
+      subscribeStatusDoc(function(d){ data = d; paint(); });
+  }
 
 /* ---- 시간표 (전체 학년/반 선택, 나이스 자동 갱신) ---- */
 function renderTimetableSection(panel, cfg){
