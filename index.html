@@ -544,8 +544,8 @@ function formatUpdated(iso){
 
 function syncLineHtml(data){
   var upd = data && data.updatedAt ? formatUpdated(data.updatedAt) : "";
-  return '<p class="sync-line">🔄 이 정보는 실시간 자동 갱신이 아니라 마지막으로 입력/갱신된 값이에요 · 기준 시각: '+
-    (upd ? escapeHtml(upd) : "확인 중…") + ' · 나이스에서 매일 자동으로 받아오려면 별도 연동이 필요해요(현재 미연결)</p>';
+  return '<p class="sync-line">🔄 나이스에서 평일 아침마다 자동으로 갱신돼요 · 마지막 자동 갱신: '+
+    (upd ? escapeHtml(upd) : "확인 중…") + '</p>';
 }
 
 /* status/latest 문서(급식·시간표·다가오는 일정)는 스케줄된 작업이 매일 자동으로 갱신합니다.
