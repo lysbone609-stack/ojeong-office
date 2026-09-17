@@ -89,6 +89,14 @@
     .seg-protein{stroke:var(--good);}
     .seg-fat{stroke:var(--danger);}
     .nutri-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+    .nl{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-dim);white-space:nowrap;}
+    .nl span{white-space:nowrap;}
+    .nl::before{content:'';width:7px;height:7px;border-radius:50%;flex:none;}
+    .nl.carb::before{background:var(--accent);}
+    .nl.protein::before{background:var(--good);}
+    .nl.fat::before{background:var(--danger);}
+    .nl b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;margin-left:auto;}
+    .no-nutri{font-size:11px;color:var(--ink-dim);}
 
   .tt-selects{display:flex;gap:8px;margin-bottom:12px;}
   .tt-selects select{font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);
@@ -187,6 +195,9 @@
   .entry input:focus{outline:none;}
   .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px;flex:none;padding:0;}
   .entry button:hover{color:var(--danger);}
+  .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);}
+  .entry.synced .sync-tag{flex:none;}
+  .duty-sync-line{color:var(--ink-dim);font-size:12px;margin:12px 0 0;}
   .daycell .addentry{font:inherit;font-size:10px;font-weight:700;color:var(--good);background:transparent;
     border:1px dashed var(--good);border-radius:6px;padding:2px;cursor:pointer;margin-top:auto;}
 
@@ -552,6 +563,10 @@ function debounce(fn, ms){
   };
 }
 
+function safeJsonParse(text){
+  try { return JSON.parse(text); } catch(e){ return null; }
+}
+
 function rowsFromSeed(cols, seed){
   return seed.map(function(arr){
     var o = {};
@@ -892,6 +907,10 @@ function renderScheduleSection(panel, cfg){
   var viewYear = today0.getFullYear();
   var viewMonth = today0.getMonth(); // 0-indexed
 
+  var dutySyncByDate = {}; // ymd -> [{name,type,period,destination,pending}] (나이스 확장에서 동기화)
+  var dutySyncMeta = null; // {monthKey, syncedAt, scope}
+  var dutySyncUnsub = null;
+
   function fmt(d){
     var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
     return y + "-" + m + "-" + dd;
@@ -899,6 +918,9 @@ function renderScheduleSection(panel, cfg){
   function isToday(d){
     var t = new Date();
     return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+  }
+  function currentMonthKey(){
+    return viewYear + "-" + String(viewMonth+1).padStart(2,"0");
   }
 
   function paint(){
@@ -927,17 +949,31 @@ function renderScheduleSection(panel, cfg){
         return '<div class="entry"><input type="text" data-date="'+key+'" data-idx="'+idx+'" value="'+escapeHtml(txt)+'">' +
           '<button data-deldate="'+key+'" data-delidx="'+idx+'">✕</button></div>';
       }).join("");
+      var syncedRows = inMonth ? (dutySyncByDate[key] || []) : [];
+      var syncedHtml = syncedRows.map(function(item){
+        var titleParts = [];
+        if (item.period) titleParts.push(item.period);
+        if (item.destination) titleParts.push(item.destination);
+        var titleAttr = "나이스 연동" + (titleParts.length ? " · " + titleParts.join(" · ") : "");
+        var label = escapeHtml(item.name || "") + " " + escapeHtml(item.type || "복무") + (item.pending ? " (결재중)" : "");
+        return '<div class="entry synced" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">🔄</span>'+label+'</div>';
+      }).join("");
       cellsHtml +=
         '<div class="daycell'+(inMonth ? '' : ' otherMonth')+(isToday(d) ? ' today' : '')+'">' +
           '<div class="dnum '+numCls+'">'+d.getDate()+'</div>' +
           entries +
+          syncedHtml +
           '<button class="addentry" data-adddate="'+key+'">+ 추가</button>' +
         '</div>';
     }
 
+    var dutySyncLine = (dutySyncMeta && dutySyncMeta.syncedAt)
+      ? '<p class="duty-sync-line">🔄 나이스 복무 동기화: '+escapeHtml(dutySyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(dutySyncMeta.syncedAt))+' 기준 ('+escapeHtml(dutySyncMeta.monthKey)+')</p>'
+      : '<p class="duty-sync-line">🔄 '+escapeHtml(currentMonthKey())+'월은 아직 나이스 복무 동기화 데이터가 없습니다 · 나이스에서 "나이스 부서 복무 달력" 확장의 "사이버행정실로 동기화" 버튼을 눌러주세요.</p>';
+
     panel.innerHTML =
       '<h2>🗓️ 직원 일정표</h2>' +
-      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다.</p>' +
+      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다. 점선 테두리(🔄) 항목은 나이스에서 자동 동기화된 내용이라 직접 수정할 수 없어요.</p>' +
       '<div class="monthnav">' +
         '<button id="prevMonth">‹ 이전 달</button>' +
         '<span class="range">'+viewYear+'년 '+(viewMonth+1)+'월</span>' +
@@ -947,16 +983,17 @@ function renderScheduleSection(panel, cfg){
       '<div class="calwrap">' +
         '<div class="dowrow">'+dowHtml+'</div>' +
         '<div class="monthgrid">'+cellsHtml+'</div>' +
-      '</div>';
+      '</div>' +
+      dutySyncLine;
 
     panel.querySelector("#prevMonth").addEventListener("click", function(){
-      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } paint();
+      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } subscribeDutySync(); paint();
     });
     panel.querySelector("#nextMonth").addEventListener("click", function(){
-      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } paint();
+      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } subscribeDutySync(); paint();
     });
     panel.querySelector("#todayMonth").addEventListener("click", function(){
-      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); paint();
+      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); subscribeDutySync(); paint();
     });
 
     panel.querySelectorAll("input[data-date]").forEach(function(inp){
@@ -993,7 +1030,32 @@ function renderScheduleSection(panel, cfg){
     });
   }
 
+  /* 나이스 "부서 복무 달력" 확장(v1.7+)에서 "사이버행정실로 동기화"를 누르면 채워지는 문서를 구독.
+     보고 있는 달이 바뀌면 그 달에 해당하는 문서로 다시 구독한다. 수동 입력(days)과는 완전히 별도 저장소라
+     동기화가 수동으로 적어둔 내용을 절대 덮어쓰지 않는다. */
+  function subscribeDutySync(){
+    if (dutySyncUnsub) { dutySyncUnsub(); dutySyncUnsub = null; }
+    dutySyncByDate = {};
+    dutySyncMeta = null;
+    if (!db) return;
+    var monthKey = currentMonthKey();
+    dutySyncUnsub = db.doc("status/duty_sync_" + monthKey).onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        var parsed = data && typeof data.byDateJson === "string" ? safeJsonParse(data.byDateJson) : null;
+        dutySyncByDate = parsed || {};
+        dutySyncMeta = { monthKey: monthKey, syncedAt: data && data.syncedAt, scope: data && data.scope };
+      } else {
+        dutySyncByDate = {};
+        dutySyncMeta = null;
+      }
+      paint();
+    }, function(){ /* ignore */ });
+    unsubs.push(dutySyncUnsub);
+  }
+
   paint();
+  subscribeDutySync();
 
   if (db) {
     var unsub = db.doc("sections/schedule").onSnapshot(function(snap){
