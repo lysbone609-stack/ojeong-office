@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오정초등학교 사이버 행정실</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap');
+
+  :root{
+    --bg:#eef1f6;
+    --surface:#ffffff;
+    --surface-2:#f3f5f9;
+    --line:#dbe1ea;
+    --ink:#1b212c;
+    --ink-dim:#69707d;
+    --accent:#2255a4;
+    --accent-soft:#e2ecfb;
+    --good:#2f8a5b;
+    --good-soft:#e0f3e8;
+    --danger:#b8492f;
+    --danger-soft:#f8e2da;
+    --shadow:0 1px 2px rgba(20,26,38,.05), 0 10px 26px -16px rgba(20,26,38,.22);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10141b; --surface:#1a2029; --surface-2:#20273349;
+      --surface-2:#212836; --line:#2c3444; --ink:#e6e9ee; --ink-dim:#8b93a0;
+      --accent:#6fa2e8; --accent-soft:#182338; --good:#6fcf9d; --good-soft:#173226;
+      --danger:#e88968; --danger-soft:#3a2019;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10141b; --surface:#1a2029; --surface-2:#212836; --line:#2c3444;
+    --ink:#e6e9ee; --ink-dim:#8b93a0; --accent:#6fa2e8; --accent-soft:#182338;
+    --good:#6fcf9d; --good-soft:#173226; --danger:#e88968; --danger-soft:#3a2019;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -16px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;
+    padding-inline:16px;padding-block:16px;min-height:100%;font-size:14px;}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding-bottom:12px;border-bottom:2px solid var(--line);}
+  header.top h1{font-family:'Gowun Batang',serif;font-size:clamp(19px,2.6vw,25px);margin:0;}
+  header.top .meta{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;}
+  .clockwrap{text-align:right;line-height:1.3;}
+  .clock-time{display:block;font-variant-numeric:tabular-nums;font-weight:900;font-size:clamp(17px,2.2vw,22px);color:var(--ink);}
+  .clock-date{display:block;color:var(--ink-dim);font-size:11px;}
+  .syncwrap{display:flex;align-items:center;gap:6px;color:var(--ink-dim);font-size:12px;}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
+  .sync-dot.on{background:var(--good);box-shadow:0 0 0 0 rgba(47,138,91,.5);animation:pulse 2.2s infinite;}
+  @media (prefers-reduced-motion: reduce){ .sync-dot.on{animation:none;} }
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,138,91,.45);}70%{box-shadow:0 0 0 6px rgba(47,138,91,0);}100%{box-shadow:0 0 0 0 rgba(47,138,91,0);}}
+  .sync-line{color:var(--ink-dim);font-size:12px;margin:10px 0 0;}
+
+  /* 급식 / 시간표 / 다가오는 일정 (자동 동기화, 조회 전용) */
+  .meal-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);
+    font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;margin-bottom:10px;}
+  .menu-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .menu-list li{font-size:15px;font-weight:500;padding-block:7px;border-bottom:1px dashed var(--line);
+    display:flex;align-items:baseline;gap:9px;}
+  .menu-list li:last-child{border-bottom:none;}
+  .menu-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;transform:translateY(-2px);}
+  .cal-row{margin-top:12px;padding-top:12px;border-top:2px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;color:var(--ink-dim);font-size:12px;}
+  .cal-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:14px;}
+  .no-meal{color:var(--ink-dim);font-size:14px;padding-block:8px;}
+
+  .tt-selects{display:flex;gap:8px;margin-bottom:12px;}
+  .tt-selects select{font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+    padding:7px 9px;flex:1;min-width:0;}
+  .tt-periods{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .tt-periods li{display:flex;align-items:center;gap:12px;background:var(--surface-2);border-radius:10px;padding:9px 11px;}
+  .pnum{font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent);background:var(--accent-soft);
+    border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px;}
+  .psub{font-size:14px;font-weight:600;}
+  .tt-empty{color:var(--ink-dim);font-size:13px;padding-block:8px;}
+
+  .sched-scroll{display:flex;gap:10px;overflow-x:auto;padding-block:2px 4px;}
+  .sched-chip{flex:none;width:130px;background:var(--surface-2);border-radius:12px;padding:11px;
+    display:flex;flex-direction:column;gap:5px;}
+  .sched-chip .dday{align-self:flex-start;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;
+    background:var(--good-soft);color:var(--good);}
+  .sched-chip.urgent .dday{background:var(--danger-soft);color:var(--danger);}
+  .sched-chip .d{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-size:11px;}
+  .sched-chip .n{font-weight:700;font-size:13px;line-height:1.3;}
+
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  nav.tabs button{
+    flex:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-dim);
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px;cursor:pointer;white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  section.panel{display:none;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:16px;}
+  section.panel.active{display:block;}
+  section.panel h2{margin:0 0 4px;font-size:16px;font-weight:700;}
+  section.panel .desc{color:var(--ink-dim);font-size:12px;margin:0 0 12px;}
+
+  .tablewrap{overflow-x:auto;}
+  table.datagrid{width:100%;border-collapse:collapse;font-size:13px;}
+  table.datagrid th{
+    background:var(--surface-2);color:var(--ink-dim);font-weight:700;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:8px 8px;
+    border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;
+  }
+  table.datagrid td{border-bottom:1px solid var(--line);padding:2px;vertical-align:top;}
+  table.datagrid tr:hover td{background:var(--surface-2);}
+  table.datagrid input, table.datagrid textarea{
+    width:100%;border:1px solid transparent;background:transparent;color:var(--ink);
+    font:inherit;padding:6px 6px;border-radius:6px;resize:vertical;
+  }
+  table.datagrid input:hover, table.datagrid textarea:hover{border-color:var(--line);}
+  table.datagrid input:focus, table.datagrid textarea:focus{
+    outline:none;border-color:var(--accent);background:var(--surface);
+  }
+  .rowdel{
+    border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:15px;
+    padding:4px 8px;border-radius:6px;
+  }
+  .rowdel:hover{background:var(--danger-soft);color:var(--danger);}
+  .addrow{
+    margin-top:10px;font:inherit;font-weight:700;font-size:12px;color:var(--good);
+    background:var(--good-soft);border:1px solid transparent;border-radius:8px;
+    padding:7px 12px;cursor:pointer;
+  }
+  .addrow:hover{filter:brightness(0.96);}
+  .note-area{margin-top:12px;}
+  .note-area label{display:block;font-size:11px;font-weight:700;color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .note-area textarea{
+    width:100%;min-height:64px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--ink);font:inherit;padding:8px 10px;resize:vertical;
+  }
+  .note-area textarea:focus{outline:none;border-color:var(--accent);}
+
+  /* staff schedule */
+  .weeknav{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .weeknav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
+    color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;}
+  .weeknav button:hover{border-color:var(--accent);color:var(--accent);}
+  .weeknav .range{font-weight:700;font-size:14px;}
+  .weekgrid{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:8px;overflow-x:auto;}
+  .daycol{background:var(--surface-2);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:120px;}
+  .daycol .dhead{font-size:11px;font-weight:700;color:var(--ink-dim);display:flex;justify-content:space-between;}
+  .daycol .dhead.today{color:var(--accent);}
+  .entry{background:var(--surface);border:1px solid var(--line);border-radius:7px;
+    padding:5px 7px;font-size:12px;display:flex;align-items:center;gap:4px;}
+  .entry input{border:none;background:transparent;color:var(--ink);font:inherit;flex:1;min-width:0;padding:0;}
+  .entry input:focus{outline:none;}
+  .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:12px;flex:none;}
+  .entry button:hover{color:var(--danger);}
+  .daycol .addentry{font:inherit;font-size:11px;font-weight:700;color:var(--good);background:transparent;
+    border:1px dashed var(--good);border-radius:7px;padding:4px;cursor:pointer;}
+
+  /* periods */
+  .periodgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .periodgroup{background:var(--surface-2);border-radius:10px;padding:12px;}
+  .periodgroup h3{margin:0 0 8px;font-size:13px;}
+
+  /* classroom map */
+  .mapbox{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  .mapbox img{max-width:100%;border-radius:10px;border:1px solid var(--line);}
+  .uploadbtn{font:inherit;font-weight:700;font-size:12px;color:var(--accent);background:var(--accent-soft);
+    border:none;border-radius:8px;padding:8px 14px;cursor:pointer;}
+  .uploadbtn:hover{filter:brightness(0.97);}
+  .placeholder{color:var(--ink-dim);font-size:13px;background:var(--surface-2);border-radius:10px;padding:16px;}
+
+  footer.foot{color:var(--ink-dim);font-size:11px;text-align:center;}
+  .setup-banner{background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:10px 14px;
+    font-size:12px;font-weight:600;margin-bottom:12px;display:none;}
+  .setup-banner.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="setup-banner" id="setupBanner">⚠️ 아직 Firebase 설정이 안 되어 있어요 — 이 화면은 지금 예시 데이터만 보여주고 있고, 수정 내용은 저장되지 않습니다. 함께 보내드린 설정 가이드를 따라 firebaseConfig 값을 채워주세요.</div>
+
+<div class="wrap">
+  <header class="top">
+    <h1>오정초등학교 사이버 행정실</h1>
+    <div class="meta">
+      <div class="clockwrap">
+        <span class="clock-time" id="clockTime">--:--</span>
+        <span class="clock-date" id="clockDate">날짜 불러오는 중…</span>
+      </div>
+      <div class="syncwrap"><span class="sync-dot" id="syncDot"></span><span id="syncText">동기화 대기 중</span></div>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div id="panels"></div>
+
+  <footer class="foot">표 탭은 이 링크를 열어본 분들이 함께 실시간으로 수정할 수 있습니다(셀을 클릭해 바로 편집) · 이 링크를 아는 사람은 누구나 로그인 없이 보고 고칠 수 있으니, 외부에 함부로 공유하지 마세요</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- section configs & seed data ---------------- */
+
+var SECTIONS = [
+  { key:"meal", title:"오늘의 급식", icon:"🍚", kind:"meal" },
+  { key:"timetable", title:"시간표", icon:"🕘", kind:"timetable" },
+  { key:"upcoming", title:"다가오는 일정", icon:"📅", kind:"upcoming" },
+  { key:"schedule", title:"직원 일정표", icon:"🗓️", kind:"schedule" },
+  { key:"vendors_regular", title:"정기용역", icon:"🔧", kind:"table",
+    columns:[["seq","순번","48px"],["name","상호(사업자번호)","220px"],["item","건명","220px"],["phone","전화번호","190px"],["note","비고","220px"]],
+    seed:[
+      ["1","나래엔시스 (130-35-53872)","디지털복합기 및 프린터 임대","032-666-7900 최창권:010-4573-7512","2024.3.1~2027.02.28(3년약정) 유치원 2025.3.1~2028.2.28"],
+      ["2","나래넷츠 (728-86-00795)","학내망 및 컴퓨터 유지보수","032-323-7901 조진성:010-4653-7927",""],
+      ["3","(주)태산엔지니어링 (130-81-58952)","승강기 유지보수","032-613-1300 조일수:010-3769-0685",""],
+      ["4","(주)부천방재 (130-86-04674)","소방설비 안전관리","032-668-6100 김태현:010-9924-4223",""],
+      ["5","한국안전기술단(주) (130-86-06430)","전기설비 안전관리","032-326-2740 천명조:010-3100-2644",""],
+      ["6","(주)에스원 (208-81-13302)","무인기계경비용역","1588-3112",""],
+      ["7","아쿠아 (130-40-69742)","정수기 관리 유지보수","032-679-6133","4대(구입2·임대2), 2026.2 3년약정만료"],
+      ["8","코웨이(주) (307-81-06054)","정수기 관리 유지보수","032-330-2086","교무실·행정실 등 다수 교체 이력"],
+      ["9","청호나이스(주) (130-81-49813)","정수기 관리 유지보수","032-441-2141","3대(임대), 얼음정수기로 교체(2025.12)"],
+      ["10","(주)구츠 (217-81-23615)","정수기 관리 유지보수","02-976-2233 윤경수:010-2296-2427","8대(구입), 복도6·급식실2"],
+      ["11","에스제이바이오 (131-86-53784)","폐식용유 수거 용역","032-811-5182","단가계약"],
+      ["12","그린코리아 (130-93-37945)","음식물쓰레기처리","032-343-0070","단가계약(월배출량 청구)"],
+      ["13","한국안전기술협회 사회적협동조합 (562-82-00144)","놀이시설안전점검","1800-6832","초/66,000원 유/44,000원(클라이밍 포함)"],
+      ["14","다원 (667-39-00948)","공기청정키트유지관리","010-2074-9209","연10회 점검·연2회 세척"],
+      ["15","다원 (667-39-00948)","공기순환기 유지관리","010-2074-9209","연10회 점검·연2회 필터교체"],
+      ["16","(주)나린기업","기계설비 유지관리자 위탁선임 및 유지관리점검","031-979-6405","연1회 성능점검(체육관 포함 전체1동)"],
+      ["17","(주)아이센텍 (687-85-01685)","물품관리시스템","031-356-1155 조숙경:010-3339-3370","물품관리 연4회·재물조사 연1회"],
+      ["18","삼성엔지니어링","에어컨수리","1588-3366 010-4341-3874(정찬일)",""],
+      ["19","원종열쇠","열쇠","032-682-1313",""],
+      ["20","코끼리상사","","010-7443-8609",""],
+      ["21","한결상사","","1588-9383 010-7149-4273",""],
+      ["22","HG종합공사","","070-7124-9595 010-8109-2424",""],
+      ["23","이음안전기술(3종시설물)","","02-2671-7003 010-2788-5557(손경식)",""],
+      ["24","(주)우일이알에스(김옥희)","배수로준설 및 그레이팅 교체","010-8753-1283",""],
+      ["25","아이토스","학교 소독","1544-3059",""],
+      ["26","한국공원체육산업","탄성포장재(우레탄)교체공사","032-322-8272 010-4902-2508","부천 길주로 284 [신규]"],
+      ["27","대한산업안전협회","교육시설안전인증","02-860-4703","[신규]"]
+    ]},
+  { key:"contractors", title:"공사업체", icon:"🏗️", kind:"table",
+    columns:[["project","공사구분","200px"],["role","직","90px"],["name","상호","190px"],["contact","전화번호","190px"],["note","비고","220px"]],
+    note:"공사별 준공예정일 — 방수공사: 2026.9.7 / 공간드림공사: 2026.9.19",
+    seed:[
+      ["방수공사(후관) 2026.7.27~9.7","총괄","(주)동호건업","010-2705-4382(이동호 대표)","옥상 비밀번호 1010"],
+      ["방수공사(후관)","교육지원청","오종철 주무관","032-620-0367 / 010-3396-8046",""],
+      ["방수공사(본관)","설계","신화건축사무소(김계수)","032-710-4591 (010-5211-2415)",""],
+      ["방수공사(본관)","교육지원청","김일","010-7569-6022",""],
+      ["논슬립","논슬립","영화테크","010-5240-3211 (010-5178-3308)",""],
+      ["공간드림공사 2026.7.22~9.19","총괄","주식회사다온(방정욱)","070-8872-1611 (010-9100-7067)","오정초 신관 3~5층 담당"],
+      ["공간드림공사","전기공사","주식회사 우민전설","010-3829-8190",""],
+      ["공간드림공사","통신공사","주식회사 와치캠","02-1800-5143 (010-9973-3219)",""],
+      ["공간드림공사","소방공사","삼정기전(주)","032-666-0966",""],
+      ["공간드림공사","재해예방기술지도","중부종합안전(주)","032-654-9114",""],
+      ["공간드림공사","담당감독자","부천교육지원청","건축(안이주)032-620-0322 / 전기통신소방(최현준)032-620-0325",""]
+    ]},
+  { key:"vendors_misc", title:"거래처", icon:"📇", kind:"table",
+    columns:[["no","번호","44px"],["cat","구분","70px"],["name","상호","170px"],["item","건명","190px"],["phone","전화번호","170px"],["email","이메일","150px"],["fax","팩스","110px"],["note","비고","180px"]],
+    seed:[
+      ["2","물품구입","부천문구","문구류","032-651-1440","orijw@naver.com","032-651-8619",""],
+      ["3","물품구입","학생문구","문구류","032-654-4200","jines77@hanmail.net","032-654-4208",""],
+      ["4","유지보수","㈜에스텍퍼스트","당직용역","031-898-5160 임승권(010-4244-3700)","","",""],
+      ["5","물품구입","일광유리","유리","032-664-4666","","",""],
+      ["7","시설","㈜한길종합건설","시설공사 및 보수등","032-345-6001 임성환(010-3711-3652)","","032-351-3350",""],
+      ["8","시설","까치울정수장","수질검사","032-625-3387","","","급수관정체수 및 저수조"],
+      ["9","공사","(주)하디스","탁구장 바닥교체","032-556-3868","","010-8985-2571","인천 계양구"],
+      ["10","시설","경남환경","정화조청소","032-653-8001 010-5017-1535","","",""],
+      ["11","시설","알렉스","물탱크청소, 방역","032-464-3527 010-8761-5699","","",""],
+      ["12","유지보수","서울보증보험","재정보증","031-706-2388","","",""],
+      ["15","시설","영풍건설","학교보수","010-3760-8685","","",""],
+      ["16","물품구입","코끼리마트","마트","682-6002","","682-6003",""],
+      ["17","물품구입","부천시장애인직업재활시설","현수막","674-8880","","","정문 60,500원"],
+      ["18","물품구입","서인당","졸업생도장","02-764-0646 010-7739-4411","","02-764-0648",""],
+      ["19","물품구입","한얼기획","졸업장케이스","031-566-3512","","",""],
+      ["20","시설","학교안전공제중앙회","놀이시설보험","070-7996-0148","","","이희수대리(대인대물 1억)"],
+      ["21","시설","한국체육시설안전기술원","놀이시설 모래소독","010-8756-3374","","",""],
+      ["22","시설","시험검사기술원","놀이시설 정기검사","1566-3947","","",""],
+      ["23","물품구입","","교장실 연혁판","031-357-7240","","031-357-7249",""],
+      ["24","물품구입","신세계길벗여행사","버스","328-8670 부장(010-4860-6447)","","328-8673",""],
+      ["25","물품구입","정신OA시스템","문서세단기","032-673-5511","","032-672-3272","모델명 6260CR"],
+      ["26","물품구입","코세스","디지털시계","070-7565-0020(02-3422-4300)","","",""],
+      ["27","물품구입","디에스지","현황판","031-357-7240","","",""],
+      ["28","물품구입","부영조합광고","표찰스티커","010-6225-7164 010-5467-1546","","349-1545",""],
+      ["29","물품구입","신영카피사","상장용지","032-344-4479","","",""],
+      ["30","물품구입","굿다이어리","다이어리, 속지","031-904-4416","","",""],
+      ["31","물품구입","풍산기업","과학물품","032-556-6400","","",""],
+      ["32","물품구입","새담","과학물품","02-766-9943","","",""],
+      ["33","물품","시청담당부서","대형폐기물","032-625-3194","","",""],
+      ["34","물품","시청(수거업체)","대형폐기물(스티커)","032-676-8470","","",""],
+      ["35","물품","연테크(성원테크)","매각업체(폐품)","010-8924-0077","nauisd@daum.net","",""],
+      ["36","폐기물","하나자원","폐품","010-6244-7676","","",""],
+      ["37","폐기물","박지훈(시흥)","폐품","010-4018-9901","","",""],
+      ["38","물품","코끼리상사","시설물품","010-7443-8609","","",""],
+      ["39","물품구입","노비타비데","비데","1588-6560","","",""],
+      ["40","물품구입","가온푸드","유치원, 돌봄 간식","031-315-4775","","",""],
+      ["41","물품구입","아이가좋은세상","돌봄간식업체","070-7576-0112 010-2467-1868","","",""],
+      ["42","물품구입","드림푸드","돌봄간식업체","010-8181-3588","","",""],
+      ["44","시설","온세계하수공사","하수도","","","",""],
+      ["45","공사","미산건축","실내건축업","010-9021-1567","","","고등학교추천"],
+      ["46","유지보수","동양전기(진엔지니어링)","전기업체","010-5474-0897","","","도원초소개"],
+      ["47","시설","교동설비","시설","032-347-5235","","",""],
+      ["48","시설","돌담건설","방수전문","010-5203-4301","","","체육관외벽 공사"],
+      ["49","시설","에스엔화성","방수전문","010-4932-7704(김명규) 345-0166","","","113-86-46460"],
+      ["50","시설","마사토산업개발","시설(운동장마사토)","010-9906-6001","","",""],
+      ["51","시설","영화전력","시설(전기)","010-2362-4933","","",""],
+      ["52","시설","동은전기","시설(전기)","010-3896-9618","","",""],
+      ["53","시설","지성건설산업","시설(체육관외벽)","010-3024-6011","","",""],
+      ["54","시설","해성에너지","가스시설","010-5244-3840","","",""],
+      ["55","시설","동광전자","방송","031-443-2544","","",""],
+      ["56","시설","엘림미디어","방송","010-3311-0687","","",""],
+      ["57","시설","지니트","방송","032-623-7600","","",""],
+      ["58","시설","진경이엔텍","화장실 절수기기","032-321-1982 010-5321-1982","","",""],
+      ["59","시설","지엔그린","조경","010-7578-9578 / 032-677-0151","","",""],
+      ["60","시설","대정조경","수목전지","032-324-5592","","",""],
+      ["61","물품구입","신영인테리어","커텐, 인테리어","010-9495-5353","","",""],
+      ["62","물품구입","한국흑판","칠판","031-667-8171","sampan01@naver.com","","서비스 좋음. 일정, 가격 힘듬"],
+      ["63","물품구입","한결상사","시설소모품, 청소용품","010-7149-4273 1588-9383","hg077@naver.com","",""],
+      ["64","물품구입","HG종합공사","입간판, 인테리어","010-8109-2424","","boeunad@naver.com","복도 명패"],
+      ["65","시설","HG종합공사","설치팀","010-9260-7606","","",""],
+      ["66","물품구입","나래화물","운송","010-9733-8864 070-7353-9622","","","1톤(텃밭) 왕복 66,000원/편도 44,000원"],
+      ["67","물품구입","우드메탈","사물함","010-5048-0531 031-594-9900","","","www.woodmetal.co.kr"],
+      ["68","물품구입","파라디수영장","생존수영","032-677-1177","","",""],
+      ["69","물품구입","복사골여행사","전세버스","032-663-7788","","",""],
+      ["70","물품구입","월드여행사","전세버스","032-668-1400","","",""],
+      ["71","물품구입","하나신정관광(김포)","전세버스","02-433-7880","","","45인승 380,000원/25인승 250,000원"],
+      ["72","유지보수","도시가스 오정점","보일러실·체육관·유치원보일러 설치","1544-3002","","",""],
+      ["73","시설","모던방재시스템","","010-5448-6721","","",""],
+      ["74","유지보수","부천지원(등기무료발급)","","032-320-1172","","",""],
+      ["75","유지보수","KB손해보험","승강기보험","02-6900-5000","","",""],
+      ["76","유지보수","현대해상화재보험","가스보험","02-720-0047 010-3239-8152","","",""],
+      ["77","물품구입","신원종서점","도서","032-672-8911","","",""],
+      ["78","물품구입","농협","학교담당","032-610-6031","","",""],
+      ["79","물품구입","이화사","표지판","010-9645-9192","ockhy@naver.com","",""],
+      ["80","물품구입","원종열쇠","열쇠","032-682-1313","","",""],
+      ["81","시설","성광용역","용역","032-673-0640","","",""],
+      ["82","폐기물","성주자원","고물상","032-611-0103","","",""],
+      ["83","물품구입","이룸디자인","블라인드 등","032-322-3676","","",""],
+      ["84","물품구입","청양직물","현수막업체","032-682-0488","","",""],
+      ["85","물품구입","부영종합광고","현수막업체, 표찰","032-349-1545","bu1545@hanmail.net","",""],
+      ["86","폐기물","지엠알","폐기물정리","010-5174-1015","","",""],
+      ["88","유지보수","창디자인","체육관1층커튼","031-227-9091","","",""],
+      ["89","물품구입","꿈에그린꽂직매장","꽃, 수목전지","010-2324-3697","","",""],
+      ["98","시설","광우기업","철거","032-663-2427","kw2427@hanmail.net","","카드결제 가능"],
+      ["99","냉난방기","정선택(개인)","에어컨","010-3669-9720","","","빠르고 확실한 대신 비용 높음"],
+      ["100","공사","영화테크","논슬립","032-612-2700 010-5240-3211","yhw182@naver.com","","부천 위치, 학교 공사 경력 많음"],
+      ["101","물품구입","학생화방문구센터","물품","032-654-4200","haksaeng4200@naver.com","","학습준비물 카드결제시 수수료 있음"],
+      ["102","물품구입","부천문구","물품","032-651-1440","orijw@naver.com","032-651-8619","학습준비물 카드결제시 수수료 없음"],
+      ["103","물품","신낙현(개인)","책걸상 무료 수거","010-4216-5939","","","무료 수거, 쇠·나무 분리 적재"],
+      ["104","물품구입","다함씨앤에스","인테리어","032-612-3157","","","복도 교실 명패, 비쌈"],
+      ["105","폐기물","성진자원","고물상","032-677-0120","","",""],
+      ["106","폐기물","지구하다","폐기물 처리","1660-3114 (010-8749-1001)","","","https://new.zguhada.com/"],
+      ["107","시설","대한산업안전협회","교육시설안전인증","02-860-4709,4783,4746,4749","edukisa@safety.or.kr","",""],
+      ["108","시설","아이토스","소독, 방역","1544-3059 / 010-4437-2326","wwkddla@naver.com","",""],
+      ["109","폐기물","GMR","불용물품","010-5174-1015","gmr3377@hanmail.net","",""],
+      ["110","물품","효성렌터카","렌터카","02-2637-5454","","",""],
+      ["111","물품","우드미","가구","032-341-3220 010-8458-3220","","",""],
+      ["112","물품구입","부천 오피스","학습준비물 납품","070-5035-9981","","",""],
+      ["113","물품","하나감정평가법인 서부지사","온비드 매각 물품 감정 평가","032-271-2121","hana22@kapaland.co.kr","","엑셀+공문 필요"],
+      ["114","용역","이지에스","청소(실내·외부·저수조·후드 등)","02-3158-5062 010-6354-8774","","","장애인기업"],
+      ["115","용역","안양다인치과","학생 구강검진","031-8091-0592","dain2874@naver.com","",""],
+      ["116","폐기물","성광용역","종량제 쓰레기 수거","032-673-0640","","",""],
+      ["117","폐기물","천일에너지","폐목재 무상 수거","010-9361-6088","","","~2028.2.19."],
+      ["118","용역","다비드아키텍처","실내건축인테리어·청소용역·장애인기업","010-9476-8436","","","정문·후문 차량경고등 설치"],
+      ["119","용역","(주)상록","나무병원/수목소독(나무의사)","032-677-1547/010-3332-1547","","",""],
+      ["120","유지보수","꿈에그린꽂직매장(수목)","화분, 수목관리 업체","010-2324-3697","","",""],
+      ["121","유지보수","플라워에듀(난영플라워)","조경관리, 수목관리","010-2962-5235","","",""],
+      ["122","용역","성원씨앤에스(구영희)","불용폐기물, 청소","010-8924-0077","","","경기도 안산"],
+      ["123","용역","학교더하기 경기","건물위생관리업(체육관 샌딩 및 라인마킹)","1533-8504","schoolplus1977@naver.com","","부천시 소사구 송내동"],
+      ["124","용역","진종합공사","인테리어·도장공사·설비 등","032-212-7606/010-9260-7606","","","부천시 서촌로32번길 3"]
+    ]},
+  { key:"calendar", title:"학사일정", icon:"📆", kind:"table",
+    columns:[["event","행사","150px"],["period","기간","220px"],["note","비고","150px"]],
+    note:"수업일수: 1학기 98일(재량휴업 2일 포함), 2학기 92일, 총 190일 · 7/17(금) 제헌절 예정 포함, 임시공휴일 발생 시 방학식을 순연함.",
+    seed:[
+      ["시업식","2026.03.03.(화)",""],
+      ["입학식","2026.03.03.(화)",""],
+      ["여름방학식","2026.07.24.(금)",""],
+      ["여름방학","2026.07.25.(토)~2026.08.17.(월)","24일"],
+      ["2학기 개학식","2026.08.18.(화)",""],
+      ["졸업식","2026.12.30.(수)",""],
+      ["종업식","2026.12.30.(수)",""],
+      ["겨울방학","2026.12.31.(목)~2027.02.28.(일)","60일"],
+      ["학교장재량휴업일","2026.05.01.(금)","노동자의날"],
+      ["학교장재량휴업일","2026.05.04.(월)",""],
+      ["추석연휴","2026.09.24.(목)~2026.09.27.(일)","4일"],
+      ["설연휴","2027.02.06.(토)~2027.02.09.(화)","4일"]
+    ]},
+  { key:"periods", title:"시정표", icon:"⏰", kind:"periods",
+    groups:[
+      { label:"1~2학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["점심시간","11:20–12:10"],["4교시 (월·금)","12:10–12:50"],["5교시 (화·수·목)","13:00–13:40"]] },
+      { label:"3~4학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시","13:00–13:40"],["6교시 (목)","13:50–14:30"]] },
+      { label:"5~6학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시 (수)","13:10–13:40"],["6교시","13:50–14:30"]] }
+    ]},
+  { key:"classroom_map", title:"교실배치도", icon:"🗺️", kind:"map" }
+];
+
+/* 급식/시간표/다가오는 일정 초기값 — 나이스 오픈API 기준, 매일 자동 갱신(실시간 공동편집 아님) */
+var STATUS_SEED = {
+  date: "2026-09-16",
+  dateDisplay: "2026년 9월 16일 (수)",
+  updatedAt: "2026-09-16T16:07:00+09:00",
+  meal: {
+    name: "중식",
+    menu: ["단호박카레라이스","통새우꼬치","감자빵","깍두기","오미자에이드"],
+    calorie: "516.4 Kcal"
+  },
+  classList: {"1":[1,2,3],"2":[1,2,3],"3":[1,2,3],"4":[1,2,3],"5":[1,2,3],"6":[1,2,3,4]},
+  timetable: {
+    "1-1": ["즐거운생활","수학","수학","슬기로운생활","자율·자치활동"],
+    "1-2": ["국어","즐거운생활","수학","슬기로운생활","자율·자치활동"],
+    "1-3": ["국어","수학","슬기로운생활","즐거운생활","수학"],
+    "2-1": ["국어","수학","즐거운생활","바른생활","즐거운생활"],
+    "2-2": ["자율·자치활동","수학","자율·자치활동","즐거운생활","자율·자치활동"],
+    "2-3": ["국어","수학","동아리활동","즐거운생활","자율·자치활동"],
+    "3-1": ["국어","사회","수학","미술","미술"],
+    "3-2": ["국어","수학","미술","미술","사회"],
+    "3-3": ["국어","수학","사회","동아리활동","사회"],
+    "4-1": ["수학","사회","영어","과학","음악"],
+    "4-2": ["수학","영어","사회","과학","과학"],
+    "4-3": ["영어","수학","수학","과학","과학"],
+    "5-1": ["체육","실과","영어","국어","수학"],
+    "5-2": ["국어","영어","체육","사회","수학"],
+    "5-3": ["영어","체육","국어","수학","실과"],
+    "6-1": ["국어","국어","실과","체육","실과"],
+    "6-2": ["국어","체육","수학","도덕","음악"],
+    "6-3": ["과학","과학","체육","수학","사회"],
+    "6-4": ["체육","사회","과학","과학","사회"]
+  },
+  schedule: [
+    {date:"2026-09-19", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-09-24", name:"추석연휴", type:"공휴일"},
+    {date:"2026-09-25", name:"추석", type:"공휴일"},
+    {date:"2026-09-26", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-03", name:"개천절", type:"공휴일"},
+    {date:"2026-10-05", name:"대체공휴일", type:"공휴일"},
+    {date:"2026-10-09", name:"한글날", type:"공휴일"},
+    {date:"2026-10-10", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-17", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-24", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-31", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-07", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-14", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-21", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-28", name:"토요휴업일", type:"휴업일"}
+  ]
+};
+
+var STAFF_SCHEDULE_SEED = {
+  "2026-09-14": [],
+  "2026-09-15": ["이중현(출장)","이강현(병가)"],
+  "2026-09-16": ["석광일(오후출장)","심경아(출장)"],
+  "2026-09-17": ["이중현(출장)"],
+  "2026-09-18": ["석광일(출장)","주지영(출장)"],
+  "2026-09-19": ["토요휴업일"],
+  "2026-09-20": ["오규민(오전)","심경아(오후)"],
+  "2026-09-21": ["이강현(연가)","이중현(연가)","오규민(연가)","석광일(오후출장)"],
+  "2026-09-22": ["현지연수"],
+  "2026-09-23": ["석광일(연가)","심경아(조퇴)"],
+  "2026-09-24": ["추석연휴"],
+  "2026-09-25": ["추석연휴"],
+  "2026-09-26": ["추석연휴"],
+  "2026-09-28": ["석광일(연가)"],
+  "2026-09-29": ["심경아(출장)"],
+  "2026-09-30": ["주지영(오후출장)"],
+  "2026-10-01": ["이중현(출장)","이강현(출장)"],
+  "2026-10-02": ["이중현(출장)","이강현(출장)"],
+  "2026-10-03": ["이중현(오전)","개천절"],
+  "2026-10-04": ["석광일(오후)"],
+  "2026-10-05": ["대체휴일","이중현(오전)"],
+  "2026-10-07": ["이강현(예비군)"],
+  "2026-10-08": ["석광일(출장)"],
+  "2026-10-09": ["한글날"]
+};
+
+/* ---------------- runtime ---------------- */
+
+var db = null;
+var assets = null;
+var activeKey = SECTIONS[0].key;
+var docCache = {}; // key -> latest doc data
+var unsubs = [];
+
+function escapeHtml(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function debounce(fn, ms){
+  var t;
+  return function(){
+    var args = arguments, ctx = this;
+    clearTimeout(t);
+    t = setTimeout(function(){ fn.apply(ctx, args); }, ms);
+  };
+}
+
+function rowsFromSeed(cols, seed){
+  return seed.map(function(arr){
+    var o = {};
+    cols.forEach(function(c, i){ o[c[0]] = arr[i] || ""; });
+    return o;
+  });
+}
+
+function safeGet(key){ try { return localStorage.getItem(key); } catch(e){ return null; } }
+function safeSet(key, val){ try { localStorage.setItem(key, val); } catch(e){ /* ignore */ } }
+
+function daysBetween(dateStr){
+  var target = new Date(dateStr + "T00:00:00");
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+
+function formatUpdated(iso){
+  try{
+    var d = new Date(iso);
+    var h = String(d.getHours()).padStart(2,"0");
+    var m = String(d.getMinutes()).padStart(2,"0");
+    return (d.getMonth()+1)+"."+d.getDate()+". "+h+":"+m;
+  }catch(e){ return ""; }
+}
+
+function syncLineHtml(data){
+  var upd = data && data.updatedAt ? formatUpdated(data.updatedAt) : "";
+  return '<p class="sync-line">🔄 이 정보는 실시간 자동 갱신이 아니라 마지막으로 입력/갱신된 값이에요 · 기준 시각: '+
+    (upd ? escapeHtml(upd) : "확인 중…") + ' · 나이스에서 매일 자동으로 받아오려면 별도 연동이 필요해요(현재 미연결)</p>';
+}
+
+/* status/latest 문서(급식·시간표·다가오는 일정)는 스케줄된 작업이 매일 자동으로 갱신합니다.
+   직원들이 직접 편집하는 표가 아니므로, 각 화면 하단에 실시간 동기화 대신 마지막 자동 갱신 시각을 보여줍니다. */
+function subscribeStatusDoc(handler){
+  if (!db) return;
+  var unsub = db.doc("status/latest").onSnapshot(function(snap){
+    if (snap.exists){
+      var d = snap.data();
+      if (d) handler(d);
+    }
+  }, function(){ /* ignore */ });
+  unsubs.push(unsub);
+}
+
+function buildTabs(){
+  var nav = document.getElementById("tabs");
+  nav.innerHTML = SECTIONS.map(function(s){
+    return '<button data-key="'+s.key+'" class="'+(s.key===activeKey?'active':'')+'">'+s.icon+' '+escapeHtml(s.title)+'</button>';
+  }).join("");
+  Array.prototype.forEach.call(nav.querySelectorAll("button"), function(btn){
+    btn.addEventListener("click", function(){ setActive(btn.getAttribute("data-key")); });
+  });
+}
+
+function setActive(key){
+  activeKey = key;
+  Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function(b){
+    b.classList.toggle("active", b.getAttribute("data-key") === key);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("section.panel"), function(p){
+    p.classList.toggle("active", p.id === "panel-" + key);
+  });
+}
+
+function buildPanels(){
+  var host = document.getElementById("panels");
+  host.innerHTML = SECTIONS.map(function(s){
+    return '<section class="panel'+(s.key===activeKey?' active':'')+'" id="panel-'+s.key+'"></section>';
+  }).join("");
+  SECTIONS.forEach(function(s){
+    var panel = document.getElementById("panel-" + s.key);
+    if (s.kind === "table") renderTableSection(panel, s);
+    else if (s.kind === "schedule") renderScheduleSection(panel, s);
+    else if (s.kind === "periods") renderPeriodsSection(panel, s);
+    else if (s.kind === "map") renderMapSection(panel, s);
+    else if (s.kind === "meal") renderMealSection(panel, s);
+    else if (s.kind === "timetable") renderTimetableSection(panel, s);
+    else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
+  });
+}
+
+/* ---- 오늘의 급식 (나이스 자동 갱신, 조회 전용) ---- */
+function renderMealSection(panel, cfg){
+  var data = STATUS_SEED;
+
+  function paint(){
+    var meal = data.meal;
+    var body;
+    if (meal && meal.menu && meal.menu.length){
+      body = '<span class="meal-badge">'+escapeHtml(meal.name || "중식")+'</span>' +
+        '<ul class="menu-list">' + meal.menu.map(function(m){ return '<li>'+escapeHtml(m)+'</li>'; }).join("") + '</ul>' +
+        (meal.calorie ? '<div class="cal-row"><span>열량</span><b>'+escapeHtml(meal.calorie)+'</b></div>' : "");
+    } else {
+      body = '<div class="no-meal">오늘은 급식이 없는 날입니다.</div>';
+    }
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<p class="desc">'+escapeHtml(data.dateDisplay || "")+' 기준</p>' +
+      body +
+      syncLineHtml(data);
+  }
+
+  paint();
+  subscribeStatusDoc(function(d){ data = d; paint(); });
+}
+
+/* ---- 시간표 (전체 학년/반 선택, 나이스 자동 갱신) ---- */
+function renderTimetableSection(panel, cfg){
+  var data = STATUS_SEED;
+
+  function paint(){
+    var grades = Object.keys(data.classList || {}).sort(function(a,b){ return a - b; });
+    var savedGrade = safeGet("ojeong_grade");
+    var grade = (savedGrade && data.classList[savedGrade]) ? savedGrade : grades[0];
+    var classes = data.classList[grade] || [1];
+    var savedClass = safeGet("ojeong_class");
+    var klass = (savedClass && classes.indexOf(Number(savedClass)) > -1) ? savedClass : String(classes[0]);
+
+    var periods = data.timetable ? data.timetable[grade + "-" + klass] : null;
+    var periodsHtml = (periods && periods.length)
+      ? periods.map(function(subj, i){ return '<li><span class="pnum">'+(i+1)+'</span><span class="psub">'+escapeHtml(subj)+'</span></li>'; }).join("")
+      : '<li class="tt-empty">이 날짜의 시간표 정보가 없습니다 (휴업일이거나 미등록).</li>';
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<p class="desc">'+escapeHtml(data.dateDisplay || "")+' 기준</p>' +
+      '<div class="tt-selects">' +
+        '<select id="ttGrade" aria-label="학년 선택">' + grades.map(function(g){ return '<option value="'+g+'"'+(g===grade?' selected':'')+'>'+g+'학년</option>'; }).join("") + '</select>' +
+        '<select id="ttClass" aria-label="반 선택">' + classes.map(function(c){ return '<option value="'+c+'"'+(String(c)===klass?' selected':'')+'>'+c+'반</option>'; }).join("") + '</select>' +
+      '</div>' +
+      '<ul class="tt-periods">'+periodsHtml+'</ul>' +
+      syncLineHtml(data);
+
+    panel.querySelector("#ttGrade").addEventListener("change", function(e){
+      safeSet("ojeong_grade", e.target.value);
+      safeSet("ojeong_class", "");
+      paint();
+    });
+    panel.querySelector("#ttClass").addEventListener("change", function(e){
+      safeSet("ojeong_class", e.target.value);
+      paint();
+    });
+  }
+
+  paint();
+  subscribeStatusDoc(function(d){ data = d; paint(); });
+}
+
+/* ---- 다가오는 일정 (D-day, 나이스 자동 갱신) ---- */
+function renderUpcomingSection(panel, cfg){
+  var data = STATUS_SEED;
+
+  function paint(){
+    var items = (data.schedule || []).filter(function(ev){ return daysBetween(ev.date) >= 0; }).slice(0, 15);
+    var body = items.length
+      ? '<div class="sched-scroll">' + items.map(function(ev){
+          var d = daysBetween(ev.date);
+          var ddayLabel = d === 0 ? "D-DAY" : ("D-" + d);
+          var urgentClass = d <= 3 ? " urgent" : "";
+          var md = ev.date.slice(5).replace("-", ".");
+          return '<div class="sched-chip'+urgentClass+'">' +
+            '<span class="dday">'+ddayLabel+'</span>' +
+            '<span class="d">'+md+' · '+escapeHtml(ev.type||"")+'</span>' +
+            '<span class="n">'+escapeHtml(ev.name)+'</span>' +
+          '</div>';
+        }).join("") + '</div>'
+      : '<div class="tt-empty">예정된 학사일정이 없습니다.</div>';
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<p class="desc">나이스 학사일정 기준 · 연간 학사일정 전체는 "학사일정" 탭을 확인하세요</p>' +
+      body +
+      syncLineHtml(data);
+  }
+
+  paint();
+  subscribeStatusDoc(function(d){ data = d; paint(); });
+}
+
+/* ---- generic table section (정기용역 / 공사업체 / 거래처 / 학사일정) ---- */
+function renderTableSection(panel, cfg){
+  var state = { rows: rowsFromSeed(cfg.columns, cfg.seed), note: cfg.note || "" };
+
+  function paint(){
+    var head = '<tr>' + cfg.columns.map(function(c){
+      return '<th style="min-width:'+c[2]+'">'+escapeHtml(c[1])+'</th>';
+    }).join("") + '<th style="width:34px"></th></tr>';
+
+    var body = state.rows.map(function(row, ri){
+      var cells = cfg.columns.map(function(c){
+        return '<td><input type="text" data-r="'+ri+'" data-c="'+c[0]+'" value="'+escapeHtml(row[c[0]])+'"></td>';
+      }).join("");
+      return '<tr>' + cells + '<td><button class="rowdel" data-del="'+ri+'" title="행 삭제">✕</button></td></tr>';
+    }).join("");
+
+    var noteHtml = cfg.note != null ? (
+      '<div class="note-area"><label>참고</label><textarea id="noteField">'+escapeHtml(state.note)+'</textarea></div>'
+    ) : "";
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<div class="tablewrap"><table class="datagrid"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>' +
+      '<button class="addrow" id="addBtn">+ 행 추가</button>' +
+      noteHtml;
+
+    panel.querySelectorAll("input[data-r]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var ri = Number(inp.getAttribute("data-r")), key = inp.getAttribute("data-c");
+        state.rows[ri][key] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-del]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var ri = Number(btn.getAttribute("data-del"));
+        state.rows.splice(ri, 1);
+        paint();
+        saveNow();
+      });
+    });
+    panel.querySelector("#addBtn").addEventListener("click", function(){
+      var o = {}; cfg.columns.forEach(function(c){ o[c[0]] = ""; });
+      state.rows.push(o);
+      paint();
+      panel.querySelector('input[data-r="'+(state.rows.length-1)+'"]').focus();
+    });
+    var nf = panel.querySelector("#noteField");
+    if (nf) nf.addEventListener("input", function(){ state.note = nf.value; scheduleSave(); });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    var payload = { rows: state.rows };
+    if (cfg.note != null) payload.note = state.note;
+    db.doc("sections/" + cfg.key).update(payload).catch(function(){
+      db.doc("sections/" + cfg.key).set(payload).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/" + cfg.key).onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.rows) {
+          state.rows = data.rows;
+          if (cfg.note != null && typeof data.note === "string") state.note = data.note;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){ /* ignore */ });
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- staff schedule (weekly grid) ---- */
+function renderScheduleSection(panel, cfg){
+  var days = JSON.parse(JSON.stringify(STAFF_SCHEDULE_SEED));
+  var dayNames = ["일","월","화","수","목","금","토"];
+  var weekStart = mondayOf(new Date());
+
+  function mondayOf(d){
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var day = x.getDay();
+    var diff = (day === 0 ? -6 : 1 - day);
+    x.setDate(x.getDate() + diff);
+    return x;
+  }
+  function fmt(d){
+    var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+    return y + "-" + m + "-" + dd;
+  }
+  function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate()+n); return x; }
+  function isToday(d){
+    var t = new Date();
+    return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+  }
+
+  function paint(){
+    var cells = "";
+    for (var i=0;i<7;i++){
+      var d = addDays(weekStart, i);
+      var key = fmt(d);
+      var list = days[key] || [];
+      var entries = list.map(function(txt, idx){
+        return '<div class="entry"><input type="text" data-date="'+key+'" data-idx="'+idx+'" value="'+escapeHtml(txt)+'">' +
+          '<button data-deldate="'+key+'" data-delidx="'+idx+'">✕</button></div>';
+      }).join("");
+      cells +=
+        '<div class="daycol">' +
+          '<div class="dhead'+(isToday(d)?' today':'')+'"><span>'+dayNames[d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate()+'</span></div>' +
+          entries +
+          '<button class="addentry" data-adddate="'+key+'">+ 추가</button>' +
+        '</div>';
+    }
+    var rangeEnd = addDays(weekStart, 6);
+    panel.innerHTML =
+      '<h2>🗓️ 직원 일정표</h2>' +
+      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다.</p>' +
+      '<div class="weeknav">' +
+        '<button id="prevWeek">‹ 이전 주</button>' +
+        '<span class="range">'+(weekStart.getMonth()+1)+'/'+weekStart.getDate()+' ~ '+(rangeEnd.getMonth()+1)+'/'+rangeEnd.getDate()+'</span>' +
+        '<button id="nextWeek">다음 주 ›</button>' +
+        '<button id="todayWeek">오늘</button>' +
+      '</div>' +
+      '<div class="weekgrid">'+cells+'</div>';
+
+    panel.querySelector("#prevWeek").addEventListener("click", function(){ weekStart = addDays(weekStart,-7); paint(); });
+    panel.querySelector("#nextWeek").addEventListener("click", function(){ weekStart = addDays(weekStart, 7); paint(); });
+    panel.querySelector("#todayWeek").addEventListener("click", function(){ weekStart = mondayOf(new Date()); paint(); });
+
+    panel.querySelectorAll("input[data-date]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var k = inp.getAttribute("data-date"), idx = Number(inp.getAttribute("data-idx"));
+        days[k][idx] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-deldate]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var k = btn.getAttribute("data-deldate"), idx = Number(btn.getAttribute("data-delidx"));
+        days[k].splice(idx,1);
+        paint(); saveNow();
+      });
+    });
+    panel.querySelectorAll("button[data-adddate]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var k = btn.getAttribute("data-adddate");
+        if (!days[k]) days[k] = [];
+        days[k].push("");
+        paint();
+        var inputs = panel.querySelectorAll('input[data-date="'+k+'"]');
+        if (inputs.length) inputs[inputs.length-1].focus();
+      });
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    db.doc("sections/schedule").update({ days: days }).catch(function(){
+      db.doc("sections/schedule").set({ days: days }).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/schedule").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.days) { days = data.days; markSynced(); paint(); }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- periods (시정표) ---- */
+function renderPeriodsSection(panel, cfg){
+  var groups = JSON.parse(JSON.stringify(cfg.groups));
+
+  function paint(){
+    var groupsHtml = groups.map(function(g, gi){
+      var rows = g.rows.map(function(r, ri){
+        return '<tr>' +
+          '<td><input data-g="'+gi+'" data-r="'+ri+'" data-c="0" value="'+escapeHtml(r[0])+'"></td>' +
+          '<td><input data-g="'+gi+'" data-r="'+ri+'" data-c="1" value="'+escapeHtml(r[1])+'"></td>' +
+          '<td><button class="rowdel" data-delg="'+gi+'" data-delr="'+ri+'">✕</button></td>' +
+        '</tr>';
+      }).join("");
+      return '<div class="periodgroup"><h3>'+escapeHtml(g.label)+'</h3>' +
+        '<table class="datagrid"><tbody>'+rows+'</tbody></table>' +
+        '<button class="addrow" data-addg="'+gi+'">+ 행 추가</button></div>';
+    }).join("");
+
+    panel.innerHTML = '<h2>⏰ 시정표</h2><div class="periodgroups">'+groupsHtml+'</div>';
+
+    panel.querySelectorAll("input[data-g]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var g = Number(inp.getAttribute("data-g")), r = Number(inp.getAttribute("data-r")), c = Number(inp.getAttribute("data-c"));
+        groups[g].rows[r][c] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-delg]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var g = Number(btn.getAttribute("data-delg")), r = Number(btn.getAttribute("data-delr"));
+        groups[g].rows.splice(r,1); paint(); saveNow();
+      });
+    });
+    panel.querySelectorAll("button[data-addg]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var g = Number(btn.getAttribute("data-addg"));
+        groups[g].rows.push(["",""]); paint(); saveNow();
+      });
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    db.doc("sections/periods").update({ groups: groups }).catch(function(){
+      db.doc("sections/periods").set({ groups: groups }).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/periods").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.groups) { groups = data.groups; markSynced(); paint(); }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- classroom map (image upload via assets) ---- */
+function renderMapSection(panel, cfg){
+  var state = { assetId: null, url: null, note: "" };
+
+  function paint(){
+    var body;
+    if (state.url) {
+      body = '<div class="mapbox"><img src="'+state.url+'" alt="교실배치도"></div>';
+    } else {
+      body = '<div class="placeholder">아직 등록된 교실배치도 이미지가 없습니다. 시트에서는 그림(도면)으로만 되어 있어 자동으로 가져오지 못했어요 — 아래 버튼으로 사진이나 스캔본을 올려주시면 모두에게 바로 보입니다.</div>';
+    }
+    panel.innerHTML =
+      '<h2>🗺️ 교실배치도</h2>' +
+      body +
+      '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+        '<input type="file" id="mapFile" accept="image/*" style="display:none">' +
+        '<button class="uploadbtn" id="mapUploadBtn">'+(state.url ? "이미지 교체" : "이미지 업로드")+'</button>' +
+        '<span class="desc" id="mapStatus" style="margin:0;"></span>' +
+      '</div>' +
+      '<div class="note-area"><label>비고</label><textarea id="mapNote">'+escapeHtml(state.note)+'</textarea></div>';
+
+    var fileInp = panel.querySelector("#mapFile");
+    panel.querySelector("#mapUploadBtn").addEventListener("click", function(){
+      if (!assets) {
+        panel.querySelector("#mapStatus").textContent = "이 화면에서는 업로드 권한이 없어요 (이미 있는 이미지는 볼 수 있어요).";
+        return;
+      }
+      fileInp.click();
+    });
+    fileInp.addEventListener("change", function(){
+      var f = fileInp.files && fileInp.files[0];
+      if (!f || !assets) return;
+      panel.querySelector("#mapStatus").textContent = "업로드 중…";
+      assets.upload(f).then(function(res){
+        state.assetId = res.id; state.url = res.url;
+        saveNow();
+        paint();
+      }).catch(function(){
+        panel.querySelector("#mapStatus").textContent = "업로드에 실패했어요. 다시 시도해주세요.";
+      });
+    });
+    panel.querySelector("#mapNote").addEventListener("input", function(){
+      state.note = panel.querySelector("#mapNote").value;
+      scheduleSave();
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 600);
+  function saveNow(){
+    if (!db) return;
+    var payload = { assetId: state.assetId, url: state.url, note: state.note };
+    db.doc("sections/classroom_map").update(payload).catch(function(){
+      db.doc("sections/classroom_map").set(payload).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/classroom_map").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data) {
+          state.assetId = data.assetId || null;
+          state.url = data.url || null;
+          state.note = data.note || "";
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---------------- sync indicator ---------------- */
+function markSynced(){
+  var dot = document.getElementById("syncDot"), txt = document.getElementById("syncText");
+  if (!dot) return;
+  dot.classList.add("on");
+  txt.textContent = "실시간 동기화됨";
+}
+
+/* ---------------- clock ---------------- */
+function tickClock(){
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2,"0");
+  var m = String(now.getMinutes()).padStart(2,"0");
+  var clockTime = document.getElementById("clockTime");
+  var clockDate = document.getElementById("clockDate");
+  if (!clockTime || !clockDate) return;
+  clockTime.textContent = h + ":" + m;
+  var days = ["일","월","화","수","목","금","토"];
+  clockDate.textContent = now.getFullYear()+"년 "+(now.getMonth()+1)+"월 "+now.getDate()+"일 ("+days[now.getDay()]+")";
+}
+
+/* ---------------- Firebase 연결 (로그인 없이 익명 인증으로 접속) ----------------
+   아래 firebaseConfig 값을 본인의 Firebase 프로젝트 값으로 반드시 교체하세요.
+   Firebase 콘솔 > 프로젝트 설정(톱니바퀴) > 일반 탭 > 내 앱(웹 앱)에서 그대로 복사하면 됩니다.
+   이 값들은 원래 공개되어도 안전하도록 설계된 값입니다(비밀키가 아닙니다) —
+   실제 보안(로그인 없이도 함부로 지우거나 훼손하지 못하게)은 Firestore/Storage 규칙이 담당합니다.
+   같이 보내드린 "설정가이드.md" 파일을 따라하면 이 값을 채우는 방법이 자세히 나와 있습니다. */
+var firebaseConfig = {
+  apiKey: "AIzaSyB_-sP0EpjtuVgV4ufF2WpaDbGfBChdyQI",
+  authDomain: "ojeong-office.firebaseapp.com",
+  projectId: "ojeong-office",
+  storageBucket: "ojeong-office.firebasestorage.app",
+  messagingSenderId: "459186984437",
+  appId: "1:459186984437:web:036d4de2efb9de1d8a3cbc"
+};
+
+/* db/assets 어댑터: 기존 Claude 아티팩트의 db/assets 기능과 거의 같은 모양(doc().set/update/onSnapshot,
+   assets.upload)으로 감싸서, 위의 모든 render*Section 함수를 그대로 재사용할 수 있게 합니다. */
+function makeDbAdapter(firestoreDb){
+  return {
+    doc: function(path){
+      var parts = path.split("/");
+      var ref = firestoreDb.collection(parts[0]).doc(parts[1]);
+      return {
+        set: function(data){ return ref.set(data); },
+        update: function(data){ return ref.update(data); },
+        onSnapshot: function(onNext, onError){
+          return ref.onSnapshot(function(snap){
+            onNext({ exists: snap.exists, data: function(){ return snap.data(); } });
+          }, onError || function(){});
+        }
+      };
+    }
+  };
+}
+
+function makeAssetsAdapter(storageInstance){
+  return {
+    upload: function(file){
+      var safeName = (file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "_");
+      var id = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + safeName;
+      var ref = storageInstance.ref().child("uploads/" + id);
+      return ref.put(file).then(function(snap){
+        return snap.ref.getDownloadURL().then(function(url){
+          return { id: id, url: url, sizeBytes: file.size, contentType: file.type };
+        });
+      });
+    }
+  };
+}
+
+/* ---------------- boot ---------------- */
+buildTabs();
+buildPanels();
+tickClock();
+setInterval(tickClock, 15000);
+
+(function bootFirebase(){
+  var syncTxt = document.getElementById("syncText");
+  var banner = document.getElementById("setupBanner");
+  var notConfigured = !firebaseConfig.apiKey || firebaseConfig.apiKey.indexOf("여기에") === 0;
+
+  if (typeof firebase === "undefined" || notConfigured){
+    if (syncTxt) syncTxt.textContent = "설정 필요 (firebaseConfig 미입력)";
+    if (banner) banner.classList.add("show");
+    return;
+  }
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+  } catch(e){
+    if (syncTxt) syncTxt.textContent = "Firebase 연결 실패";
+    if (banner) banner.classList.add("show");
+    return;
+  }
+
+  firebase.auth().signInAnonymously().then(function(){
+    db = makeDbAdapter(firebase.firestore());
+    assets = makeAssetsAdapter(firebase.storage());
+    buildPanels(); // db가 준비됐으니 실시간 구독을 붙여서 다시 그림
+  }).catch(function(err){
+    if (syncTxt) syncTxt.textContent = "연결 대기 중 (오프라인 모드)";
+    if (banner) banner.classList.add("show");
+    console.error("Firebase 익명 로그인 실패:", err);
+  });
+})();
+
+})();
+</script>
+</body>
+</html>
