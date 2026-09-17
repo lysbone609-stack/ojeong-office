@@ -141,24 +141,34 @@
   }
   .note-area textarea:focus{outline:none;border-color:var(--accent);}
 
-  /* staff schedule */
-  .weeknav{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-  .weeknav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
-    color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer;}
-  .weeknav button:hover{border-color:var(--accent);color:var(--accent);}
-  .weeknav .range{font-weight:700;font-size:14px;}
-  .weekgrid{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:8px;overflow-x:auto;}
-  .daycol{background:var(--surface-2);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:120px;}
-  .daycol .dhead{font-size:11px;font-weight:700;color:var(--ink-dim);display:flex;justify-content:space-between;}
-  .daycol .dhead.today{color:var(--accent);}
-  .entry{background:var(--surface);border:1px solid var(--line);border-radius:7px;
-    padding:5px 7px;font-size:12px;display:flex;align-items:center;gap:4px;}
-  .entry input{border:none;background:transparent;color:var(--ink);font:inherit;flex:1;min-width:0;padding:0;}
+  /* staff schedule (month calendar) */
+  .monthnav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .monthnav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
+    color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
+  .monthnav button:hover{border-color:var(--accent);color:var(--accent);}
+  .monthnav .range{font-weight:700;font-size:14px;min-width:84px;text-align:center;}
+  .calwrap{overflow-x:auto;padding-bottom:4px;}
+  .dowrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;min-width:640px;}
+  .dowrow span{text-align:center;font-size:11px;font-weight:700;color:var(--ink-dim);}
+  .dowrow span.sun{color:var(--danger);}
+  .dowrow span.sat{color:var(--accent);}
+  .monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;min-width:640px;}
+  .daycell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:78px;
+    display:flex;flex-direction:column;gap:3px;}
+  .daycell.otherMonth{opacity:.42;}
+  .daycell.today{box-shadow:inset 0 0 0 2px var(--accent);}
+  .daycell .dnum{font-size:11px;font-weight:700;color:var(--ink-dim);}
+  .daycell .dnum.sun{color:var(--danger);}
+  .daycell .dnum.sat{color:var(--accent);}
+  .daycell.today .dnum{color:var(--accent);}
+  .entry{background:var(--surface);border:1px solid var(--line);border-radius:6px;
+    padding:3px 5px;font-size:11px;display:flex;align-items:center;gap:3px;}
+  .entry input{border:none;background:transparent;color:var(--ink);font:inherit;flex:1;min-width:0;padding:0;font-size:11px;}
   .entry input:focus{outline:none;}
-  .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:12px;flex:none;}
+  .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px;flex:none;padding:0;}
   .entry button:hover{color:var(--danger);}
-  .daycol .addentry{font:inherit;font-size:11px;font-weight:700;color:var(--good);background:transparent;
-    border:1px dashed var(--good);border-radius:7px;padding:4px;cursor:pointer;}
+  .daycell .addentry{font:inherit;font-size:10px;font-weight:700;color:var(--good);background:transparent;
+    border:1px dashed var(--good);border-radius:6px;padding:2px;cursor:pointer;margin-top:auto;}
 
   /* periods */
   .periodgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
@@ -765,61 +775,80 @@ function renderTableSection(panel, cfg){
   }
 }
 
-/* ---- staff schedule (weekly grid) ---- */
+/* ---- staff schedule (month calendar) ---- */
 function renderScheduleSection(panel, cfg){
   var days = JSON.parse(JSON.stringify(STAFF_SCHEDULE_SEED));
   var dayNames = ["일","월","화","수","목","금","토"];
-  var weekStart = mondayOf(new Date());
+  var today0 = new Date();
+  var viewYear = today0.getFullYear();
+  var viewMonth = today0.getMonth(); // 0-indexed
 
-  function mondayOf(d){
-    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    var day = x.getDay();
-    var diff = (day === 0 ? -6 : 1 - day);
-    x.setDate(x.getDate() + diff);
-    return x;
-  }
   function fmt(d){
     var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
     return y + "-" + m + "-" + dd;
   }
-  function addDays(d, n){ var x = new Date(d); x.setDate(x.getDate()+n); return x; }
   function isToday(d){
     var t = new Date();
     return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
   }
 
   function paint(){
-    var cells = "";
-    for (var i=0;i<7;i++){
-      var d = addDays(weekStart, i);
+    var firstOfMonth = new Date(viewYear, viewMonth, 1);
+    var startDow = firstOfMonth.getDay();
+    var gridStart = new Date(viewYear, viewMonth, 1 - startDow);
+    var lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+    var endDow = lastOfMonth.getDay();
+    var gridEnd = new Date(viewYear, viewMonth, lastOfMonth.getDate() + (6 - endDow));
+    var totalDays = Math.round((gridEnd - gridStart) / 86400000) + 1;
+
+    var dowHtml = dayNames.map(function(n, i){
+      var cls = i === 0 ? "sun" : (i === 6 ? "sat" : "");
+      return '<span class="'+cls+'">'+n+'</span>';
+    }).join("");
+
+    var cellsHtml = "";
+    for (var i=0;i<totalDays;i++){
+      var d = new Date(gridStart); d.setDate(d.getDate() + i);
       var key = fmt(d);
       var list = days[key] || [];
+      var inMonth = d.getMonth() === viewMonth;
+      var dow = d.getDay();
+      var numCls = dow === 0 ? "sun" : (dow === 6 ? "sat" : "");
       var entries = list.map(function(txt, idx){
         return '<div class="entry"><input type="text" data-date="'+key+'" data-idx="'+idx+'" value="'+escapeHtml(txt)+'">' +
           '<button data-deldate="'+key+'" data-delidx="'+idx+'">✕</button></div>';
       }).join("");
-      cells +=
-        '<div class="daycol">' +
-          '<div class="dhead'+(isToday(d)?' today':'')+'"><span>'+dayNames[d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate()+'</span></div>' +
+      cellsHtml +=
+        '<div class="daycell'+(inMonth ? '' : ' otherMonth')+(isToday(d) ? ' today' : '')+'">' +
+          '<div class="dnum '+numCls+'">'+d.getDate()+'</div>' +
           entries +
           '<button class="addentry" data-adddate="'+key+'">+ 추가</button>' +
         '</div>';
     }
-    var rangeEnd = addDays(weekStart, 6);
+
     panel.innerHTML =
       '<h2>🗓️ 직원 일정표</h2>' +
       '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다.</p>' +
-      '<div class="weeknav">' +
-        '<button id="prevWeek">‹ 이전 주</button>' +
-        '<span class="range">'+(weekStart.getMonth()+1)+'/'+weekStart.getDate()+' ~ '+(rangeEnd.getMonth()+1)+'/'+rangeEnd.getDate()+'</span>' +
-        '<button id="nextWeek">다음 주 ›</button>' +
-        '<button id="todayWeek">오늘</button>' +
+      '<div class="monthnav">' +
+        '<button id="prevMonth">‹ 이전 달</button>' +
+        '<span class="range">'+viewYear+'년 '+(viewMonth+1)+'월</span>' +
+        '<button id="nextMonth">다음 달 ›</button>' +
+        '<button id="todayMonth">이번 달</button>' +
       '</div>' +
-      '<div class="weekgrid">'+cells+'</div>';
+      '<div class="calwrap">' +
+        '<div class="dowrow">'+dowHtml+'</div>' +
+        '<div class="monthgrid">'+cellsHtml+'</div>' +
+      '</div>';
 
-    panel.querySelector("#prevWeek").addEventListener("click", function(){ weekStart = addDays(weekStart,-7); paint(); });
-    panel.querySelector("#nextWeek").addEventListener("click", function(){ weekStart = addDays(weekStart, 7); paint(); });
-    panel.querySelector("#todayWeek").addEventListener("click", function(){ weekStart = mondayOf(new Date()); paint(); });
+    panel.querySelector("#prevMonth").addEventListener("click", function(){
+      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } paint();
+    });
+    panel.querySelector("#nextMonth").addEventListener("click", function(){
+      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } paint();
+    });
+    panel.querySelector("#todayMonth").addEventListener("click", function(){
+      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); paint();
+    });
 
     panel.querySelectorAll("input[data-date]").forEach(function(inp){
       inp.addEventListener("input", function(){
