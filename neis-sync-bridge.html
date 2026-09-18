@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사이버행정실 동기화</title>
+<style>
+  :root{
+    --bg:#eef1f6; --surface:#ffffff; --surface-2:#f3f5f9; --line:#dbe1ea;
+    --ink:#1b212c; --ink-dim:#69707d; --accent:#2255a4; --accent-soft:#e2ecfb;
+    --good:#2f8a5b; --good-soft:#e0f3e8; --danger:#b8492f; --danger-soft:#f8e2da;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#10141b; --surface:#1a2029; --surface-2:#212836; --line:#2c3444;
+      --ink:#e6e9ee; --ink-dim:#8b93a0; --accent:#6fa2e8; --accent-soft:#182338;
+      --good:#6fcf9d; --good-soft:#173226; --danger:#e88968; --danger-soft:#3a2019;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",-apple-system,sans-serif;
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 24px;
+    max-width:360px;width:100%;text-align:center;box-shadow:0 10px 30px -18px rgba(0,0,0,.3);}
+  .icon{font-size:34px;margin-bottom:10px;}
+  h1{font-size:16px;margin:0 0 12px;}
+  #status{font-size:14px;line-height:1.6;color:var(--ink-dim);white-space:pre-line;}
+  #status.ok{color:var(--good);}
+  #status.err{color:var(--danger);}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  button{margin-top:16px;background:var(--accent-soft);color:var(--accent);border:none;border-radius:8px;
+    padding:8px 16px;font-size:13px;cursor:pointer;font-weight:600;}
+  button:hover{filter:brightness(0.97);}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🔄</div>
+    <h1>오정초등학교 사이버행정실</h1>
+    <div id="status"><span class="spinner"></span>연결 대기 중...</div>
+    <button id="closeBtn" style="display:none;" onclick="window.close()">창 닫기</button>
+  </div>
+<script>
+(function(){
+  var FIREBASE_API_KEY = "AIzaSyB_-sP0EpjtuVgV4ufF2WpaDbGfBChdyQI";
+  var PROJECT_ID = "ojeong-office";
+  var statusEl = document.getElementById("status");
+  var closeBtn = document.getElementById("closeBtn");
+  var handled = false;
+
+  function setStatus(html, cls){
+    statusEl.innerHTML = html;
+    statusEl.className = cls || "";
+  }
+
+  if (!window.opener){
+    setStatus("이 페이지는 나이스 동기화 버튼을 통해서만 열 수 있습니다.", "err");
+    closeBtn.style.display = "inline-block";
+  } else {
+    setStatus('<span class="spinner"></span>나이스로부터 데이터를 기다리는 중...');
+    window.addEventListener("message", onMessage);
+    try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_READY" }, "*"); } catch (e) {}
+  }
+
+  function isValidMonthKey(k){ return /^\d{4}-\d{2}$/.test(String(k || "")); }
+
+  async function getIdToken(){
+    var res = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + FIREBASE_API_KEY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ returnSecureToken: true })
+    });
+    if (!res.ok) throw new Error("임시 인증 실패 (" + res.status + ")");
+    var data = await res.json();
+    return data.idToken;
+  }
+
+  async function writeDutySync(monthKey, byDate, scope){
+    if (!isValidMonthKey(monthKey)) throw new Error("잘못된 월 정보입니다.");
+    var idToken = await getIdToken();
+    var docPath = "projects/" + PROJECT_ID + "/databases/(default)/documents/status/duty_sync_" + monthKey;
+    var fieldPaths = ["byDateJson", "syncedAt", "scope", "monthKey"]
+      .map(function(f){ return "updateMask.fieldPaths=" + f; }).join("&");
+    var url = "https://firestore.googleapis.com/v1/" + docPath + "?" + fieldPaths;
+    var body = {
+      fields: {
+        byDateJson: { stringValue: JSON.stringify(byDate || {}) },
+        syncedAt: { stringValue: new Date().toISOString() },
+        scope: { stringValue: String(scope || "") },
+        monthKey: { stringValue: monthKey }
+      }
+    };
+    var res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Authorization": "Bearer " + idToken, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok){
+      var text = "";
+      try { text = await res.text(); } catch (e) {}
+      throw new Error("동기화 실패 (" + res.status + ") " + text.slice(0, 200));
+    }
+  }
+
+  async function onMessage(e){
+    if (!e || !e.data || e.data.type !== "JBE_NEIS_DUTY_SYNC") return;
+    if (e.source !== window.opener) return;
+    if (handled) return;
+    handled = true;
+    window.removeEventListener("message", onMessage);
+
+    var payload = e.data.payload || {};
+    setStatus('<span class="spinner"></span>' + (payload.monthKey || "") + " 복무현황을 저장하는 중...");
+
+    try {
+      await writeDutySync(payload.monthKey, payload.byDate, payload.scope);
+      var count = Object.keys(payload.byDate || {}).length;
+      setStatus("✅ " + payload.monthKey + " 복무현황 동기화 완료\n(" + count + "일치 반영됨)\n\n이 창은 닫으셔도 됩니다.", "ok");
+      closeBtn.style.display = "inline-block";
+      try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_RESULT", ok: true }, "*"); } catch (err) {}
+    } catch (err) {
+      setStatus("❌ 동기화 실패\n" + ((err && err.message) || err), "err");
+      closeBtn.style.display = "inline-block";
+      try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_RESULT", ok: false, error: String((err && err.message) || err) }, "*"); } catch (err2) {}
+    }
+  }
+})();
+</script>
+</body>
+</html>
