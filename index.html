@@ -1277,8 +1277,8 @@ function renderScheduleSection(panel, cfg){
     }
 
     var dutySyncLine = (dutySyncMeta && dutySyncMeta.syncedAt)
-      ? '<p class="duty-sync-line">🔄 나이스 복무 동기화: '+escapeHtml(dutySyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(dutySyncMeta.syncedAt))+' 기준 ('+escapeHtml(dutySyncMeta.monthKey)+')</p>'
-      : '<p class="duty-sync-line">🔄 '+escapeHtml(currentMonthKey())+'월은 아직 나이스 복무 동기화 데이터가 없습니다 · 나이스에서 "나이스 부서 복무 달력" 확장의 "사이버행정실로 동기화" 버튼을 눌러주세요.</p>';
+      ? '<p class="duty-sync-line">🔄 나이스 복무 동기화: '+escapeHtml(dutySyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(dutySyncMeta.syncedAt))+' 기준 ('+escapeHtml(dutySyncMeta.monthKey)+') · <a href="./neis-sync.html" target="_blank" rel="noopener">동기화 방법 안내</a></p>'
+      : '<p class="duty-sync-line">🔄 '+escapeHtml(currentMonthKey())+'월은 아직 나이스 복무 동기화 데이터가 없습니다 · <a href="./neis-sync.html" target="_blank" rel="noopener">확장 설치 없이 동기화하는 방법 보기</a></p>';
 
     panel.innerHTML =
       '<h2>🗓️ 직원 일정표</h2>' +
