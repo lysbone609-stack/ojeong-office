@@ -1008,8 +1008,7 @@ function buildPanels(){
                   var innerHtml = '<div class="mdnum '+numCls+'">'+d.getDate()+'</div>';
                   if (inMonth && hasMeal){
                         var extra = dayObj.menu.length > 1 ? (" 외 " + (dayObj.menu.length - 1) + "개") : "";
-                        innerHtml += '<div class="mcal">'+escapeHtml(dayObj.calorie || "")+'</div>' +
-                              '<div class="mmenu">'+escapeHtml((dayObj.menu[0] || "") + extra)+'</div>';
+                        innerHtml += '<div class="mmenu">'+escapeHtml((dayObj.menu[0] || "") + extra)+'</div>';
                   } else if (inMonth && cached){
                         innerHtml += '<div class="mmenu">급식 없음</div>';
                   }
