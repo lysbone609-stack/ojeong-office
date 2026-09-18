@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>오정초등학교 사이버 행정실</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem("ojeong_theme");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  }catch(e){}
+})();
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap');
 
@@ -51,6 +59,9 @@
   .clock-time{display:block;font-variant-numeric:tabular-nums;font-weight:900;font-size:clamp(17px,2.2vw,22px);color:var(--ink);}
   .clock-date{display:block;color:var(--ink-dim);font-size:11px;}
   .syncwrap{display:flex;align-items:center;gap:6px;color:var(--ink-dim);font-size:12px;}
+.theme-toggle{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;font-size:16px;}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
   .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
   .sync-dot.on{background:var(--good);box-shadow:0 0 0 0 rgba(47,138,91,.5);animation:pulse 2.2s infinite;}
   @media (prefers-reduced-motion: reduce){ .sync-dot.on{animation:none;} }
@@ -108,8 +119,8 @@
     .meal-nav .range{font-weight:700;font-size:13px;min-width:96px;text-align:center;}
     .meal-loading{color:var(--ink-dim);font-size:12px;margin:0 0 10px;}
 
-    .meal-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;min-width:640px;}
-    .meal-month-cell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:64px;display:flex;flex-direction:column;gap:3px;}
+    .meal-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:640px;}
+    .meal-month-cell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:64px;min-width:0;display:flex;flex-direction:column;gap:3px;}
     .meal-month-cell.otherMonth{opacity:.42;}
     .meal-month-cell.today{box-shadow:inset 0 0 0 2px var(--accent);}
     .meal-month-cell .mdnum{font-size:11px;font-weight:700;color:var(--ink-dim);}
@@ -233,12 +244,12 @@
   .monthnav button:hover{border-color:var(--accent);color:var(--accent);}
   .monthnav .range{font-weight:700;font-size:14px;min-width:84px;text-align:center;}
   .calwrap{overflow-x:auto;padding-bottom:4px;}
-  .dowrow{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px;min-width:640px;}
+  .dowrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;min-width:640px;}
   .dowrow span{text-align:center;font-size:11px;font-weight:700;color:var(--ink-dim);}
   .dowrow span.sun{color:var(--danger);}
   .dowrow span.sat{color:var(--accent);}
-  .monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;min-width:640px;}
-  .daycell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:78px;
+  .monthgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:640px;}
+  .daycell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:78px;min-width:0;
     display:flex;flex-direction:column;gap:3px;}
   .daycell.otherMonth{opacity:.42;}
   .daycell.today{box-shadow:inset 0 0 0 2px var(--accent);}
@@ -246,13 +257,13 @@
   .daycell .dnum.sun{color:var(--danger);}
   .daycell .dnum.sat{color:var(--accent);}
   .daycell.today .dnum{color:var(--accent);}
-  .entry{background:var(--surface);border:1px solid var(--line);border-radius:6px;
-    padding:3px 5px;font-size:11px;display:flex;align-items:center;gap:3px;}
+  .entry{background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:0;
+    padding:3px 5px;font-size:11px;display:flex;align-items:center;gap:3px;overflow-wrap:break-word;}
   .entry input{border:none;background:transparent;color:var(--ink);font:inherit;flex:1;min-width:0;padding:0;font-size:11px;}
   .entry input:focus{outline:none;}
   .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px;flex:none;padding:0;}
   .entry button:hover{color:var(--danger);}
-  .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);}
+  .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);word-break:keep-all;}
   .entry.synced .sync-tag{flex:none;}
   .duty-sync-line{color:var(--ink-dim);font-size:12px;margin:12px 0 0;}
   .duty-sync-line .linklike{font:inherit;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
@@ -291,6 +302,7 @@
         <span class="clock-date" id="clockDate">날짜 불러오는 중…</span>
       </div>
       <div class="syncwrap"><span class="sync-dot" id="syncDot"></span><span id="syncText">동기화 대기 중</span></div>
+      <button type="button" class="theme-toggle" id="themeToggleBtn" title="화면 밝기 전환" aria-label="화면 밝기 전환"></button>
     </div>
   </header>
 
@@ -1609,6 +1621,37 @@ function tickClock(){
   clockDate.textContent = now.getFullYear()+"년 "+(now.getMonth()+1)+"월 "+now.getDate()+"일 ("+days[now.getDay()]+")";
 }
 
+/* ---------------- 라이트/다크 모드 전환 ---------------- */
+var THEME_KEY = "ojeong_theme";
+function effectiveTheme(){
+  var attr = document.documentElement.getAttribute("data-theme");
+  if (attr === "light" || attr === "dark") return attr;
+  try {
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  } catch(e){}
+  return "light";
+}
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  try { localStorage.setItem(THEME_KEY, t); } catch(e){}
+  paintThemeBtn();
+}
+function paintThemeBtn(){
+  var btn = document.getElementById("themeToggleBtn");
+  if (!btn) return;
+  var cur = effectiveTheme();
+  btn.textContent = cur === "dark" ? "☀️" : "🌙";
+  btn.title = cur === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환";
+}
+function initThemeToggle(){
+  var btn = document.getElementById("themeToggleBtn");
+  if (!btn) return;
+  paintThemeBtn();
+  btn.addEventListener("click", function(){
+    applyTheme(effectiveTheme() === "dark" ? "light" : "dark");
+  });
+}
+
 /* ---------------- Firebase 연결 (로그인 없이 익명 인증으로 접속) ----------------
    아래 firebaseConfig 값을 본인의 Firebase 프로젝트 값으로 반드시 교체하세요.
    Firebase 콘솔 > 프로젝트 설정(톱니바퀴) > 일반 탭 > 내 앱(웹 앱)에서 그대로 복사하면 됩니다.
@@ -1664,6 +1707,7 @@ buildTabs();
 buildPanels();
 tickClock();
 setInterval(tickClock, 15000);
+initThemeToggle();
 
 (function bootFirebase(){
   var syncTxt = document.getElementById("syncText");
