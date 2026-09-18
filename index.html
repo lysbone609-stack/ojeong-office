@@ -214,20 +214,19 @@
   .neis-sync-btn{font:inherit;font-weight:700;font-size:12px;color:var(--accent);background:var(--accent-soft);
     border:1px solid var(--accent);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex:none;}
   .neis-sync-btn:hover{opacity:.85;}
-  .neis-modal-card{width:min(480px,100%);}
-  .neis-modal-card .neis-step{display:flex;gap:10px;align-items:flex-start;margin:0 0 14px;}
-  .neis-modal-card .neis-step:last-of-type{margin-bottom:0;}
-  .neis-modal-card .neis-step-num{flex:none;display:inline-flex;align-items:center;justify-content:center;
-    width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:800;}
-  .neis-modal-card .neis-step-body h4{margin:0 0 4px;font-size:13.5px;}
-  .neis-modal-card .neis-step-body p{margin:0 0 6px;font-size:12.5px;line-height:1.6;color:var(--ink-dim);}
-  .neis-modal-card .neis-step-body p:last-child{margin-bottom:0;}
-  .neis-bm-row{background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:12px;text-align:center;}
-  .neis-bm-btn{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:13px;
-    padding:9px 16px;border-radius:8px;text-decoration:none;cursor:grab;user-select:none;}
-  .neis-warn{display:inline-block;background:var(--danger-soft);color:var(--danger);font-size:11px;font-weight:700;
-    padding:2px 8px;border-radius:6px;margin-bottom:6px;}
-  .neis-target-names{background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--ink);margin:0 0 6px;}
+  .neis-modal-card{width:min(420px,100%);}
+  .neis-visual-steps{display:flex;flex-direction:column;gap:10px;margin:14px 0;}
+  .neis-visual-step{display:flex;align-items:center;gap:12px;background:var(--surface-2);border-radius:12px;padding:10px 12px;}
+  .neis-visual-icon{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+    background:var(--accent-soft);color:var(--accent);border-radius:10px;}
+  .neis-visual-icon svg{width:24px;height:24px;}
+  .neis-visual-text{flex:1;min-width:0;}
+  .neis-visual-text .t{font-weight:800;font-size:13px;margin-bottom:2px;}
+  .neis-visual-text .d{font-size:12px;line-height:1.5;color:var(--ink-dim);}
+  .neis-bm-row{background:var(--surface-2);border:1px dashed var(--accent);border-radius:12px;padding:14px;text-align:center;margin:2px 0 0;}
+  .neis-bm-btn{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+    padding:11px 20px;border-radius:8px;text-decoration:none;cursor:grab;user-select:none;}
+  .neis-bm-hint{font-size:11.5px;color:var(--ink-dim);margin-top:8px;}
   .monthnav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
   .monthnav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
     color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
@@ -675,36 +674,31 @@ function showNeisSyncModal(){
   var overlay = document.createElement("div");
   overlay.id = "neisSyncOverlay";
   overlay.className = "modal-overlay";
+  var ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="4.5" rx="1.3"/><path d="M12 21l3.6-7.5H8.4L12 21z"/><path d="M12 12.5V9"/></svg>';
+  var ICON_CLICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M6.5 8.5h6M6.5 12h4"/><path d="M14 14.5l6.5 2.3-2.6 1-1 2.6-2.9-5.9z" fill="currentColor" stroke="none"/></svg>';
+  var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
   overlay.innerHTML =
     '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
       '<h3>🔄 나이스 복무 동기화</h3>' +
-      '<p class="modal-desc">아래 지정된 인원의 승인완료 복무현황만 동기화합니다. 확장 프로그램 설치는 필요 없어요 — 즐겨찾기 버튼 하나만 등록하면 됩니다.</p>' +
-      '<div class="neis-target-names">👥 대상 인원(6명): ' + escapeHtml(NEIS_SYNC_TARGET_NAMES.join(", ")) + '</div>' +
-      '<div class="neis-target-names">🗓️ 동기화 범위: 이번 달 기준 전월 1개월 + 이번 달 + 다음 2개월, 총 4개월치(예: 9월에 실행하면 8~11월)를 한 번에 동기화합니다.</div>' +
-      '<div class="neis-step">' +
-        '<span class="neis-step-num">1</span>' +
-        '<div class="neis-step-body">' +
-          '<h4>즐겨찾기 등록 (처음 한 번만)</h4>' +
-          '<p>아래 버튼을 마우스로 눌러 <b>브라우저 즐겨찾기 표시줄로 끌어다 놓으세요</b>. 클릭하면 안내 문구만 뜹니다 — 반드시 드래그해야 해요.</p>' +
-          '<div class="neis-bm-row">' +
-            '<a class="neis-bm-btn" href="' + NEIS_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔄 사이버행정실 동기화</a>' +
-            '<div class="modal-desc" style="margin:8px 0 0;">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)로 켤 수 있어요.</div>' +
-          '</div>' +
+      '<p class="modal-desc">아래 3단계만 따라 하면 돼요.</p>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
+          '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
         '</div>' +
       '</div>' +
-      '<div class="neis-step">' +
-        '<span class="neis-step-num">2</span>' +
-        '<div class="neis-step-body">' +
-          '<h4>나이스에 로그인한 뒤, 그 화면에서 즐겨찾기 클릭</h4>' +
-          '<p><span class="neis-warn">주의</span> 이 사이버행정실 화면이 아니라, <b>나이스(neis.go.kr) 화면을 보고 있을 때</b> 즐겨찾기를 눌러야 동작합니다 — 브라우저 보안 정책상 이 사이트에서는 나이스 로그인 정보를 직접 읽을 수 없어서, 버튼을 나이스 쪽에 두는 방식으로 구현했어요.</p>' +
-          '<p>처음 한 번만: "처음 사용하시는군요" 안내가 뜨면 확인 후, 나이스에서 <b>[일일근무상황조회]</b> 화면을 열어 아무 날짜로나 조회를 한 번 실행해 주세요. 그 즉시 이번 달 기준 전월~다음 2개월(총 4개월치) 동기화가 자동 시작됩니다. 4개월치를 조회하다 보니 완료까지 몇 분 정도 걸릴 수 있어요.</p>' +
-        '</div>' +
+      '<div class="neis-bm-row">' +
+        '<a class="neis-bm-btn" href="' + NEIS_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔄 사이버행정실 동기화</a>' +
+        '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
       '</div>' +
-      '<div class="neis-step">' +
-        '<span class="neis-step-num">3</span>' +
-        '<div class="neis-step-body">' +
-          '<h4>작은 팝업 창에서 완료 확인</h4>' +
-          '<p>동기화가 끝나면 "✅ 동기화 완료" 알림이 뜨고, 이 "직원 일정표" 탭에 점선 테두리(🔄)로 반영됩니다. 동기화는 자동 반복되지 않으니 접속할 때마다 다시 눌러주세요.</p>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
+          '<div class="neis-visual-text"><div class="t">② 나이스 화면에서 즐겨찾기 클릭</div><div class="d">나이스에 로그인한 채로, 그 화면에서 방금 등록한 즐겨찾기를 누르세요.</div></div>' +
+        '</div>' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
+          '<div class="neis-visual-text"><div class="t">③ 완료!</div><div class="d">"완료" 알림이 뜨면 끝. 직원 일정표에 자동으로 반영돼요.</div></div>' +
         '</div>' +
       '</div>' +
       '<div class="modal-actions">' +
