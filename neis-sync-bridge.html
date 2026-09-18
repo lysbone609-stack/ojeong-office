@@ -112,19 +112,44 @@
     window.removeEventListener("message", onMessage);
 
     var payload = e.data.payload || {};
-    setStatus('<span class="spinner"></span>' + (payload.monthKey || "") + " 복무현황을 저장하는 중...");
+    var months = Array.isArray(payload.months) ? payload.months : [];
 
-    try {
-      await writeDutySync(payload.monthKey, payload.byDate, payload.scope);
-      var count = Object.keys(payload.byDate || {}).length;
-      setStatus("✅ " + payload.monthKey + " 복무현황 동기화 완료\n(" + count + "일치 반영됨)\n\n이 창은 닫으셔도 됩니다.", "ok");
+    if (!months.length){
+      setStatus("❌ 동기화 실패\n전달된 데이터가 없습니다.", "err");
       closeBtn.style.display = "inline-block";
-      try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_RESULT", ok: true }, "*"); } catch (err) {}
-    } catch (err) {
-      setStatus("❌ 동기화 실패\n" + ((err && err.message) || err), "err");
-      closeBtn.style.display = "inline-block";
-      try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_RESULT", ok: false, error: String((err && err.message) || err) }, "*"); } catch (err2) {}
+      try { window.opener.postMessage({ type: "JBE_NEIS_DUTY_SYNC_RESULT", ok: false, error: "전달된 데이터가 없습니다." }, "*"); } catch (err2) {}
+      return;
     }
+
+    var results = [];
+    var anyFail = false;
+    for (var i = 0; i < months.length; i++){
+      var item = months[i] || {};
+      setStatus('<span class="spinner"></span>(' + (i + 1) + "/" + months.length + ") " + (item.monthKey || "") + " 저장하는 중...");
+      try {
+        await writeDutySync(item.monthKey, item.byDate, item.scope);
+        var count = Object.keys(item.byDate || {}).length;
+        results.push(item.monthKey + ": " + count + "일치 반영");
+      } catch (err) {
+        anyFail = true;
+        results.push(item.monthKey + ": 실패(" + ((err && err.message) || err) + ")");
+      }
+    }
+
+    var summaryText = results.join("\n");
+    if (anyFail){
+      setStatus("⚠️ 일부 동기화 실패\n" + summaryText + "\n\n이 창은 닫으셔도 됩니다.", "err");
+    } else {
+      setStatus("✅ 복무현황 동기화 완료\n" + summaryText + "\n\n이 창은 닫으셔도 됩니다.", "ok");
+    }
+    closeBtn.style.display = "inline-block";
+    try {
+      window.opener.postMessage({
+        type: "JBE_NEIS_DUTY_SYNC_RESULT",
+        ok: !anyFail,
+        error: anyFail ? ("일부 달 저장 실패: " + results.join(", ")) : undefined
+      }, "*");
+    } catch (err2) {}
   }
 })();
 </script>
