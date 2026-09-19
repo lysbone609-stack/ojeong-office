@@ -175,6 +175,9 @@
     padding:8px 14px;cursor:pointer;white-space:nowrap;
   }
   nav.tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .other-tab-select{flex:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-dim);
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:7px 10px;cursor:pointer;white-space:nowrap;max-width:180px;}
 
   section.panel{display:none;background:var(--surface);border:1px solid var(--line);
     border-radius:14px;box-shadow:var(--shadow);padding:16px;}
@@ -282,6 +285,45 @@
     border:none;border-radius:8px;padding:8px 14px;cursor:pointer;}
   .uploadbtn:hover{filter:brightness(0.97);}
   .placeholder{color:var(--ink-dim);font-size:13px;background:var(--surface-2);border-radius:10px;padding:16px;}
+  .archive-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .archive-phase-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+  .archive-phase-tabs button{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink-dim);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;}
+  .archive-phase-tabs button.active{color:#fff;background:var(--accent);border-color:var(--accent);}
+  .archive-addbtn{font:inherit;font-weight:700;font-size:13px;color:#fff;background:var(--accent);border:none;
+    border-radius:9px;padding:9px 16px;cursor:pointer;flex:none;}
+  .archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .archive-card{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;position:relative;}
+  .archive-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface);}
+  .archive-card .meta{padding:8px 10px 10px;}
+  .archive-card .badge{display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;margin-bottom:5px;}
+  .archive-card .badge.before{color:var(--ink-dim);background:var(--surface);}
+  .archive-card .badge.during{color:#fff;background:var(--accent);}
+  .archive-card .badge.after{color:#fff;background:var(--good);}
+  .archive-card .badge.processing{color:#fff;background:var(--accent);}
+  .archive-card .badge.done{color:#fff;background:var(--good);}
+  .archive-card .badge.rejected{color:#fff;background:var(--danger);}
+  .repair-actions{display:flex;gap:6px;margin-top:8px;}
+  .repair-donebtn,.repair-rejectbtn{flex:1;font:inherit;font-size:11.5px;font-weight:700;border:none;
+    border-radius:8px;padding:7px 4px;cursor:pointer;}
+  .repair-donebtn{color:#fff;background:var(--good);}
+  .repair-rejectbtn{color:#fff;background:var(--danger);}
+  .archive-card .loc{font-size:12.5px;font-weight:700;color:var(--ink);overflow-wrap:break-word;}
+  .archive-card .dt{font-size:11px;color:var(--ink-dim);margin-top:2px;}
+  .archive-card .delbtn{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:none;
+    background:rgba(15,23,42,.55);color:#fff;font-size:13px;line-height:1;cursor:pointer;}
+  .archive-empty{grid-column:1/-1;}
+  .archive-date-group{margin-bottom:18px;}
+  .archive-date-heading{font-size:12.5px;font-weight:700;color:var(--ink-dim);margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);}
+  .archive-phase-tabs #archiveAddCatBtn{color:var(--accent);}
+  .archive-lightbox-img{display:block;width:100%;border-radius:10px;margin-bottom:10px;}
+  .archive-form-row{margin-bottom:10px;}
+  .archive-form-row label{display:block;font-size:11px;font-weight:700;color:var(--ink-dim);margin-bottom:4px;}
+  .archive-form-row input[type="text"],.archive-form-row input[type="datetime-local"],.archive-form-row select,.archive-form-row textarea{
+    width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--ink);font:inherit;font-size:13.5px;padding:8px 10px;}
+  .archive-form-row textarea{resize:vertical;min-height:50px;}
+  .archive-form-error{color:var(--danger);font-size:12px;margin:-4px 0 10px;display:none;}
 
   footer.foot{color:var(--ink-dim);font-size:11px;text-align:center;}
   .setup-banner{background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:10px 14px;
@@ -324,7 +366,7 @@
 
 /* ---------------- section configs & seed data ---------------- */
 
-var SECTIONS = [
+var ALL_SECTION_DEFS = [
   { key:"meal", title:"이번 주 급식", icon:"🍚", kind:"meal" },
   { key:"timetable", title:"시간표", icon:"🕘", kind:"timetable" },
   { key:"upcoming", title:"다가오는 일정", icon:"📅", kind:"upcoming" },
@@ -513,8 +555,23 @@ var SECTIONS = [
       { label:"3~4학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시","13:00–13:40"],["6교시 (목)","13:50–14:30"]] },
       { label:"5~6학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시 (수)","13:10–13:40"],["6교시","13:50–14:30"]] }
     ]},
-  { key:"classroom_map", title:"교실배치도", icon:"🗺️", kind:"map" }
+  { key:"classroom_map", title:"교실배치도", icon:"🗺️", kind:"map" },
+  { key:"construction_archive", title:"공사 현장 사진", icon:"📷", kind:"construction_archive" },
+  { key:"facility_repair", title:"시설 보수 현황", icon:"🛠️", kind:"facility_repair" }
 ];
+
+/* 메뉴 탭 노출 순서: 자주 쓰는 것만 상단에 두고, 나머지는 "기타" 탭 안에서 드롭다운으로 고르게 함.
+   기존 섹션 정의(ALL_SECTION_DEFS)와 Firestore 저장 경로(sections/<key>)는 그대로 두고,
+   화면에 보여줄 순서만 이 두 목록으로 다시 배치함. */
+var MAIN_TAB_ORDER = ["schedule","meal","upcoming","construction_archive","facility_repair","vendors_regular","vendors_misc","classroom_map","periods"];
+var OTHER_TAB_ORDER = ["timetable","contractors","calendar"];
+function findSectionDef(key){
+  for (var i=0;i<ALL_SECTION_DEFS.length;i++){ if (ALL_SECTION_DEFS[i].key === key) return ALL_SECTION_DEFS[i]; }
+  return null;
+}
+var OTHER_SECTIONS = OTHER_TAB_ORDER.map(findSectionDef).filter(Boolean);
+var SECTIONS = MAIN_TAB_ORDER.map(findSectionDef).filter(Boolean);
+SECTIONS.push({ key:"other", title:"기타", icon:"📁", kind:"other" });
 
 /* 급식/시간표/다가오는 일정 초기값 — 나이스 오픈API 기준, 매일 자동 갱신(실시간 공동편집 아님) */
 var STATUS_SEED = {
@@ -584,32 +641,9 @@ var STATUS_SEED = {
   ]
 };
 
-var STAFF_SCHEDULE_SEED = {
-  "2026-09-14": [],
-  "2026-09-15": ["이중현(출장)","이강현(병가)"],
-  "2026-09-16": ["석광일(오후출장)","심경아(출장)"],
-  "2026-09-17": ["이중현(출장)"],
-  "2026-09-18": ["석광일(출장)","주지영(출장)"],
-  "2026-09-19": ["토요휴업일"],
-  "2026-09-20": ["오규민(오전)","심경아(오후)"],
-  "2026-09-21": ["이강현(연가)","이중현(연가)","오규민(연가)","석광일(오후출장)"],
-  "2026-09-22": ["현지연수"],
-  "2026-09-23": ["석광일(연가)","심경아(조퇴)"],
-  "2026-09-24": ["추석연휴"],
-  "2026-09-25": ["추석연휴"],
-  "2026-09-26": ["추석연휴"],
-  "2026-09-28": ["석광일(연가)"],
-  "2026-09-29": ["심경아(출장)"],
-  "2026-09-30": ["주지영(오후출장)"],
-  "2026-10-01": ["이중현(출장)","이강현(출장)"],
-  "2026-10-02": ["이중현(출장)","이강현(출장)"],
-  "2026-10-03": ["이중현(오전)","개천절"],
-  "2026-10-04": ["석광일(오후)"],
-  "2026-10-05": ["대체휴일","이중현(오전)"],
-  "2026-10-07": ["이강현(예비군)"],
-  "2026-10-08": ["석광일(출장)"],
-  "2026-10-09": ["한글날"]
-};
+/* 나이스 복무 동기화(북마클릿)로 앞으로 자동 채워질 예정이라, 그동안 수기로 넣어둔 예시 일정은 모두 비워둠.
+   기능(달력, 직접 입력/삭제, 나이스 동기화 버튼)은 그대로 유지됨 — 데이터만 빈 상태로 시작. */
+var STAFF_SCHEDULE_SEED = {};
 
 /* ---------------- runtime ---------------- */
 
@@ -627,6 +661,60 @@ var editUnlockedSession = false;
 function isEditUnlocked(){
   if (editUnlockedSession) return true;
   try { return localStorage.getItem(EDIT_UNLOCK_KEY) === "1"; } catch(e){ return false; }
+}
+
+/* 공사 현장 사진 "업로드" 전용 비밀번호(0000) — 수정용 1932와는 별개.
+   한 번 통과하면 그 휴대폰(브라우저)에서는 7일간 다시 묻지 않고, 7일이 지나면 다시 팝업이 뜸. */
+var ARCHIVE_UPLOAD_PASSWORD = "0000";
+var ARCHIVE_UPLOAD_UNLOCK_KEY = "ojeong_archive_upload_unlocked_at";
+var ARCHIVE_UPLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isArchiveUploadUnlocked(){
+  try {
+    var t = parseInt(localStorage.getItem(ARCHIVE_UPLOAD_UNLOCK_KEY), 10);
+    return !!t && (Date.now() - t < ARCHIVE_UPLOAD_TTL_MS);
+  } catch(e){ return false; }
+}
+
+function showArchiveUploadLockModal(onSuccess){
+  if (document.getElementById("archiveUploadLockOverlay")) return;
+  var overlay = document.createElement("div");
+  overlay.id = "archiveUploadLockOverlay";
+  overlay.className = "modal-overlay";
+  overlay.innerHTML =
+    '<div class="modal-card" role="dialog" aria-modal="true">' +
+      '<h3>🔒 사진 업로드 비밀번호</h3>' +
+      '<p class="modal-desc">공사 현장 사진을 올리려면 비밀번호가 필요합니다. 한 번 입력하면 이 휴대폰에서는 7일간 다시 묻지 않아요.</p>' +
+      '<input type="password" class="editlock-input" id="archiveUploadLockInput" placeholder="비밀번호" inputmode="numeric" autocomplete="off">' +
+      '<div class="editlock-error" id="archiveUploadLockError">비밀번호가 올바르지 않습니다.</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" id="archiveUploadLockCancel">취소</button>' +
+        '<button type="button" class="primary" id="archiveUploadLockConfirm">확인</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var input = overlay.querySelector("#archiveUploadLockInput");
+  var errorEl = overlay.querySelector("#archiveUploadLockError");
+
+  function close(){ overlay.remove(); }
+  function tryUnlock(){
+    if (input.value === ARCHIVE_UPLOAD_PASSWORD){
+      try { localStorage.setItem(ARCHIVE_UPLOAD_UNLOCK_KEY, String(Date.now())); } catch(e){ /* ignore */ }
+      close();
+      onSuccess();
+    } else {
+      errorEl.style.display = "block";
+      input.value = "";
+      input.focus();
+    }
+  }
+
+  overlay.querySelector("#archiveUploadLockCancel").addEventListener("click", close);
+  overlay.querySelector("#archiveUploadLockConfirm").addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter") tryUnlock(); });
+  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  setTimeout(function(){ input.focus(); }, 30);
 }
 
 function showEditLockModal(){
@@ -833,6 +921,64 @@ function setActive(key){
   });
 }
 
+function renderSectionByKind(panel, s){
+  if (s.kind === "table") renderTableSection(panel, s);
+  else if (s.kind === "schedule") renderScheduleSection(panel, s);
+  else if (s.kind === "periods") renderPeriodsSection(panel, s);
+  else if (s.kind === "map") renderMapSection(panel, s);
+  else if (s.kind === "meal") renderMealSection(panel, s);
+  else if (s.kind === "timetable") renderTimetableSection(panel, s);
+  else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
+  else if (s.kind === "construction_archive") renderConstructionArchiveSection(panel, s);
+  else if (s.kind === "facility_repair") renderFacilityRepairSection(panel, s);
+}
+
+/* "기타" 탭: 자주 안 쓰는 나머지 섹션들을 고르는 화면.
+   선택 드롭다운은 패널 안이 아니라 상단 탭 바의 "기타" 버튼 바로 옆에 붙여서 보여줌. */
+function renderOtherSection(panel, cfg){
+  var current = OTHER_SECTIONS.length ? OTHER_SECTIONS[0].key : null;
+  var localUnsub = null;
+
+  function paintTabSelect(){
+    var nav = document.getElementById("tabs");
+    if (!nav) return;
+    var tabBtn = nav.querySelector('button[data-key="other"]');
+    if (!tabBtn) return;
+    var old = nav.querySelector("#otherTabSelect");
+    if (old) old.remove();
+    var sel = document.createElement("select");
+    sel.id = "otherTabSelect";
+    sel.className = "other-tab-select";
+    sel.innerHTML = OTHER_SECTIONS.map(function(s){
+      return '<option value="'+s.key+'"'+(s.key===current?" selected":"")+'>'+s.icon+' '+escapeHtml(s.title)+'</option>';
+    }).join("");
+    sel.addEventListener("change", function(e){
+      current = e.target.value;
+      setActive("other");
+      renderCurrent();
+    });
+    tabBtn.insertAdjacentElement("afterend", sel);
+  }
+
+  function renderCurrent(){
+    if (localUnsub) { try { localUnsub(); } catch(e){} localUnsub = null; }
+    var target = null;
+    for (var i=0;i<OTHER_SECTIONS.length;i++){ if (OTHER_SECTIONS[i].key === current){ target = OTHER_SECTIONS[i]; break; } }
+
+    paintTabSelect();
+    panel.innerHTML = '<div id="otherBody"></div>';
+
+    if (target){
+      var body = panel.querySelector("#otherBody");
+      var before = unsubs.length;
+      renderSectionByKind(body, target);
+      if (unsubs.length > before) localUnsub = unsubs.pop(); // 드롭다운 전환 시 이전 실시간 구독 정리
+    }
+  }
+
+  renderCurrent();
+}
+
 function buildPanels(){
   var host = document.getElementById("panels");
   host.innerHTML = SECTIONS.map(function(s){
@@ -840,13 +986,8 @@ function buildPanels(){
   }).join("");
   SECTIONS.forEach(function(s){
     var panel = document.getElementById("panel-" + s.key);
-    if (s.kind === "table") renderTableSection(panel, s);
-    else if (s.kind === "schedule") renderScheduleSection(panel, s);
-    else if (s.kind === "periods") renderPeriodsSection(panel, s);
-    else if (s.kind === "map") renderMapSection(panel, s);
-    else if (s.kind === "meal") renderMealSection(panel, s);
-    else if (s.kind === "timetable") renderTimetableSection(panel, s);
-    else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
+    if (s.kind === "other") renderOtherSection(panel, s);
+    else renderSectionByKind(panel, s);
   });
 }
 
@@ -1181,11 +1322,44 @@ function renderTimetableSection(panel, cfg){
 }
 
 /* ---- 다가오는 일정 (D-day, 나이스 자동 갱신) ---- */
+/* "다가오는 일정"은 "학사일정" 탭(sections/calendar)의 내용 중 토요휴업일·재량휴업일류를 제외하고
+   오늘부터 1년 뒤까지의 일정만 뽑아서 보여줌(입학식/여름방학식/여름방학/개학식/겨울방학 등). */
+var UPCOMING_EXCLUDE_PATTERN = /토요휴업|재량휴업/;
+
+function parseKoreanCalPeriod(periodStr){
+  var re = /(\d{4})\.(\d{1,2})\.(\d{1,2})\.?/g;
+  var m, dates = [];
+  while ((m = re.exec(periodStr || "")) !== null){
+    var y = m[1], mo = String(m[2]).padStart(2,"0"), d = String(m[3]).padStart(2,"0");
+    dates.push(y + "-" + mo + "-" + d);
+  }
+  if (!dates.length) return { start: null };
+  return { start: dates[0] };
+}
+
 function renderUpcomingSection(panel, cfg){
-  var data = STATUS_SEED;
+  var calDef = findSectionDef("calendar");
+  var rows = calDef ? rowsFromSeed(calDef.columns, calDef.seed) : [];
+
+  function computeItems(){
+    var todayD = new Date(); todayD.setHours(0,0,0,0);
+    var limitD = new Date(todayD); limitD.setFullYear(limitD.getFullYear() + 1);
+    var out = [];
+    rows.forEach(function(row){
+      var name = row.event || "";
+      if (!name || UPCOMING_EXCLUDE_PATTERN.test(name)) return;
+      var parsed = parseKoreanCalPeriod(row.period || "");
+      if (!parsed.start) return;
+      var sd = new Date(parsed.start + "T00:00:00");
+      if (isNaN(sd.getTime()) || sd < todayD || sd > limitD) return;
+      out.push({ name: name, date: parsed.start });
+    });
+    out.sort(function(a,b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+    return out;
+  }
 
   function paint(){
-    var items = (data.schedule || []).filter(function(ev){ return daysBetween(ev.date) >= 0; }).slice(0, 15);
+    var items = computeItems();
     var body = items.length
       ? '<div class="sched-scroll">' + items.map(function(ev){
           var d = daysBetween(ev.date);
@@ -1194,7 +1368,7 @@ function renderUpcomingSection(panel, cfg){
           var md = ev.date.slice(5).replace("-", ".");
           return '<div class="sched-chip'+urgentClass+'">' +
             '<span class="dday">'+ddayLabel+'</span>' +
-            '<span class="d">'+md+' · '+escapeHtml(ev.type||"")+'</span>' +
+            '<span class="d">'+md+'</span>' +
             '<span class="n">'+escapeHtml(ev.name)+'</span>' +
           '</div>';
         }).join("") + '</div>'
@@ -1202,13 +1376,21 @@ function renderUpcomingSection(panel, cfg){
 
     panel.innerHTML =
       '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
-      '<p class="desc">나이스 학사일정 기준 · 연간 학사일정 전체는 "학사일정" 탭을 확인하세요</p>' +
-      body +
-      syncLineHtml(data);
+      '<p class="desc">"학사일정" 탭 기준(토요휴업일 제외) · 오늘부터 1년 이내 일정만 표시 · 전체 일정은 "학사일정" 탭에서 확인하세요</p>' +
+      body;
   }
 
   paint();
-  subscribeStatusDoc(function(d){ data = d; paint(); });
+
+  if (db) {
+    var unsub = db.doc("sections/calendar").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.rows) { rows = data.rows; paint(); }
+      }
+    }, function(){ /* ignore */ });
+    unsubs.push(unsub);
+  }
 }
 
 /* ---- generic table section (정기용역 / 공사업체 / 거래처 / 학사일정) ---- */
@@ -1600,6 +1782,654 @@ function renderMapSection(panel, cfg){
   }
 }
 
+/* ---- 공사 현장 사진 아카이브 (사업명 카테고리 → 공사전/중/후 → 날짜별 그룹, 사진만, Firebase Storage 업로드) ----
+   휴대폰에서 사진을 보내는 화면은 이 사이트가 아니라 별도 파일(gongsa-sajin-upload.html)이며,
+   같은 Firestore 문서(sections/construction_archive)를 공유해서 카테고리·사진이 서로 실시간 연동됨. */
+var ARCHIVE_MAX_BYTES = 12 * 1024 * 1024; // 사진 1장당 12MB 상한 (용량 관리)
+var ARCHIVE_PHASES = [
+  { key:"before", label:"공사전" },
+  { key:"during", label:"공사중" },
+  { key:"after", label:"공사후" }
+];
+function archivePhaseLabel(key){
+  for (var i=0;i<ARCHIVE_PHASES.length;i++){ if (ARCHIVE_PHASES[i].key === key) return ARCHIVE_PHASES[i].label; }
+  return key;
+}
+function todayDateValue(){
+  var d = new Date();
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+function formatArchiveDate(dateStr){
+  if (!dateStr) return "(날짜 미기입)";
+  var days = ["일","월","화","수","목","금","토"];
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return dateStr;
+  return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일 ("+days[d.getDay()]+")";
+}
+function formatArchiveDateNoWeekday(dateStr){
+  if (!dateStr) return "";
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return dateStr;
+  return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일";
+}
+function addOneMonth(dateStr){
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return null;
+  var nd = new Date(d.getFullYear(), d.getMonth()+1, d.getDate());
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  return nd.getFullYear()+"-"+pad(nd.getMonth()+1)+"-"+pad(nd.getDate());
+}
+function archiveCategoryLabel(categories, id){
+  for (var i=0;i<categories.length;i++){ if (categories[i].id === id) return categories[i].label; }
+  return "(알 수 없음)";
+}
+function groupByDate(list){
+  var map = {}, order = [];
+  list.forEach(function(p){
+    var key = p.date || "(날짜 미기입)";
+    if (!map[key]) { map[key] = []; order.push(key); }
+    map[key].push(p);
+  });
+  order.sort(function(a,b){ return a < b ? 1 : (a > b ? -1 : 0); }); // 최신 날짜가 위로
+  return order.map(function(key){ return { date: key, items: map[key] }; });
+}
+
+var ARCHIVE_CONTACT_COLUMNS = [
+  ["role","직","90px"],
+  ["name","상호","170px"],
+  ["companyPhone","전화번호(회사)","160px"],
+  ["personalPhone","전화번호(개인)","160px"],
+  ["note","비고","200px"]
+];
+
+function renderConstructionArchiveSection(panel, cfg){
+  var state = { categories: [], photos: [], contacts: [], activeCategory: null, phaseFilter: "all" };
+
+  function visiblePhotos(){
+    var list = state.photos;
+    if (state.activeCategory){
+      list = list.filter(function(p){ return p.categoryId === state.activeCategory; });
+      if (state.phaseFilter !== "all") list = list.filter(function(p){ return p.phase === state.phaseFilter; });
+    }
+    return list;
+  }
+
+  function lastAfterDate(categoryId){
+    var maxDate = null;
+    state.photos.forEach(function(p){
+      if (p.categoryId === categoryId && p.phase === "after" && p.date){
+        if (!maxDate || p.date > maxDate) maxDate = p.date;
+      }
+    });
+    return maxDate;
+  }
+
+  function isCategoryCompleted(categoryId){
+    var last = lastAfterDate(categoryId);
+    if (!last) return false;
+    var threshold = addOneMonth(last);
+    if (!threshold) return false;
+    return todayDateValue() >= threshold;
+  }
+
+  function paint(){
+    var activeCategories = state.categories.filter(function(c){ return !isCategoryCompleted(c.id); });
+    var completedCategories = state.categories.filter(function(c){ return isCategoryCompleted(c.id); })
+      .map(function(c){ return { id:c.id, label:c.label, lastDate: lastAfterDate(c.id) }; })
+      .sort(function(a,b){ return (b.lastDate||"") < (a.lastDate||"") ? -1 : ((b.lastDate||"") > (a.lastDate||"") ? 1 : 0); });
+
+    var catTabsHtml = '<button data-cat="" class="'+(!state.activeCategory?"active":"")+'">전체</button>' +
+      '<button type="button" id="archiveAddCatBtn" title="사업명 추가">＋</button>' +
+      activeCategories.map(function(c){
+        return '<button data-cat="'+escapeHtml(c.id)+'" class="'+(state.activeCategory===c.id?"active":"")+'">'+escapeHtml(c.label)+'</button>';
+      }).join("");
+
+    var completedDropdownHtml = completedCategories.length
+      ? '<select id="archiveCompletedSelect" class="other-tab-select" title="공사후 마지막 사진 1개월 뒤 자동으로 여기에 모입니다">' +
+          '<option value="">✅ 공사완료 ('+completedCategories.length+')</option>' +
+          completedCategories.map(function(c){
+            return '<option value="'+escapeHtml(c.id)+'"'+(state.activeCategory===c.id?" selected":"")+'>'+
+              escapeHtml(formatArchiveDateNoWeekday(c.lastDate))+' '+escapeHtml(c.label)+'</option>';
+          }).join("") +
+        '</select>'
+      : '';
+
+    var phaseTabsHtml = "";
+    if (state.activeCategory){
+      phaseTabsHtml = '<div class="archive-phase-tabs" id="archivePhaseTabs" style="margin-top:8px;">' +
+        '<button data-f="all" class="'+(state.phaseFilter==="all"?"active":"")+'">전체</button>' +
+        ARCHIVE_PHASES.map(function(ph){
+          return '<button data-f="'+ph.key+'" class="'+(state.phaseFilter===ph.key?"active":"")+'">'+ph.label+'</button>';
+        }).join("") +
+        '<button data-f="contacts" class="'+(state.phaseFilter==="contacts"?"active":"")+'">📇 연락처</button>' +
+      '</div>';
+    }
+
+    var isContactsView = state.activeCategory && state.phaseFilter === "contacts";
+    var bodyHtml;
+    if (!state.categories.length){
+      bodyHtml = '<div class="placeholder archive-empty">아직 등록된 사업명이 없습니다. 위 ＋ 버튼으로 "공간드림사업"처럼 진행 중인 사업명을 먼저 추가해 주세요.</div>';
+    } else if (isContactsView){
+      bodyHtml = contactsTableHtml();
+    } else {
+      var groups = groupByDate(visiblePhotos());
+      if (!groups.length){
+        bodyHtml = '<div class="placeholder archive-empty">아직 등록된 사진이 없습니다. "사진 추가" 버튼으로 올려주세요.</div>';
+      } else {
+        bodyHtml = groups.map(function(g){
+          var cardsHtml = g.items.map(function(p){
+            return '<div class="archive-card" data-id="'+escapeHtml(p.id)+'">' +
+              '<img src="'+escapeHtml(p.url)+'" alt="공사 현장 사진" loading="lazy">' +
+              (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(p.id)+'" title="삭제">✕</button>' : '') +
+              '<div class="meta">' +
+                '<span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span>' +
+                (!state.activeCategory ? '<div class="loc" style="color:var(--accent);">'+escapeHtml(archiveCategoryLabel(state.categories, p.categoryId))+'</div>' : '') +
+                '<div class="loc">'+escapeHtml(p.location || "(장소 미기입)")+'</div>' +
+              '</div>' +
+            '</div>';
+          }).join("");
+          return '<div class="archive-date-group">' +
+            '<div class="archive-date-heading">'+escapeHtml(formatArchiveDate(g.date))+'</div>' +
+            '<div class="archive-grid">'+cardsHtml+'</div>' +
+          '</div>';
+        }).join("");
+      }
+    }
+
+    panel.innerHTML =
+      '<h2>📷 공사 현장 사진</h2>' +
+      '<p class="desc">사업명(예: 공간드림사업)별로 공사전·공사중·공사후 사진을 날짜순으로 모아두는 곳입니다. 나중에 하자가 생기면 공사 전 상태와 바로 비교해볼 수 있어요. 공사후 마지막 사진 이후 1개월이 지나면 "공사완료" 목록으로 자동으로 옮겨집니다. "연락처"는 이 홈페이지에서만 보이고 휴대폰 업로드 화면에는 나오지 않습니다.</p>' +
+      '<div class="archive-toolbar">' +
+        '<div class="archive-phase-tabs" id="archiveCatTabs">'+catTabsHtml+'</div>' +
+        completedDropdownHtml +
+        (isContactsView ? '' : '<button type="button" class="archive-addbtn" id="archiveAddBtn">＋ 사진 추가</button>') +
+      '</div>' +
+      phaseTabsHtml +
+      '<div id="archiveBody" style="margin-top:12px;">'+bodyHtml+'</div>';
+
+    var completedSelectEl = panel.querySelector("#archiveCompletedSelect");
+    if (completedSelectEl){
+      completedSelectEl.addEventListener("change", function(e){
+        var val = e.target.value;
+        if (!val) return;
+        state.activeCategory = val;
+        state.phaseFilter = "all";
+        paint();
+      });
+    }
+
+    panel.querySelector("#archiveCatTabs").addEventListener("click", function(e){
+      if (e.target.closest("#archiveAddCatBtn")) { openAddCategoryForm(); return; }
+      var btn = e.target.closest("button[data-cat]");
+      if (!btn) return;
+      state.activeCategory = btn.getAttribute("data-cat") || null;
+      state.phaseFilter = "all";
+      paint();
+    });
+
+    var phaseTabsEl = panel.querySelector("#archivePhaseTabs");
+    if (phaseTabsEl){
+      phaseTabsEl.addEventListener("click", function(e){
+        var btn = e.target.closest("button[data-f]");
+        if (!btn) return;
+        state.phaseFilter = btn.getAttribute("data-f");
+        paint();
+      });
+    }
+
+    if (isContactsView){
+      wireContactsTable(panel);
+    } else {
+      panel.querySelector("#archiveAddBtn").addEventListener("click", function(){
+        if (!assets) { alert("아직 사진 저장소 연결 중입니다. 잠시 후 다시 시도해 주세요."); return; }
+        if (!state.categories.length) { alert("먼저 위 ＋ 버튼으로 사업명을 추가해 주세요."); return; }
+        if (isArchiveUploadUnlocked()) openArchiveUploadForm();
+        else showArchiveUploadLockModal(openArchiveUploadForm);
+      });
+    }
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-del]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute("data-del");
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        if (!confirm("이 사진을 삭제할까요? 되돌릴 수 없습니다.")) return;
+        var target = null;
+        for (var i=0;i<state.photos.length;i++){ if (state.photos[i].id === id){ target = state.photos[i]; break; } }
+        if (target) removeArchivePhoto(target);
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
+      img.addEventListener("click", function(){
+        var card = img.closest(".archive-card");
+        var id = card.getAttribute("data-id");
+        var p = null;
+        for (var i=0;i<state.photos.length;i++){ if (state.photos[i].id === id){ p = state.photos[i]; break; } }
+        if (p) showArchiveLightbox(p);
+      });
+    });
+  }
+
+  function showArchiveLightbox(p){
+    var overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
+        '<img class="archive-lightbox-img" src="'+escapeHtml(p.url)+'" alt="공사 현장 사진">' +
+        '<div><span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span> ' +
+          '<span class="badge" style="background:var(--surface-2);color:var(--ink);">'+escapeHtml(archiveCategoryLabel(state.categories, p.categoryId))+'</span></div>' +
+        '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(p.date))+'</div>' +
+        '<div class="dt">'+escapeHtml(p.location || "")+'</div>' +
+        (p.note ? '<div class="desc" style="margin-top:8px;">'+escapeHtml(p.note)+'</div>' : '') +
+        '<div class="modal-actions"><button type="button" id="archiveLightboxClose">닫기</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close(){ overlay.remove(); }
+    overlay.querySelector("#archiveLightboxClose").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  }
+
+  function contactsTableHtml(){
+    var rows = state.contacts.filter(function(c){ return c.categoryId === state.activeCategory; });
+    var head = '<tr>' + ARCHIVE_CONTACT_COLUMNS.map(function(c){
+      return '<th style="min-width:'+c[2]+'">'+escapeHtml(c[1])+'</th>';
+    }).join("") + '<th style="width:34px"></th></tr>';
+    var body = rows.map(function(row){
+      var cells = ARCHIVE_CONTACT_COLUMNS.map(function(c){
+        return '<td><input type="text" data-cid="'+escapeHtml(row.id)+'" data-c="'+c[0]+'" value="'+escapeHtml(row[c[0]]||"")+'"></td>';
+      }).join("");
+      return '<tr>' + cells + '<td><button class="rowdel" data-delcid="'+escapeHtml(row.id)+'" title="행 삭제">✕</button></td></tr>';
+    }).join("");
+    return '<div class="tablewrap"><table class="datagrid"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>' +
+      '<button class="addrow" id="archiveContactAddBtn">+ 연락처 추가</button>';
+  }
+
+  function wireContactsTable(panel){
+    Array.prototype.forEach.call(panel.querySelectorAll("input[data-cid]"), function(inp){
+      inp.addEventListener("input", function(){
+        var cid = inp.getAttribute("data-cid"), key = inp.getAttribute("data-c");
+        for (var i=0;i<state.contacts.length;i++){
+          if (state.contacts[i].id === cid){ state.contacts[i][key] = inp.value; break; }
+        }
+        scheduleContactsSave();
+      });
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-delcid]"), function(btn){
+      btn.addEventListener("click", function(){
+        var cid = btn.getAttribute("data-delcid");
+        state.contacts = state.contacts.filter(function(c){ return c.id !== cid; });
+        paint();
+        saveContacts();
+      });
+    });
+    var addBtn = panel.querySelector("#archiveContactAddBtn");
+    if (addBtn){
+      addBtn.addEventListener("click", function(){
+        var row = { id: "ct_" + Date.now() + "_" + Math.random().toString(36).slice(2,7), categoryId: state.activeCategory };
+        ARCHIVE_CONTACT_COLUMNS.forEach(function(c){ row[c[0]] = ""; });
+        state.contacts.push(row);
+        paint();
+        var firstInput = panel.querySelector('input[data-cid="'+row.id+'"]');
+        if (firstInput) firstInput.focus();
+      });
+    }
+  }
+
+  function openAddCategoryForm(){
+    if (!isEditUnlocked()) { showEditLockModal(); return; }
+    if (document.getElementById("archiveCatOverlay")) return;
+    var overlay = document.createElement("div");
+    overlay.id = "archiveCatOverlay";
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true">' +
+        '<h3>＋ 사업명 추가</h3>' +
+        '<p class="modal-desc">예: 공간드림사업, 화장실 개선공사 등 진행 중인 사업 이름을 적어주세요.</p>' +
+        '<input type="text" class="editlock-input" id="archiveCatInput" placeholder="사업명" autocomplete="off">' +
+        '<div class="archive-form-error" id="archiveCatError">사업명을 입력해 주세요.</div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" id="archiveCatCancel">취소</button>' +
+          '<button type="button" class="primary" id="archiveCatConfirm">확인</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var input = overlay.querySelector("#archiveCatInput");
+    function close(){ overlay.remove(); }
+    function confirmAdd(){
+      var label = input.value.trim();
+      if (!label) { overlay.querySelector("#archiveCatError").style.display = "block"; return; }
+      var cat = { id: "cat_" + Date.now() + "_" + Math.random().toString(36).slice(2,7), label: label, createdAt: new Date().toISOString() };
+      state.categories.push(cat);
+      state.activeCategory = cat.id;
+      state.phaseFilter = "all";
+      saveCategoryAdd(cat);
+      close();
+      paint();
+    }
+    overlay.querySelector("#archiveCatCancel").addEventListener("click", close);
+    overlay.querySelector("#archiveCatConfirm").addEventListener("click", confirmAdd);
+    input.addEventListener("keydown", function(e){ if (e.key === "Enter") confirmAdd(); });
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+    setTimeout(function(){ input.focus(); }, 30);
+  }
+
+  function openArchiveUploadForm(){
+    if (document.getElementById("archiveUploadOverlay")) return;
+    var overlay = document.createElement("div");
+    overlay.id = "archiveUploadOverlay";
+    overlay.className = "modal-overlay";
+    var defaultCat = state.activeCategory || (state.categories[0] && state.categories[0].id) || "";
+    var defaultPhase = state.phaseFilter !== "all" ? state.phaseFilter : "before";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true">' +
+        '<h3>📷 공사 현장 사진 추가</h3>' +
+        '<div class="archive-form-row"><label>사업명</label>' +
+          '<select id="archiveCatSelect">' +
+            state.categories.map(function(c){ return '<option value="'+escapeHtml(c.id)+'"'+(c.id===defaultCat?" selected":"")+'>'+escapeHtml(c.label)+'</option>'; }).join("") +
+          '</select>' +
+        '</div>' +
+        '<div class="archive-form-row"><label>공사 단계</label>' +
+          '<select id="archivePhaseInput">' +
+            ARCHIVE_PHASES.map(function(ph){ return '<option value="'+ph.key+'"'+(ph.key===defaultPhase?" selected":"")+'>'+ph.label+'</option>'; }).join("") +
+          '</select>' +
+        '</div>' +
+        '<div class="archive-form-row"><label>날짜</label>' +
+          '<input type="date" id="archiveDateInput" value="'+todayDateValue()+'">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>사진 선택</label>' +
+          '<input type="file" id="archiveFileInput" accept="image/*">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>장소 (선택)</label>' +
+          '<input type="text" id="archiveLocationInput" placeholder="예: 본관 3층 복도">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>메모 (선택)</label>' +
+          '<textarea id="archiveNoteInput" placeholder="특이사항이 있으면 적어주세요"></textarea>' +
+        '</div>' +
+        '<div class="archive-form-error" id="archiveFormError"></div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" id="archiveFormCancel">취소</button>' +
+          '<button type="button" class="primary" id="archiveFormSave">저장</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    function close(){ overlay.remove(); }
+    function showError(msg){
+      var el = overlay.querySelector("#archiveFormError");
+      el.textContent = msg; el.style.display = "block";
+    }
+
+    overlay.querySelector("#archiveFormCancel").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+
+    overlay.querySelector("#archiveFormSave").addEventListener("click", function(){
+      var fileInp = overlay.querySelector("#archiveFileInput");
+      var f = fileInp.files && fileInp.files[0];
+      if (!f) { showError("사진을 선택해 주세요."); return; }
+      if (f.type.indexOf("image/") !== 0) { showError("이미지 파일만 올릴 수 있어요."); return; }
+      if (f.size > ARCHIVE_MAX_BYTES) { showError("사진 용량이 너무 큽니다(12MB 이하로 올려주세요)."); return; }
+
+      var saveBtn = overlay.querySelector("#archiveFormSave");
+      saveBtn.disabled = true; saveBtn.textContent = "업로드 중…";
+
+      var entry = {
+        categoryId: overlay.querySelector("#archiveCatSelect").value,
+        phase: overlay.querySelector("#archivePhaseInput").value,
+        date: overlay.querySelector("#archiveDateInput").value || todayDateValue(),
+        location: overlay.querySelector("#archiveLocationInput").value.trim(),
+        note: overlay.querySelector("#archiveNoteInput").value.trim()
+      };
+
+      assets.upload(f).then(function(res){
+        entry.id = res.id;
+        entry.url = res.url;
+        entry.uploadedAt = new Date().toISOString();
+        state.photos.push(entry);
+        addArchivePhoto(entry);
+        close();
+        paint();
+      }).catch(function(){
+        saveBtn.disabled = false; saveBtn.textContent = "저장";
+        showError("업로드에 실패했어요. 네트워크 상태를 확인하고 다시 시도해 주세요.");
+      });
+    });
+  }
+
+  function archiveDocRef(){ return firebase.firestore().collection("sections").doc("construction_archive"); }
+
+  var scheduleContactsSave = debounce(saveContacts, 500);
+  function saveContacts(){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ contacts: state.contacts }).catch(function(){
+      ref.set({ contacts: state.contacts }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function saveCategoryAdd(cat){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ categories: firebase.firestore.FieldValue.arrayUnion(cat) }).catch(function(){
+      ref.set({ categories: [cat] }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function addArchivePhoto(entry){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ photos: firebase.firestore.FieldValue.arrayUnion(entry) }).catch(function(){
+      ref.set({ photos: [entry] }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function removeArchivePhoto(entry){
+    state.photos = state.photos.filter(function(p){ return p.id !== entry.id; });
+    paint();
+    if (db) archiveDocRef().update({ photos: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
+    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/construction_archive").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data) {
+          if (Array.isArray(data.categories)) state.categories = data.categories;
+          if (Array.isArray(data.photos)) state.photos = data.photos;
+          if (Array.isArray(data.contacts)) state.contacts = data.contacts;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- 시설 보수 현황 (교직원이 휴대폰으로 고장·보수 요청 사진 전송 → 시설주무관이 처리) ----
+   휴대폰에서 요청을 보내는 화면은 이 사이트가 아니라 별도 파일(sisul-bosu-jeonsong.html)이며,
+   같은 Firestore 문서(sections/facility_repair)를 공유해서 실시간 연동됨.
+   처리중/처리완료/처리불가 구분은 이 홈페이지(데스크톱)에서만 보이고 조작할 수 있으며,
+   교직원 전송 화면에는 이 구분이 전혀 노출되지 않음(모든 요청은 전송 시 자동으로 "처리중"이 됨). */
+var REPAIR_STATUSES = [
+  { key:"processing", label:"처리중" },
+  { key:"done", label:"처리완료" },
+  { key:"rejected", label:"처리불가" }
+];
+function repairStatusLabel(key){
+  for (var i=0;i<REPAIR_STATUSES.length;i++){ if (REPAIR_STATUSES[i].key === key) return REPAIR_STATUSES[i].label; }
+  return key;
+}
+
+function renderFacilityRepairSection(panel, cfg){
+  var state = { reports: [], statusFilter: "processing" };
+
+  function visibleReports(){
+    if (state.statusFilter === "all") return state.reports;
+    return state.reports.filter(function(r){ return r.status === state.statusFilter; });
+  }
+
+  function repairDocRef(){ return firebase.firestore().collection("sections").doc("facility_repair"); }
+
+  function paint(){
+    var tabsHtml = '<div class="archive-phase-tabs" id="repairStatusTabs">' +
+      '<button data-f="all" class="'+(state.statusFilter==="all"?"active":"")+'">전체</button>' +
+      REPAIR_STATUSES.map(function(s){
+        return '<button data-f="'+s.key+'" class="'+(state.statusFilter===s.key?"active":"")+'">'+s.label+'</button>';
+      }).join("") +
+    '</div>';
+
+    var groups = groupByDate(visibleReports());
+    var bodyHtml;
+    if (!groups.length){
+      bodyHtml = '<div class="placeholder archive-empty">'+
+        (state.statusFilter === "all" ? "아직 접수된 시설 보수 요청이 없습니다." : "해당 상태의 요청이 없습니다.") +
+      '</div>';
+    } else {
+      bodyHtml = groups.map(function(g){
+        var cardsHtml = g.items.map(function(r){
+          var actionsHtml = r.status === "processing"
+            ? '<div class="repair-actions">' +
+                '<button type="button" class="repair-donebtn" data-done="'+escapeHtml(r.id)+'">✅ 처리 완료</button>' +
+                '<button type="button" class="repair-rejectbtn" data-reject="'+escapeHtml(r.id)+'">🚫 처리 불가</button>' +
+              '</div>'
+            : '';
+          return '<div class="archive-card" data-id="'+escapeHtml(r.id)+'">' +
+            '<img src="'+escapeHtml(r.url)+'" alt="시설 보수 사진" loading="lazy">' +
+            (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(r.id)+'" title="삭제">✕</button>' : '') +
+            '<div class="meta">' +
+              '<span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span>' +
+              '<div class="loc">'+escapeHtml(r.location || "(장소 미기입)")+'</div>' +
+              (r.note ? '<div class="dt">'+escapeHtml(r.note)+'</div>' : '') +
+              actionsHtml +
+            '</div>' +
+          '</div>';
+        }).join("");
+        return '<div class="archive-date-group">' +
+          '<div class="archive-date-heading">'+escapeHtml(formatArchiveDate(g.date))+'</div>' +
+          '<div class="archive-grid">'+cardsHtml+'</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    panel.innerHTML =
+      '<h2>🛠️ 시설 보수 현황</h2>' +
+      '<p class="desc">교직원이 휴대폰으로 보낸 시설 고장·보수 요청 사진입니다. "처리 완료"·"처리 불가" 버튼과 처리 상태 구분은 이 홈페이지에서만 보이며, 교직원 전송 화면에는 나오지 않습니다.</p>' +
+      '<div class="archive-toolbar">' + tabsHtml + '</div>' +
+      '<div id="repairBody" style="margin-top:12px;">'+bodyHtml+'</div>';
+
+    panel.querySelector("#repairStatusTabs").addEventListener("click", function(e){
+      var btn = e.target.closest("button[data-f]");
+      if (!btn) return;
+      state.statusFilter = btn.getAttribute("data-f");
+      paint();
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-del]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute("data-del");
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        if (!confirm("이 요청을 삭제할까요? 되돌릴 수 없습니다.")) return;
+        var target = null;
+        for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ target = state.reports[i]; break; } }
+        if (target) removeRepairReport(target);
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-done]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        updateRepairStatus(btn.getAttribute("data-done"), "done");
+      });
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-reject]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        updateRepairStatus(btn.getAttribute("data-reject"), "rejected");
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
+      img.addEventListener("click", function(){
+        var card = img.closest(".archive-card");
+        var id = card.getAttribute("data-id");
+        var r = null;
+        for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ r = state.reports[i]; break; } }
+        if (r) showRepairLightbox(r);
+      });
+    });
+  }
+
+  function showRepairLightbox(r){
+    var overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
+        '<img class="archive-lightbox-img" src="'+escapeHtml(r.url)+'" alt="시설 보수 사진">' +
+        '<div><span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span></div>' +
+        '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(r.date))+'</div>' +
+        '<div class="dt">'+escapeHtml(r.location || "")+'</div>' +
+        (r.note ? '<div class="desc" style="margin-top:8px;">'+escapeHtml(r.note)+'</div>' : '') +
+        '<div class="modal-actions"><button type="button" id="repairLightboxClose">닫기</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close(){ overlay.remove(); }
+    overlay.querySelector("#repairLightboxClose").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  }
+
+  function updateRepairStatus(id, status){
+    var idx = -1;
+    for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ idx = i; break; } }
+    if (idx === -1) return;
+    var oldEntry = state.reports[idx];
+    var newEntry = {};
+    for (var k in oldEntry) { if (Object.prototype.hasOwnProperty.call(oldEntry, k)) newEntry[k] = oldEntry[k]; }
+    newEntry.status = status;
+    newEntry.resolvedAt = new Date().toISOString();
+    state.reports[idx] = newEntry;
+    paint();
+    if (db){
+      var ref = repairDocRef();
+      ref.update({ reports: firebase.firestore.FieldValue.arrayRemove(oldEntry) }).then(function(){
+        return ref.update({ reports: firebase.firestore.FieldValue.arrayUnion(newEntry) });
+      }).catch(function(){
+        ref.set({ reports: state.reports }, { merge: true }).catch(function(){});
+      });
+    }
+  }
+
+  function removeRepairReport(entry){
+    state.reports = state.reports.filter(function(r){ return r.id !== entry.id; });
+    paint();
+    if (db) repairDocRef().update({ reports: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
+    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/facility_repair").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && Array.isArray(data.reports)) {
+          state.reports = data.reports;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
 /* ---------------- sync indicator ---------------- */
 function markSynced(){
   var dot = document.getElementById("syncDot"), txt = document.getElementById("syncText");
@@ -1698,6 +2528,9 @@ function makeAssetsAdapter(storageInstance){
           return { id: id, url: url, sizeBytes: file.size, contentType: file.type };
         });
       });
+    },
+    remove: function(id){
+      return storageInstance.ref().child("uploads/" + id).delete();
     }
   };
 }

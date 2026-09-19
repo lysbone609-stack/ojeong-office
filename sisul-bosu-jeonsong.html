@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>시설 보수 요청 보내기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+  :root{
+    --bg:#eef1f6; --surface:#ffffff; --surface-2:#f3f5f9; --line:#dbe1ea;
+    --ink:#1b212c; --ink-dim:#69707d; --accent:#2255a4; --accent-soft:#e2ecfb;
+    --good:#2f8a5b; --good-soft:#e0f3e8; --danger:#b8492f; --danger-soft:#f8e2da;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#10141b; --surface:#1a2029; --surface-2:#212836; --line:#2c3444;
+      --ink:#e6e9ee; --ink-dim:#8b93a0; --accent:#6fa2e8; --accent-soft:#182338;
+      --good:#6fcf9d; --good-soft:#173226; --danger:#e88968; --danger-soft:#3a2019;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",-apple-system,sans-serif;
+    padding:22px 16px 60px;}
+  .wrap{max-width:460px;margin:0 auto;}
+  h1{font-size:19px;margin:0 0 4px;}
+  .sub{color:var(--ink-dim);font-size:13px;margin:0 0 20px;line-height:1.6;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px;}
+  .row{margin-bottom:14px;}
+  .row label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-dim);margin-bottom:6px;}
+  .row select,.row input[type="text"],.row input[type="date"],.row input[type="file"],.row textarea{
+    width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);
+    color:var(--ink);font:inherit;font-size:15px;padding:11px 12px;}
+  .row textarea{resize:vertical;min-height:56px;}
+  .savebtn{width:100%;font:inherit;font-weight:700;font-size:15.5px;color:#fff;background:var(--accent);
+    border:none;border-radius:10px;padding:14px;cursor:pointer;}
+  .savebtn:disabled{opacity:.6;}
+  .msg{font-size:13px;margin-top:10px;text-align:center;line-height:1.6;display:none;}
+  .msg.ok{color:var(--good);display:block;}
+  .msg.err{color:var(--danger);display:block;}
+  .lockcard{text-align:center;}
+  .lockcard input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:9px;
+    background:var(--surface-2);color:var(--ink);font:inherit;font-size:20px;letter-spacing:.3em;
+    text-align:center;padding:12px;margin-bottom:10px;}
+  .lockcard button{width:100%;font:inherit;font-weight:700;font-size:15px;color:#fff;background:var(--accent);
+    border:none;border-radius:10px;padding:13px;cursor:pointer;}
+  .lockerr{color:var(--danger);font-size:12.5px;margin:-2px 0 10px;display:none;}
+  .hint{font-size:12px;color:var(--ink-dim);margin-top:14px;line-height:1.6;}
+  #statusLine{font-size:12.5px;color:var(--ink-dim);text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛠️ 시설 보수 요청 보내기</h1>
+  <p class="sub">오정초등학교 시설이 고장났거나 고쳐야 할 곳이 있으면 사진과 함께 보내주세요. 다른 학교 정보는 이 화면에서 볼 수 없습니다.</p>
+
+  <div class="card lockcard" id="lockCard">
+    <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+    <input type="password" id="lockInput" placeholder="비밀번호" inputmode="numeric" autocomplete="off">
+    <div class="lockerr" id="lockError">비밀번호가 올바르지 않습니다.</div>
+    <button type="button" id="lockConfirm">확인</button>
+  </div>
+
+  <div class="card" id="formCard" style="display:none;">
+    <div class="row"><label>날짜</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="row"><label>사진 선택</label>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+    <div class="row"><label>장소 (선택)</label>
+      <input type="text" id="locationInput" placeholder="예: 본관 3층 복도 형광등">
+    </div>
+    <div class="row"><label>메모 (선택)</label>
+      <textarea id="noteInput" placeholder="어떤 문제인지 적어주세요"></textarea>
+    </div>
+    <button type="button" class="savebtn" id="saveBtn">전송</button>
+    <div class="msg" id="formMsg"></div>
+  </div>
+
+  <div id="statusLine">연결 중…</div>
+  <p class="hint">이 비밀번호는 이 휴대폰에서 7일간 유지되며, 이후에는 다시 물어봅니다.</p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script>
+(function(){
+  var UPLOAD_PASSWORD = "0000";
+  var UPLOAD_UNLOCK_KEY = "ojeong_archive_upload_unlocked_at";
+  var UPLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var MAX_BYTES = 12 * 1024 * 1024;
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyB_-sP0EpjtuVgV4ufF2WpaDbGfBChdyQI",
+    authDomain: "ojeong-office.firebaseapp.com",
+    projectId: "ojeong-office",
+    storageBucket: "ojeong-office.firebasestorage.app",
+    messagingSenderId: "459186984437",
+    appId: "1:459186984437:web:036d4de2efb9de1d8a3cbc"
+  };
+
+  var db = null, storage = null;
+
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function todayDateValue(){
+    var d = new Date();
+    return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  }
+
+  function isUnlocked(){
+    try {
+      var t = parseInt(localStorage.getItem(UPLOAD_UNLOCK_KEY), 10);
+      return !!t && (Date.now() - t < UPLOAD_TTL_MS);
+    } catch(e){ return false; }
+  }
+
+  function showForm(){
+    document.getElementById("lockCard").style.display = "none";
+    document.getElementById("formCard").style.display = "block";
+    document.getElementById("dateInput").value = todayDateValue();
+  }
+
+  function initLock(){
+    if (isUnlocked()) { showForm(); return; }
+    var input = document.getElementById("lockInput");
+    var err = document.getElementById("lockError");
+    function tryUnlock(){
+      if (input.value === UPLOAD_PASSWORD){
+        try { localStorage.setItem(UPLOAD_UNLOCK_KEY, String(Date.now())); } catch(e){}
+        showForm();
+      } else {
+        err.style.display = "block";
+        input.value = "";
+        input.focus();
+      }
+    }
+    document.getElementById("lockConfirm").addEventListener("click", tryUnlock);
+    input.addEventListener("keydown", function(e){ if (e.key === "Enter") tryUnlock(); });
+    setTimeout(function(){ input.focus(); }, 30);
+  }
+
+  function setStatus(text){ document.getElementById("statusLine").textContent = text; }
+
+  function bootFirebase(){
+    try { firebase.initializeApp(firebaseConfig); } catch(e){ setStatus("연결 실패"); return; }
+    firebase.auth().signInAnonymously().then(function(){
+      db = firebase.firestore();
+      storage = firebase.storage();
+      setStatus("연결됨");
+    }).catch(function(){ setStatus("연결 대기 중 (오프라인)"); });
+  }
+
+  function uploadPhoto(file){
+    var safeName = (file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "_");
+    var id = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + safeName;
+    var ref = storage.ref().child("uploads/" + id);
+    return ref.put(file).then(function(snap){
+      return snap.ref.getDownloadURL().then(function(url){
+        return { id: id, url: url };
+      });
+    });
+  }
+
+  function showMsg(text, ok){
+    var el = document.getElementById("formMsg");
+    el.textContent = text;
+    el.className = "msg " + (ok ? "ok" : "err");
+  }
+
+  function initForm(){
+    document.getElementById("saveBtn").addEventListener("click", function(){
+      if (!db || !storage) { showMsg("아직 연결 중입니다. 잠시 후 다시 시도해 주세요.", false); return; }
+      var fileInp = document.getElementById("fileInput");
+      var f = fileInp.files && fileInp.files[0];
+      if (!f) { showMsg("사진을 선택해 주세요.", false); return; }
+      if (f.type.indexOf("image/") !== 0) { showMsg("이미지 파일만 올릴 수 있어요.", false); return; }
+      if (f.size > MAX_BYTES) { showMsg("사진 용량이 너무 큽니다(12MB 이하로 올려주세요).", false); return; }
+
+      var saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true; saveBtn.textContent = "전송 중…";
+
+      var entry = {
+        status: "processing",
+        date: document.getElementById("dateInput").value || todayDateValue(),
+        location: document.getElementById("locationInput").value.trim(),
+        note: document.getElementById("noteInput").value.trim()
+      };
+
+      uploadPhoto(f).then(function(res){
+        entry.id = res.id;
+        entry.url = res.url;
+        entry.uploadedAt = new Date().toISOString();
+        var ref = db.collection("sections").doc("facility_repair");
+        return ref.update({ reports: firebase.firestore.FieldValue.arrayUnion(entry) }).catch(function(){
+          return ref.set({ reports: [entry] }, { merge: true });
+        });
+      }).then(function(){
+        showMsg("✅ 전송되었습니다. 시설 담당자가 확인 후 처리합니다.", true);
+        fileInp.value = "";
+        document.getElementById("locationInput").value = "";
+        document.getElementById("noteInput").value = "";
+      }).catch(function(){
+        showMsg("전송에 실패했어요. 네트워크 상태를 확인하고 다시 시도해 주세요.", false);
+      }).then(function(){
+        saveBtn.disabled = false; saveBtn.textContent = "전송";
+      });
+    });
+  }
+
+  initLock();
+  initForm();
+  bootFirebase();
+})();
+</script>
+</body>
+</html>
