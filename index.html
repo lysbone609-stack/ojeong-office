@@ -184,6 +184,8 @@
   section.panel.active{display:block;}
   section.panel h2{margin:0 0 4px;font-size:16px;font-weight:700;}
   section.panel .desc{color:var(--ink-dim);font-size:12px;margin:0 0 12px;}
+  section.panel .desc a{color:var(--accent);font-weight:700;text-decoration:none;}
+  section.panel .desc a:hover{text-decoration:underline;}
 
   .tablewrap{overflow-x:auto;}
   table.datagrid{width:100%;border-collapse:collapse;font-size:13px;}
@@ -2159,7 +2161,7 @@ function renderConstructionArchiveSection(panel, cfg){
 
     panel.innerHTML =
       '<h2>📷 공사 현장 사진</h2>' +
-      '<p class="desc">사업명(예: 공간드림사업)별로 공사전·공사중·공사후 사진을 날짜순으로 모아두는 곳입니다. 나중에 하자가 생기면 공사 전 상태와 바로 비교해볼 수 있어요. 공사후 마지막 사진 이후 1개월이 지나면 "공사완료" 목록으로 자동으로 옮겨집니다. "연락처"는 이 홈페이지에서만 보이고 휴대폰 업로드 화면에는 나오지 않습니다.</p>' +
+      '<p class="desc">공사후 마지막 사진 이후 1개월이 지나면 "공사완료" 목록으로 자동으로 옮겨집니다. <a href="gongsa-sajin-upload.html" target="_blank" rel="noopener">📱 공사 현장 사진 모바일 제보 페이지</a></p>' +
       '<div class="archive-toolbar">' +
         '<div class="archive-phase-tabs" id="archiveCatTabs">'+catTabsHtml+'</div>' +
         completedDropdownHtml +
@@ -2538,7 +2540,7 @@ function renderFacilityRepairSection(panel, cfg){
 
     panel.innerHTML =
       '<h2>🛠️ 시설 보수 현황</h2>' +
-      '<p class="desc">교직원이 휴대폰으로 보낸 시설 고장·보수 요청 사진입니다. "처리 완료"·"처리 불가" 버튼과 처리 상태 구분은 이 홈페이지에서만 보이며, 교직원 전송 화면에는 나오지 않습니다.</p>' +
+      '<p class="desc">교직원이 휴대폰으로 보낸 시설 고장·보수 요청 사진입니다. <a href="sisul-bosu-jeonsong.html" target="_blank" rel="noopener">📱 시설 보수 현황 모바일 제보 페이지</a></p>' +
       '<div class="archive-toolbar">' + tabsHtml + '</div>' +
       '<div id="repairBody" style="margin-top:12px;">'+bodyHtml+'</div>';
 
