@@ -312,6 +312,23 @@
   .budget-logitem{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
     padding:10px 12px;font-size:11px;color:var(--ink-dim);overflow-wrap:break-word;}
   .budget-logitem .lt{font-weight:700;color:var(--ink);font-size:12px;margin-bottom:2px;}
+  .budget-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .budget-kpi{flex:1 1 140px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .budget-kpi .kl{font-size:11px;color:var(--ink-dim);font-weight:700;margin-bottom:4px;}
+  .budget-kpi .kv{font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:break-word;}
+  .budget-rt-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
+  .budget-rt-good{background:var(--good-soft);color:var(--good);}
+  .budget-rt-warn{background:var(--warn-soft);color:var(--warn);}
+  .budget-rt-danger{background:var(--danger-soft);color:var(--danger);}
+  .budget-searchrow{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .budget-searchrow input{flex:1 1 200px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);
+    border-radius:8px;background:var(--surface);color:var(--ink);}
+  .budget-meta{font-size:11px;color:var(--ink-dim);margin-bottom:8px;}
+  table.datagrid.budget-tbl td{padding:6px 8px;font-variant-numeric:tabular-nums;}
+  table.datagrid.budget-tbl th{white-space:nowrap;}
+  table.datagrid.budget-tbl td.bn{font-variant-numeric:normal;max-width:260px;}
+  table.datagrid.budget-tbl td.bn .biz{font-weight:700;color:var(--ink);}
+  table.datagrid.budget-tbl td.bn .basis{font-size:11px;color:var(--ink-dim);margin-top:2px;overflow-wrap:break-word;}
   .monthnav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
   .monthnav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
     color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
@@ -338,7 +355,6 @@
   .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px;flex:none;padding:0;}
   .entry button:hover{color:var(--danger);}
   .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);word-break:keep-all;}
-  .entry.synced.overtime{background:var(--warn-soft);border-color:var(--warn);color:var(--warn);}
   .entry.synced .sync-tag{flex:none;}
   .duty-sync-line{color:var(--ink-dim);font-size:12px;margin:12px 0 0;}
   .duty-sync-line .linklike{font:inherit;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
@@ -640,8 +656,8 @@ var ALL_SECTION_DEFS = [
 /* 메뉴 탭 노출 순서: 자주 쓰는 것만 상단에 두고, 나머지는 "기타" 탭 안에서 드롭다운으로 고르게 함.
    기존 섹션 정의(ALL_SECTION_DEFS)와 Firestore 저장 경로(sections/<key>)는 그대로 두고,
    화면에 보여줄 순서만 이 두 목록으로 다시 배치함. */
-var MAIN_TAB_ORDER = ["schedule","meal","upcoming","construction_archive","facility_repair","vendors_regular","vendors_misc","classroom_map","periods"];
-var OTHER_TAB_ORDER = ["timetable","contractors","calendar"];
+var MAIN_TAB_ORDER = ["schedule","meal","construction_archive","facility_repair","vendors_regular","vendors_misc","classroom_map"];
+var OTHER_TAB_ORDER = ["timetable","upcoming","periods","contractors","calendar"];
 function findSectionDef(key){
   for (var i=0;i<ALL_SECTION_DEFS.length;i++){ if (ALL_SECTION_DEFS[i].key === key) return ALL_SECTION_DEFS[i]; }
   return null;
@@ -926,9 +942,8 @@ function dragIllustrationHtml(emoji, label){
    지금은 에듀파인 화면에서 오가는 요청을 캡처해 사이버행정실로 보내주는 "캡처 모드"만 제공함 —
    이렇게 모인 데이터를 바탕으로 다음 단계에서 실제 예산 대시보드 동기화 로직을 만들 예정. */
 var EDUFINE_CAPTURE_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bvar%20t%3D%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fedufine-sync-bridge.html%22%2Ce%3D%22__jbeEdufineCapturing%22%2Cn%3D%22__jbeEdufineBuffer%22%2Ci%3D%22__jbeEdufineRestore%22%2Co%3D%2F%5C.%28js%7Ccss%7Cpng%7Cjpe%3Fg%7Cgif%7Csvg%7Cico%7Cwoff2%3F%7Cttf%7Ceot%7Cxfdl%7Cxjs%29%28%5C%3F%7C%24%29%2Fi%3Bfunction%20r%28%29%7Btry%7Breturn%28new%20Date%29.toLocaleString%28%22ko-KR%22%29%7Dcatch%28t%29%7Breturn%28new%20Date%29.toISOString%28%29%7D%7Dif%28window%5Be%5D%29%7Bwindow%5Be%5D%3D%211%3Bvar%20s%3Dwindow%5Bn%5D%7C%7C%5B%5D%3Bif%28%22function%22%3D%3Dtypeof%20window%5Bi%5D%29try%7Bwindow%5Bi%5D%28%29%7Dcatch%28t%29%7B%7Dreturn%20s.length%3Fvoid%20function%28e%29%7Bvar%20n%3Dwindow.open%28t%2C%22jbeEdufineCaptureBridge%22%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28%21n%29return%20void%20alert%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20i%3D%211%2Co%3DsetTimeout%28function%28%29%7Bi%7C%7C%28i%3D%210%2Cwindow.removeEventListener%28%22message%22%2Cr%29%29%7D%2C3e4%29%3Bfunction%20r%28t%29%7Bif%28t%26%26t.data%29if%28%22JBE_EDUFINE_CAPTURE_READY%22%3D%3D%3Dt.data.type%29try%7Bn.postMessage%28%7Btype%3A%22JBE_EDUFINE_CAPTURE%22%2Cpayload%3A%7Bentries%3Ae%7D%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28%22JBE_EDUFINE_CAPTURE_RESULT%22%3D%3D%3Dt.data.type%29%7Bif%28i%29return%3Bi%3D%210%2CclearTimeout%28o%29%2Cwindow.removeEventListener%28%22message%22%2Cr%29%2Ct.data.ok%3Falert%28%22%E2%9C%85%20%EC%BA%A1%EC%B2%98%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EA%B0%80%20%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%EB%A1%9C%20%EC%A0%84%EC%86%A1%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4%20%28%22%2Be.length%2B%22%EA%B1%B4%29.%22%29%3Aalert%28%22%EC%A0%84%EC%86%A1%20%EC%8B%A4%ED%8C%A8%3A%20%22%2B%28t.data.error%7C%7C%22%EC%95%8C%20%EC%88%98%20%EC%97%86%EB%8A%94%20%EC%98%A4%EB%A5%98%22%29%29%7D%7Dwindow.addEventListener%28%22message%22%2Cr%29%7D%28s%29%3Avoid%20alert%28%22%EC%BA%A1%EC%B2%98%EB%90%9C%20%EC%9A%94%EC%B2%AD%EC%9D%B4%20%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%EC%98%88%EC%82%B0%20%EA%B4%80%EB%A0%A8%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%A1%B0%ED%9A%8C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%7Dwindow%5Be%5D%3D%210%2Cwindow%5Bn%5D%3D%5B%5D%2Calert%28%22%EC%BA%A1%EC%B2%98%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4%28%EA%B0%9C%EC%84%A0%ED%8C%90%29.%5Cn%5Cn%EC%A7%80%EA%B8%88%EB%B6%80%ED%84%B0%20%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%EC%98%88%EC%82%B0%28%ED%8E%B8%EC%84%B1%2F%EC%A7%91%ED%96%89%2F%EC%9E%94%EC%95%A1%20%EB%93%B1%29%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EB%AA%87%20%EA%B0%9C%20%EB%91%98%EB%9F%AC%EB%B4%90%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EB%8B%A4%20%EB%B3%B4%EC%85%A8%EC%9C%BC%EB%A9%B4%20%EA%B0%99%EC%9D%80%20%EC%A6%90%EA%B2%A8%EC%B0%BE%EA%B8%B0%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EB%8D%94%20%EB%88%8C%EB%9F%AC%EC%84%9C%20%EC%BA%A1%EC%B2%98%EB%A5%BC%20%EC%A2%85%EB%A3%8C%ED%95%98%EA%B3%A0%20%EC%A0%84%EC%86%A1%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%5Cn%E2%80%BB%20%EC%9D%B4%EB%B2%88%20%EB%B2%84%EC%A0%84%EC%9D%80%20%ED%99%94%EB%A9%B4%20%EA%B5%AC%EC%84%B1%20%ED%8C%8C%EC%9D%BC%28.js%20%EB%93%B1%29%EC%9D%80%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%EC%A0%9C%EC%99%B8%ED%95%98%EA%B3%A0%2C%20%EC%8B%A4%EC%A0%9C%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%9A%94%EC%B2%AD%EC%9D%80%20%ED%98%95%EC%8B%9D%28JSON%2FXML%20%EB%93%B1%29%EC%97%90%20%EC%83%81%EA%B4%80%EC%97%86%EC%9D%B4%20%EB%AA%A8%EB%91%90%20%EA%B8%B0%EB%A1%9D%ED%95%A9%EB%8B%88%EB%8B%A4.%22%29%3Bvar%20a%3Dwindow.fetch%2Cc%3DXMLHttpRequest.prototype.open%2Cd%3DXMLHttpRequest.prototype.send%3Bfunction%20u%28t%29%7Breturn%20o.test%28String%28t%7C%7C%22%22%29.split%28%22%3F%22%29%5B0%5D%29%7Dfunction%20p%28t%2Ce%2Ci%2Co%2Cs%2Ca%29%7Bvar%20c%3Dwindow%5Bn%5D%3B%21c%7C%7Cc.length%3E%3D60%7C%7Cu%28e%29%7C%7Cc.push%28%7Bt%3Ar%28%29%2Cmethod%3AString%28t%7C%7C%22GET%22%29%2Curl%3AString%28e%7C%7C%22%22%29.slice%280%2C300%29%2Cstatus%3Aa%7C%7C%22%22%2CcontentType%3AString%28s%7C%7C%22%22%29.slice%280%2C100%29%2CreqPreview%3AString%28i%7C%7C%22%22%29.slice%280%2C300%29%2CresPreview%3AString%28o%7C%7C%22%22%29.slice%280%2C1500%29%7D%29%7Dwindow.fetch%3Dfunction%28t%2Ce%29%7Bvar%20n%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Ci%3De%26%26e.method%7C%7Ct%26%26t.method%7C%7C%22GET%22%2Co%3De%26%26e.body%2Cr%3Da.apply%28this%2Carguments%29%3Bif%28u%28n%29%29return%20r%3Btry%7Br.then%28function%28t%29%7Btry%7Bvar%20e%3Dt.headers%26%26t.headers.get%3Ft.headers.get%28%22content-type%22%29%3A%22%22%3Bt.clone%28%29.text%28%29.then%28function%28r%29%7Bp%28i%2Cn%2Co%2Cr%2Ce%2Ct.status%29%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7D%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7Dreturn%20r%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeMethod%3Dt%2Cthis.__jbeUrl%3De%2Cc.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Bvar%20e%3Dthis%3Bif%28%21u%28e.__jbeUrl%29%29try%7Be.addEventListener%28%22loadend%22%2Cfunction%28%29%7Btry%7Bvar%20n%3D%22%22%3Btry%7Bn%3De.getResponseHeader%28%22content-type%22%29%7Dcatch%28t%29%7B%7Dp%28e.__jbeMethod%2Ce.__jbeUrl%2Ct%2Ce.responseText%2Cn%2Ce.status%29%7Dcatch%28t%29%7B%7D%7D%29%7Dcatch%28t%29%7B%7Dreturn%20d.apply%28this%2Carguments%29%7D%2Cwindow%5Bi%5D%3Dfunction%28%29%7Bwindow.fetch%3Da%2CXMLHttpRequest.prototype.open%3Dc%2CXMLHttpRequest.prototype.send%3Dd%2Cwindow%5Bi%5D%3Dnull%7D%7D%28%29%3B";
-var OVERTIME_SYNC_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bif%28window.__jbeOvertimeSyncRunning%29alert%28%22%EC%9D%B4%EB%AF%B8%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%9E%91%EC%97%85%EC%9D%B4%20%EC%A7%84%ED%96%89%20%EC%A4%91%EC%9E%85%EB%8B%88%EB%8B%A4.%20%EC%9E%A0%EC%8B%9C%20%EA%B8%B0%EB%8B%A4%EB%A0%A4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Belse%7Bwindow.__jbeOvertimeSyncRunning%3D%210%3Bvar%20t%3D%22jbeOvertimeSyncTemplateV1%22%2Ce%3D%22jbeOvertimeSyncEndpointV1%22%2Cn%3D%5B%22%EC%84%9D%EA%B4%91%EC%9D%BC%22%2C%22%EC%8B%AC%EA%B2%BD%EC%95%84%22%2C%22%EC%98%A4%EA%B7%9C%EB%AF%BC%22%2C%22%EC%9D%B4%EC%A4%91%ED%98%84%22%2C%22%EC%9D%B4%EA%B0%95%ED%98%84%22%2C%22%EC%A3%BC%EC%A7%80%EC%98%81%22%5D%2Cr%3D%5B-1%2C0%2C1%2C2%5D%2Ca%3D%22%EC%99%84%EA%B2%B0%22%2Co%3D%22__jbeOvertimeSyncToast%22%3B%21async%20function%28%29%7Btry%7Bvar%20n%3Dfunction%28%29%7Btry%7Bvar%20n%3DlocalStorage.getItem%28t%29%2Cr%3DlocalStorage.getItem%28e%29%3Breturn%20n%26%26r%3F%7Bbody%3AJSON.parse%28n%29%2Cendpoint%3Ar%7D%3Anull%7Dcatch%28t%29%7Breturn%20null%7D%7D%28%29%3Bif%28%21n%29%7Balert%28%22%EC%B2%98%EC%9D%8C%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%8B%9C%EB%8A%94%EA%B5%B0%EC%9A%94%21%5Cn%5Cn%ED%99%95%EC%9D%B8%EC%9D%84%20%EB%88%84%EB%A5%B8%20%EB%92%A4%2C%20%EB%82%98%EC%9D%B4%EC%8A%A4%EC%97%90%EC%84%9C%20%5B%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%5D%20%EC%8B%A0%EC%B2%AD%2F%EC%A1%B0%ED%9A%8C%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%AC%B4%20%EA%B8%B0%EA%B0%84%EC%9C%BC%EB%A1%9C%EB%82%98%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EC%8B%A4%ED%96%89%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EC%A1%B0%ED%9A%8C%20%EB%B2%84%ED%8A%BC%EC%9D%84%20%EB%88%84%EB%A5%B4%EB%8A%94%20%EC%88%9C%EA%B0%84%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%EC%9D%B8%EC%8B%9D%EB%90%98%EC%96%B4%2C%20%EC%9D%B4%EB%B2%88%20%EB%8B%AC%20%EA%B8%B0%EC%A4%80%20%EC%A0%84%EC%9B%94~%EB%8B%A4%EC%9D%8C%202%EA%B0%9C%EC%9B%94%28%EC%B4%9D%204%EA%B0%9C%EC%9B%94%EC%B9%98%29%20%EB%8F%99%EA%B8%B0%ED%99%94%EA%B0%80%20%EC%8B%9C%EC%9E%91%EB%90%A9%EB%8B%88%EB%8B%A4.%22%29%2Cu%28%22%E2%8F%B1%EF%B8%8F%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%ED%99%94%EB%A9%B4%EC%97%90%EC%84%9C%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%EA%B8%B0%EB%8B%A4%EB%A6%AC%EB%8A%94%20%EC%A4%91%E2%80%A6%22%29%3Bvar%20r%3Dawait%20p%28%29%3B%21function%28n%2Cr%29%7Btry%7BlocalStorage.setItem%28t%2CJSON.stringify%28n%29%29%2ClocalStorage.setItem%28e%2Cr%29%7Dcatch%28t%29%7B%7D%7D%28r.body%2Cr.url%29%2Cn%3Dr%7Du%28%22%E2%8F%B1%EF%B8%8F%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4%E2%80%A6%22%29%2Cawait%20h%28%7Bbody%3An.body%2Cendpoint%3An.endpoint%7D%29%7Dcatch%28t%29%7Bconsole.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%5D%22%2Ct%29%2Cl%28%29%2Calert%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%20%EB%AC%B8%EC%A0%9C%EA%B0%80%20%EB%B0%9C%EC%83%9D%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4%3A%20%22%2B%28t%26%26t.message%7C%7Ct%29%29%7Dfinally%7Bwindow.__jbeOvertimeSyncRunning%3D%211%7D%7D%28%29%7Dfunction%20i%28t%29%7Breturn%20String%28t%29.length%3C2%3F%220%22%2Bt%3AString%28t%29%7Dfunction%20c%28t%2Ce%2Cn%29%7Breturn%22%22%2Bt%2Bi%28e%29%2Bi%28n%29%7Dfunction%20d%28t%29%7Breturn%20String%28t%7C%7C%22%22%29.replace%28%2F%5Cs%2B%2Fg%2C%22%20%22%29.trim%28%29%7Dfunction%20s%28t%29%7Bvar%20e%3Dd%28t%29%3Breturn%2F%5E%5Cd%7B4%7D%24%2F.test%28e%29%3Fe.slice%280%2C2%29%2B%22%3A%22%2Be.slice%282%2C4%29%3Ae%7Dfunction%20u%28t%29%7Bvar%20e%3Ddocument.getElementById%28o%29%3Breturn%20e%7C%7C%28%28e%3Ddocument.createElement%28%22div%22%29%29.id%3Do%2Ce.style.cssText%3D%22position%3Afixed%3Btop%3A16px%3Bright%3A16px%3Bz-index%3A2147483647%3Bbackground%3A%231b212c%3Bcolor%3A%23fff%3Bpadding%3A12px%2016px%3Bborder-radius%3A10px%3Bfont-size%3A13px%3Bfont-family%3A-apple-system%2C%27Malgun%20Gothic%27%2Csans-serif%3Bline-height%3A1.6%3Bbox-shadow%3A0%206px%2020px%20rgba%280%2C0%2C0%2C.35%29%3Bmax-width%3A280px%3Bwhite-space%3Apre-line%3B%22%2C%28document.body%7C%7Cdocument.documentElement%29.appendChild%28e%29%29%2Ce.textContent%3Dt%2Ce%7Dfunction%20l%28%29%7Bvar%20t%3Ddocument.getElementById%28o%29%3Bt%26%26t.parentNode%26%26t.parentNode.removeChild%28t%29%7Dfunction%20p%28%29%7Breturn%20new%20Promise%28function%28t%29%7Bvar%20e%3Dwindow.fetch%2Cn%3DXMLHttpRequest.prototype.open%2Cr%3DXMLHttpRequest.prototype.send%2Ca%3D%211%3Bfunction%20o%28o%2Ci%29%7Bif%28%21a%26%26String%28o%7C%7C%22%22%29.indexOf%26%26-1%21%3D%3DString%28o%7C%7C%22%22%29.indexOf%28%22srv_epw_ew00_001.do%22%29%29%7Bvar%20c%3Btry%7Bc%3DJSON.parse%28i%29%7Dcatch%28t%29%7Breturn%7Dif%28function%28t%29%7Breturn%21%21%28t%26%26t.data%26%26t.data.dmSearch%26%26Object.prototype.hasOwnProperty.call%28t.data.dmSearch%2C%22etLbrYmdFrom%22%29%29%7D%28c%29%29%7Ba%3D%210%2Cwindow.fetch%3De%2CXMLHttpRequest.prototype.open%3Dn%2CXMLHttpRequest.prototype.send%3Dr%3Bvar%20d%3Do%3Btry%7Bd%3Dnew%20URL%28o%2Clocation.href%29.pathname%7Dcatch%28t%29%7B%7Dt%28%7Burl%3Ad%2Cbody%3Ac%7D%29%7D%7D%7Dwindow.fetch%3Dfunction%28t%2Cn%29%7Btry%7Bvar%20r%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Ca%3Dn%26%26n.body%3B%22string%22%3D%3Dtypeof%20a%26%26o%28r%2Ca%29%7Dcatch%28t%29%7B%7Dreturn%20e.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeUrl%3De%2Cn.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Btry%7B%22string%22%3D%3Dtypeof%20t%26%26o%28this.__jbeUrl%2Ct%29%7Dcatch%28t%29%7B%7Dreturn%20r.apply%28this%2Carguments%29%7D%7D%29%7Dasync%20function%20f%28t%2Ce%2Cn%29%7Bvar%20r%3DJSON.parse%28JSON.stringify%28t.body%29%29%2Ca%3Dc%28e%2Cn%2C1%29%2Co%3Dc%28e%2Cn%2Cfunction%28t%2Ce%29%7Breturn%20new%20Date%28t%2Ce%2C0%29.getDate%28%29%7D%28e%2Cn%29%29%3Br.data.dmSearch.etLbrYmdFrom%3Da%2Cr.data.dmSearch.etLbrYmdTo%3Do%3Bvar%20i%3Dawait%20fetch%28t.endpoint%2C%7Bmethod%3A%22POST%22%2Ccredentials%3A%22include%22%2Cheaders%3A%7BAccept%3A%22application%2Fjson%22%2C%22Content-Type%22%3A%22application%2Fjson%3B%20charset%3DUTF-8%22%2C%22X-Requested-With%22%3A%22XMLHttpRequest%22%2Cui%3A%22eXbuilder%22%7D%2Cbody%3AJSON.stringify%28r%29%7D%29%3Bif%28%21i.ok%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%28%22%2Bi.status%2B%22%29%22%29%3Bvar%20d%3Dawait%20i.json%28%29%3Breturn%20Array.isArray%28d.dsMain%29%3Fd.dsMain%3A%5B%5D%7Dfunction%20y%28t%29%7Bvar%20e%3Dnew%20Date%2Cn%3De.getMonth%28%29%2Bt%3Breturn%7By%3Ae.getFullYear%28%29%2BMath.floor%28n%2F12%29%2Cm%3A%28n%2512%2B12%29%2512%2B1%7D%7Dasync%20function%20m%28t%2Ce%2Cr%29%7Bvar%20o%2Cc%3De%2B%22-%22%2Bi%28r%29%2Cu%3D%7B%7D%2Cl%3D0%3Btry%7Bo%3Dawait%20f%28t%2Ce%2Cr%29%7Dcatch%28t%29%7Breturn%20console.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%5D%22%2Cc%2Ct%29%2C%7BmonthKey%3Ac%2CbyDate%3Au%2Ctotal%3A0%2Cfailed%3A%210%7D%7Dreturn%20o.filter%28function%28t%29%7Breturn%20function%28t%29%7Breturn-1%21%3D%3Dn.indexOf%28d%28t%26%26t.invlFlnm%29%29%7D%28t%29%26%26function%28t%29%7Breturn%20d%28t%26%26t.atrzStsNm%29%3D%3D%3Da%7D%28t%29%7D%29.map%28function%28t%29%7Breturn%7Bname%3Ad%28t.invlFlnm%29%2Cdate%3Ad%28t.etLbrYmd%29%2CworkRange%3As%28t.lbrBgngHm%29%2B%22~%22%2Bs%28t.lbrEndHm%29%2CaplyRange%3As%28t.aplyBgngHm%29%2B%22~%22%2Bs%28t.aplyEndHm%29%2Chours%3As%28t.etLbrAplyHm%29%2Creason%3Ad%28t.etLbrRsnCn%29%2Choliday%3A%22Y%22%3D%3D%3Dd%28t.hldyYn%29%7D%7D%29.forEach%28function%28t%29%7Bvar%20e%3D8%3D%3D%3Dt.date.length%3Ft.date.slice%280%2C4%29%2B%22-%22%2Bt.date.slice%284%2C6%29%2B%22-%22%2Bt.date.slice%286%2C8%29%3At.date%3Bu%5Be%5D%7C%7C%28u%5Be%5D%3D%5B%5D%29%2Cu%5Be%5D.push%28t%29%2Cl%2B%2B%7D%29%2C%7BmonthKey%3Ac%2CbyDate%3Au%2Ctotal%3Al%2Cfailed%3A%211%7D%7Dasync%20function%20h%28t%29%7Bfor%28var%20e%3D%5B%5D%2Ca%3D0%3Ba%3Cr.length%3Ba%2B%2B%29%7Bvar%20o%3Dy%28r%5Ba%5D%29%3Bu%28%22%E2%8F%B1%EF%B8%8F%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Ba%2B%22%2F%22%2Br.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%29%22%29%3Bvar%20i%3Dawait%20m%28t%2Co.y%2Co.m%29%3Be.push%28i%29%7Du%28%22%E2%8F%B1%EF%B8%8F%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Br.length%2B%22%2F%22%2Br.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%2C%20%EC%A0%80%EC%9E%A5%ED%95%98%EB%8A%94%20%EC%A4%91%E2%80%A6%29%22%29%3Bvar%20c%3De.filter%28function%28t%29%7Breturn%21t.failed%7D%29%3Bif%28%21c.length%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%A1%B0%ED%9A%8C%EC%97%90%20%EB%AA%A8%EB%91%90%20%EC%8B%A4%ED%8C%A8%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%83%81%ED%83%9C%EB%A5%BC%20%ED%99%95%EC%9D%B8%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20d%2Cs%3Dc.reduce%28function%28t%2Ce%29%7Breturn%20t%2Be.total%7D%2C0%29%2Cp%3Dc.map%28function%28t%29%7Bvar%20e%3D%22%EC%A7%80%EC%A0%95%20%EC%9D%B8%EC%9B%90%206%EB%AA%85%28%22%2Bn.join%28%22%C2%B7%22%29%2B%22%29%20%C2%B7%20%EA%B2%B0%EC%9E%AC%20%EC%99%84%EA%B2%B0%28%22%2B%22%EC%99%84%EA%B2%B0%29%20%EA%B1%B4%EB%A7%8C%20%C2%B7%20%EC%B4%9D%20%22%2Bt.total%2B%22%EA%B1%B4%22%3Breturn%7BmonthKey%3At.monthKey%2CbyDate%3At.byDate%2Cscope%3Ae%7D%7D%29%3Bawait%28d%3D%7Bmonths%3Ap%7D%2Cnew%20Promise%28function%28t%2Ce%29%7Bvar%20n%3Dwindow.open%28%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fovertime-sync-bridge.html%22%2C%22jbeOvertimeSyncBridge%22%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28n%29%7Bvar%20r%3D%211%2Ca%3DsetTimeout%28function%28%29%7Br%7C%7C%28r%3D%210%2Cwindow.removeEventListener%28%22message%22%2Co%29%2Ce%28new%20Error%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%ED%99%94%EB%A9%B4%EC%9D%B4%20%EC%9D%91%EB%8B%B5%ED%95%98%EC%A7%80%20%EC%95%8A%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%20%EC%84%A4%EC%A0%95%EC%9D%84%20%ED%99%95%EC%9D%B8%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%29%7D%2C3e4%29%3Bwindow.addEventListener%28%22message%22%2Co%29%7Delse%20e%28new%20Error%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%3Bfunction%20o%28i%29%7Bif%28i%26%26i.data%29if%28%22JBE_OVERTIME_SYNC_READY%22%3D%3D%3Di.data.type%29try%7Bn.postMessage%28%7Btype%3A%22JBE_OVERTIME_SYNC%22%2Cpayload%3Ad%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28%22JBE_OVERTIME_SYNC_RESULT%22%3D%3D%3Di.data.type%29%7Bif%28r%29return%3Br%3D%210%2CclearTimeout%28a%29%2Cwindow.removeEventListener%28%22message%22%2Co%29%2Ci.data.ok%3Ft%28%29%3Ae%28new%20Error%28i.data.error%7C%7C%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%8B%A4%ED%8C%A8%22%29%29%7D%7D%7D%29%29%3Bvar%20f%3Dc.map%28function%28t%29%7Breturn%20t.monthKey%2B%22%3A%20%22%2Bt.total%2B%22%EA%B1%B4%22%7D%29.join%28%22%2C%20%22%29%2Ch%3De.length-c.length%3Bl%28%29%2Calert%28%22%E2%9C%85%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%99%84%EB%A3%8C%20%28%EC%B4%9D%20%22%2Bs%2B%22%EA%B1%B4%29%5Cn%22%2Bf%2B%28h%3F%22%5Cn%28%22%2Bh%2B%22%EA%B0%9C%EC%9B%94%EC%9D%80%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%EB%A1%9C%20%EC%A0%9C%EC%99%B8%EB%90%A8%29%22%3A%22%22%29%2B%22%5Cn%5Cn%E2%80%BB%20%EA%B2%B0%EC%9E%AC%EA%B0%80%20%EC%99%84%EA%B2%B0%28%22%2B%22%EC%99%84%EA%B2%B0%29%EB%90%9C%20%EC%8B%A0%EC%B2%AD%20%EB%82%B4%EC%97%AD%EB%A7%8C%20%ED%91%9C%EC%8B%9C%EB%90%A9%EB%8B%88%EB%8B%A4.%20%EA%B2%B0%EC%9E%AC%20%EC%A7%84%ED%96%89%20%EC%A4%91%EC%9D%B4%EA%B1%B0%EB%82%98%20%EB%B0%98%EB%A0%A4%EB%90%9C%20%EA%B1%B4%EC%9D%80%20%ED%91%9C%EC%8B%9C%EB%90%98%EC%A7%80%20%EC%95%8A%EC%8A%B5%EB%8B%88%EB%8B%A4.%22%29%7D%7D%28%29%3B";
 
-var COMBINED_SYNC_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bif%28window.__jbeCombinedSyncRunning%29alert%28%22%EC%9D%B4%EB%AF%B8%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%9E%91%EC%97%85%EC%9D%B4%20%EC%A7%84%ED%96%89%20%EC%A4%91%EC%9E%85%EB%8B%88%EB%8B%A4.%20%EC%9E%A0%EC%8B%9C%20%EA%B8%B0%EB%8B%A4%EB%A0%A4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Belse%7Bwindow.__jbeCombinedSyncRunning%3D%210%3Bvar%20t%3D%22jbeNeisDutyTemplateV1%22%2Ce%3D%22jbeNeisDutyEndpointV1%22%2Cn%3D%22jbeOvertimeSyncTemplateV1%22%2Cr%3D%22jbeOvertimeSyncEndpointV1%22%2Ca%3D%5B%22%EC%84%9D%EA%B4%91%EC%9D%BC%22%2C%22%EC%8B%AC%EA%B2%BD%EC%95%84%22%2C%22%EC%98%A4%EA%B7%9C%EB%AF%BC%22%2C%22%EC%9D%B4%EC%A4%91%ED%98%84%22%2C%22%EC%9D%B4%EA%B0%95%ED%98%84%22%2C%22%EC%A3%BC%EC%A7%80%EC%98%81%22%5D%2Co%3D%5B-1%2C0%2C1%2C2%5D%2Ci%3D%22__jbeCombinedSyncToast%22%3B%21async%20function%28%29%7Btry%7Bvar%20i%3Dy%28t%2Ce%29%2Cu%3Dy%28n%2Cr%29%2Cc%3D%21i%2Cd%3D%21u%3Bif%28c%7C%7Cd%29%7Bvar%20s%3D%5B%5D%3Bc%26%26s.push%28%22%5B%EC%9D%BC%EC%9D%BC%EA%B7%BC%EB%AC%B4%EC%83%81%ED%99%A9%EC%A1%B0%ED%9A%8C%5D%28%EB%B3%B5%EB%AC%B4%29%22%29%2Cd%26%26s.push%28%22%5B%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%5D%22%29%2Calert%28%22%EC%B2%98%EC%9D%8C%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%8B%9C%EB%8A%94%EA%B5%B0%EC%9A%94%21%5Cn%5Cn%ED%99%95%EC%9D%B8%EC%9D%84%20%EB%88%84%EB%A5%B8%20%EB%92%A4%20%EB%82%98%EC%9D%B4%EC%8A%A4%EC%97%90%EC%84%9C%20%22%2Bs.join%28%22%2C%20%22%29%2B%22%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%AC%B4%20%EA%B8%B0%EA%B0%84%EC%9C%BC%EB%A1%9C%EB%82%98%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%EC%94%A9%20%EC%8B%A4%ED%96%89%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EB%91%90%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%88%9C%EC%84%9C%20%EC%83%81%EA%B4%80%EC%97%86%EC%9D%B4%20%EC%98%A4%EA%B0%80%EB%A9%B0%20%EC%A1%B0%ED%9A%8C%ED%95%98%EB%A9%B4%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%EC%9D%B8%EC%8B%9D%EB%90%A9%EB%8B%88%EB%8B%A4.%20%285%EB%B6%84%20%EC%9D%B4%EB%82%B4%29%5Cn%EB%91%98%20%EB%8B%A4%20%EC%9D%B8%EC%8B%9D%EB%90%98%EB%A9%B4%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%EA%B0%80%20%EC%8B%9C%EC%9E%91%EB%90%A9%EB%8B%88%EB%8B%A4.%22%29%2Cm%28%22%F0%9F%94%84%E2%8F%B1%EF%B8%8F%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%ED%99%94%EB%A9%B4%EC%97%90%EC%84%9C%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%EA%B8%B0%EB%8B%A4%EB%A6%AC%EB%8A%94%20%EC%A4%91%E2%80%A6%5Cn%ED%95%84%EC%9A%94%3A%20%22%2Bs.join%28%22%2C%20%22%29%29%3Bvar%20l%3Dawait%20g%28c%2Cd%2C3e5%29%3Bif%28c%26%26l.duty%26%26%28f%28t%2Ce%2Cl.duty.body%2Cl.duty.url%29%2Ci%3Dl.duty%29%2Cd%26%26l.overtime%26%26%28f%28n%2Cr%2Cl.overtime.body%2Cl.overtime.url%29%2Cu%3Dl.overtime%29%2C%21i%7C%7C%21u%29%7Bh%28%29%3Bvar%20p%3D%5B%5D%3Breturn%20i%7C%7Cp.push%28%22%5B%EC%9D%BC%EC%9D%BC%EA%B7%BC%EB%AC%B4%EC%83%81%ED%99%A9%EC%A1%B0%ED%9A%8C%5D%28%EB%B3%B5%EB%AC%B4%29%22%29%2Cu%7C%7Cp.push%28%22%5B%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%5D%22%29%2Cvoid%20alert%28%22%E2%8F%B1%EF%B8%8F%20%EC%8B%9C%EA%B0%84%EC%9D%B4%20%EC%B4%88%EA%B3%BC%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%5Cn%22%2B%28c%26%26i%7C%7Cd%26%26u%3F%22%EC%9D%B8%EC%8B%9D%EB%90%9C%20%ED%99%94%EB%A9%B4%EC%9D%80%20%EC%A0%80%EC%9E%A5%ED%95%B4%20%EB%91%90%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%5Cn%22%3A%22%22%29%2Bp.join%28%22%2C%20%22%29%2B%22%20%ED%99%94%EB%A9%B4%20%EC%9D%B8%EC%8B%9D%EC%9D%B4%20%EC%95%84%EC%A7%81%20%EC%95%88%20%EB%90%90%EC%96%B4%EC%9A%94.%5Cn%ED%95%B4%EB%8B%B9%20%ED%99%94%EB%A9%B4%EC%97%90%EC%84%9C%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EC%8B%A4%ED%96%89%ED%95%9C%20%EB%92%A4%20%EA%B0%99%EC%9D%80%20%EC%A6%90%EA%B2%A8%EC%B0%BE%EA%B8%B0%EB%A5%BC%20%EB%8B%A4%EC%8B%9C%20%EB%88%8C%EB%9F%AC%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%7D%7Dm%28%22%F0%9F%94%84%E2%8F%B1%EF%B8%8F%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4%E2%80%A6%22%29%3Bvar%20E%3Dawait%20async%20function%28t%29%7Bfor%28var%20e%3D%5B%5D%2Cn%3D0%3Bn%3Co.length%3Bn%2B%2B%29%7Bvar%20r%3Dv%28o%5Bn%5D%29%3Bm%28%22%F0%9F%94%84%20%5B1%2F2%5D%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%ED%98%84%ED%99%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Bn%2B%22%2F%22%2Bo.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%29%22%29%2Ce.push%28await%20w%28t%2Cr.y%2Cr.m%29%29%7Dvar%20i%3De.filter%28function%28t%29%7Breturn%20t.failedDays%3Ct.days%7D%29%3Bif%28%21i.length%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%20%EC%A1%B0%ED%9A%8C%EC%97%90%20%EB%AA%A8%EB%91%90%20%EC%8B%A4%ED%8C%A8%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%83%81%ED%83%9C%EB%A5%BC%20%ED%99%95%EC%9D%B8%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20u%3Di.reduce%28function%28t%2Ce%29%7Breturn%20t%2Be.total%7D%2C0%29%2Cc%3Di.map%28function%28t%29%7Bvar%20e%3D%22%EC%A7%80%EC%A0%95%20%EC%9D%B8%EC%9B%90%206%EB%AA%85%28%22%2Ba.join%28%22%C2%B7%22%29%2B%22%29%20%C2%B7%20%EC%8A%B9%EC%9D%B8%EC%99%84%EB%A3%8C%EB%A7%8C%20%C2%B7%20%EC%B4%9D%20%22%2Bt.total%2B%22%EA%B1%B4%22%2B%28t.failedDays%3F%22%20%C2%B7%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%22%2Bt.failedDays%2B%22%EC%9D%BC%22%3A%22%22%29%3Breturn%7BmonthKey%3At.monthKey%2CbyDate%3At.byDate%2Cscope%3Ae%7D%7D%29%3Breturn%20await%20S%28%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fneis-sync-bridge.html%22%2C%22jbeNeisSyncBridge%22%2C%22JBE_NEIS_DUTY_SYNC_READY%22%2C%22JBE_NEIS_DUTY_SYNC%22%2C%22JBE_NEIS_DUTY_SYNC_RESULT%22%2C%7Bmonths%3Ac%7D%29%2C%7BgrandTotal%3Au%2Csummary%3Ai.map%28function%28t%29%7Breturn%20t.monthKey%2B%22%3A%20%22%2Bt.total%2B%22%EA%B1%B4%22%7D%29.join%28%22%2C%20%22%29%2Cskipped%3Ae.length-i.length%7D%7D%28%7Bbody%3Ai.body%2Cendpoint%3Ai.endpoint%7D%29%2C_%3Dawait%20async%20function%28t%29%7Bfor%28var%20e%3D%5B%5D%2Cn%3D0%3Bn%3Co.length%3Bn%2B%2B%29%7Bvar%20r%3Dv%28o%5Bn%5D%29%3Bm%28%22%E2%8F%B1%EF%B8%8F%20%5B2%2F2%5D%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Bn%2B%22%2F%22%2Bo.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%29%22%29%2Ce.push%28await%20b%28t%2Cr.y%2Cr.m%29%29%7Dvar%20i%3De.filter%28function%28t%29%7Breturn%21t.failed%7D%29%3Bif%28%21i.length%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EC%A1%B0%ED%9A%8C%EC%97%90%20%EB%AA%A8%EB%91%90%20%EC%8B%A4%ED%8C%A8%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%83%81%ED%83%9C%EB%A5%BC%20%ED%99%95%EC%9D%B8%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20u%3Di.reduce%28function%28t%2Ce%29%7Breturn%20t%2Be.total%7D%2C0%29%2Cc%3Di.map%28function%28t%29%7Bvar%20e%3D%22%EC%A7%80%EC%A0%95%20%EC%9D%B8%EC%9B%90%206%EB%AA%85%28%22%2Ba.join%28%22%C2%B7%22%29%2B%22%29%20%C2%B7%20%EA%B2%B0%EC%9E%AC%20%EC%99%84%EA%B2%B0%28%EC%99%84%EA%B2%B0%29%20%EA%B1%B4%EB%A7%8C%20%C2%B7%20%EC%B4%9D%20%22%2Bt.total%2B%22%EA%B1%B4%22%3Breturn%7BmonthKey%3At.monthKey%2CbyDate%3At.byDate%2Cscope%3Ae%7D%7D%29%3Breturn%20await%20S%28%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fovertime-sync-bridge.html%22%2C%22jbeOvertimeSyncBridge%22%2C%22JBE_OVERTIME_SYNC_READY%22%2C%22JBE_OVERTIME_SYNC%22%2C%22JBE_OVERTIME_SYNC_RESULT%22%2C%7Bmonths%3Ac%7D%29%2C%7BgrandTotal%3Au%2Csummary%3Ai.map%28function%28t%29%7Breturn%20t.monthKey%2B%22%3A%20%22%2Bt.total%2B%22%EA%B1%B4%22%7D%29.join%28%22%2C%20%22%29%2Cskipped%3Ae.length-i.length%7D%7D%28%7Bbody%3Au.body%2Cendpoint%3Au.endpoint%7D%29%3Bh%28%29%2Calert%28%22%E2%9C%85%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%99%84%EB%A3%8C%5Cn%5Cn%5B%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%5D%20%EC%B4%9D%20%22%2BE.grandTotal%2B%22%EA%B1%B4%20%28%EC%8A%B9%EC%9D%B8%EC%99%84%EB%A3%8C%EB%A7%8C%29%5Cn%22%2BE.summary%2B%28E.skipped%3F%22%5Cn%28%22%2BE.skipped%2B%22%EA%B0%9C%EC%9B%94%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%EB%A1%9C%20%EC%A0%9C%EC%99%B8%29%22%3A%22%22%29%2B%22%5Cn%5Cn%5B%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%5D%20%EC%B4%9D%20%22%2B_.grandTotal%2B%22%EA%B1%B4%20%28%EA%B2%B0%EC%9E%AC%20%EC%99%84%EA%B2%B0%EB%A7%8C%29%5Cn%22%2B_.summary%2B%28_.skipped%3F%22%5Cn%28%22%2B_.skipped%2B%22%EA%B0%9C%EC%9B%94%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%EB%A1%9C%20%EC%A0%9C%EC%99%B8%29%22%3A%22%22%29%29%7Dcatch%28t%29%7Bconsole.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%5D%22%2Ct%29%2Ch%28%29%2Calert%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%20%EB%AC%B8%EC%A0%9C%EA%B0%80%20%EB%B0%9C%EC%83%9D%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4%3A%20%22%2B%28t%26%26t.message%7C%7Ct%29%29%7Dfinally%7Bwindow.__jbeCombinedSyncRunning%3D%211%7D%7D%28%29%7Dfunction%20u%28t%29%7Breturn%20String%28t%29.length%3C2%3F%220%22%2Bt%3AString%28t%29%7Dfunction%20c%28t%2Ce%2Cn%29%7Breturn%22%22%2Bt%2Bu%28e%29%2Bu%28n%29%7Dfunction%20d%28t%2Ce%29%7Breturn%20new%20Date%28t%2Ce%2C0%29.getDate%28%29%7Dfunction%20s%28t%29%7Breturn%20String%28t%7C%7C%22%22%29.replace%28%2F%5Cs%2B%2Fg%2C%22%20%22%29.trim%28%29%7Dfunction%20l%28t%29%7Breturn-1%21%3D%3Da.indexOf%28s%28t%26%26t.invlFlnm%29%29%7Dfunction%20p%28t%29%7Bvar%20e%3Ds%28t%29%3Breturn%2F%5E%5Cd%7B4%7D%24%2F.test%28e%29%3Fe.slice%280%2C2%29%2B%22%3A%22%2Be.slice%282%2C4%29%3Ae%7Dfunction%20y%28t%2Ce%29%7Btry%7Bvar%20n%3DlocalStorage.getItem%28t%29%2Cr%3DlocalStorage.getItem%28e%29%3Breturn%20n%26%26r%3F%7Bbody%3AJSON.parse%28n%29%2Cendpoint%3Ar%7D%3Anull%7Dcatch%28t%29%7Breturn%20null%7D%7Dfunction%20f%28t%2Ce%2Cn%2Cr%29%7Btry%7BlocalStorage.setItem%28t%2CJSON.stringify%28n%29%29%2ClocalStorage.setItem%28e%2Cr%29%7Dcatch%28t%29%7B%7D%7Dfunction%20m%28t%29%7Bvar%20e%3Ddocument.getElementById%28i%29%3Breturn%20e%7C%7C%28%28e%3Ddocument.createElement%28%22div%22%29%29.id%3Di%2Ce.style.cssText%3D%22position%3Afixed%3Btop%3A16px%3Bright%3A16px%3Bz-index%3A2147483647%3Bbackground%3A%231b212c%3Bcolor%3A%23fff%3Bpadding%3A12px%2016px%3Bborder-radius%3A10px%3Bfont-size%3A13px%3Bfont-family%3A-apple-system%2C%27Malgun%20Gothic%27%2Csans-serif%3Bline-height%3A1.6%3Bbox-shadow%3A0%206px%2020px%20rgba%280%2C0%2C0%2C.35%29%3Bmax-width%3A300px%3Bwhite-space%3Apre-line%3B%22%2C%28document.body%7C%7Cdocument.documentElement%29.appendChild%28e%29%29%2Ce.textContent%3Dt%2Ce%7Dfunction%20h%28%29%7Bvar%20t%3Ddocument.getElementById%28i%29%3Bt%26%26t.parentNode%26%26t.parentNode.removeChild%28t%29%7Dfunction%20g%28t%2Ce%2Cn%29%7Breturn%20new%20Promise%28function%28r%29%7Bvar%20a%3Dwindow.fetch%2Co%3DXMLHttpRequest.prototype.open%2Ci%3DXMLHttpRequest.prototype.send%2Cu%3D%211%2Cc%3Dnull%2Cd%3Dnull%3Bfunction%20s%28%29%7Bu%7C%7C%28u%3D%210%2CclearTimeout%28l%29%2Cwindow.fetch%3Da%2CXMLHttpRequest.prototype.open%3Do%2CXMLHttpRequest.prototype.send%3Di%2Cr%28%7Bduty%3Ac%2Covertime%3Ad%7D%29%29%7Dvar%20l%3DsetTimeout%28s%2Cn%29%3Bfunction%20p%28n%2Cr%29%7Bif%28%21u%29%7Bvar%20a%3DString%28n%7C%7C%22%22%29%2Co%3D%211%3Bif%28t%26%26%21c%26%26-1%21%3D%3Da.indexOf%28%22srv_mym_mm01_001.do%22%29%29try%7Bvar%20i%3DJSON.parse%28r%29%3Bif%28function%28t%29%7Breturn%21%21%28t%26%26t.data%26%26t.data.dmSearch%26%26Object.prototype.hasOwnProperty.call%28t.data.dmSearch%2C%22workYmd%22%29%29%7D%28i%29%29%7Bvar%20l%3Da%3Btry%7Bl%3Dnew%20URL%28a%2Clocation.href%29.pathname%7Dcatch%28t%29%7B%7Dc%3D%7Burl%3Al%2Cbody%3Ai%7D%2Co%3D%210%7D%7Dcatch%28t%29%7B%7Dif%28e%26%26%21d%26%26-1%21%3D%3Da.indexOf%28%22srv_epw_ew00_001.do%22%29%29try%7Bvar%20p%3DJSON.parse%28r%29%3Bif%28function%28t%29%7Breturn%21%21%28t%26%26t.data%26%26t.data.dmSearch%26%26Object.prototype.hasOwnProperty.call%28t.data.dmSearch%2C%22etLbrYmdFrom%22%29%29%7D%28p%29%29%7Bvar%20y%3Da%3Btry%7By%3Dnew%20URL%28a%2Clocation.href%29.pathname%7Dcatch%28t%29%7B%7Dd%3D%7Burl%3Ay%2Cbody%3Ap%7D%2Co%3D%210%7D%7Dcatch%28t%29%7B%7Dif%28o%29%7Bvar%20f%3D%5B%5D%2Ch%3D%5B%5D%3Bt%26%26%28c%3Ff%3Ah%29.push%28%22%EB%B3%B5%EB%AC%B4%22%29%2Ce%26%26%28d%3Ff%3Ah%29.push%28%22%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%22%29%2Cm%28%22%F0%9F%94%84%E2%8F%B1%EF%B8%8F%20%EC%9D%B8%EC%8B%9D%EB%90%A8%3A%20%22%2B%28f.join%28%22%C2%B7%22%29%7C%7C%22-%22%29%2B%28h.length%3F%22%5Cn%EB%82%A8%EC%9D%8C%3A%20%22%2Bh.join%28%22%C2%B7%22%29%2B%22%20%ED%99%94%EB%A9%B4%EC%97%90%EC%84%9C%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%96%89%22%3A%22%22%29%29%7Dt%26%26%21c%7C%7Ce%26%26%21d%7C%7Cs%28%29%7D%7Dwindow.fetch%3Dfunction%28t%2Ce%29%7Btry%7Bvar%20n%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Cr%3De%26%26e.body%3B%22string%22%3D%3Dtypeof%20r%26%26p%28n%2Cr%29%7Dcatch%28t%29%7B%7Dreturn%20a.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeUrl%3De%2Co.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Btry%7B%22string%22%3D%3Dtypeof%20t%26%26p%28this.__jbeUrl%2Ct%29%7Dcatch%28t%29%7B%7Dreturn%20i.apply%28this%2Carguments%29%7D%7D%29%7Dfunction%20v%28t%29%7Bvar%20e%3Dnew%20Date%2Cn%3De.getMonth%28%29%2Bt%3Breturn%7By%3Ae.getFullYear%28%29%2BMath.floor%28n%2F12%29%2Cm%3A%28n%2512%2B12%29%2512%2B1%7D%7Dasync%20function%20w%28t%2Ce%2Cn%29%7Bfor%28var%20r%2Ca%2Co%2Ci%3De%2B%22-%22%2Bu%28n%29%2Cp%3Dd%28e%2Cn%29%2Cy%3D%7B%7D%2Cf%3D0%2Cm%3D0%2Ch%3D%5B%5D%2Cg%3D1%3Bg%3C%3Dp%3Bg%2B%2B%29h.push%28g%29%3Breturn%20await%28r%3Dh%2Ca%3D6%2Co%3Dasync%20function%28r%29%7Bvar%20a%2Co%3Dc%28e%2Cn%2Cr%29%2Ci%3Dfunction%28t%2Ce%2Cn%29%7Breturn%20t%2B%22-%22%2Bu%28e%29%2B%22-%22%2Bu%28n%29%7D%28e%2Cn%2Cr%29%3Btry%7Ba%3Dawait%20async%20function%28t%2Ce%29%7Bvar%20n%3DJSON.parse%28JSON.stringify%28t.body%29%29%3Bn.data.dmSearch.workYmd%3De%3Bvar%20r%3Dawait%20fetch%28t.endpoint%2C%7Bmethod%3A%22POST%22%2Ccredentials%3A%22include%22%2Cheaders%3A%7BAccept%3A%22application%2Fjson%22%2C%22Content-Type%22%3A%22application%2Fjson%3B%20charset%3DUTF-8%22%2C%22X-Requested-With%22%3A%22XMLHttpRequest%22%2Cui%3A%22eXbuilder%22%7D%2Cbody%3AJSON.stringify%28n%29%7D%29%3Bif%28%21r.ok%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%28%22%2Br.status%2B%22%29%22%29%3Bvar%20a%3Dawait%20r.json%28%29%3Breturn%20Array.isArray%28a.dsMain%29%3Fa.dsMain%3A%5B%5D%7D%28t%2Co%29%7Dcatch%28t%29%7Breturn%20console.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%2F%EB%B3%B5%EB%AC%B4%5D%22%2Ci%2Ct%29%2Cvoid%20m%2B%2B%7Dvar%20d%3Da.filter%28function%28t%29%7Breturn%20function%28t%29%7Breturn%22%EC%8A%B9%EC%9D%B8%EC%99%84%EB%A3%8C%22%3D%3D%3Ds%28t%26%26t.atrzStsNm%29%7D%28t%29%26%26l%28t%29%7D%29.map%28function%28t%29%7Breturn%7Bname%3As%28t.invlFlnm%29%2Ctype%3As%28t.workSittnNm%29%2Cperiod%3As%28t.workSittnPrd%29%2Cdestination%3As%28t.destiNm%29%2Cpending%3A%211%7D%7D%29%3Bd.length%26%26%28y%5Bi%5D%3Dd%2Cf%2B%3Dd.length%29%7D%2Cnew%20Promise%28function%28t%29%7Bvar%20e%3D0%2Cn%3D0%2Ci%3D0%3Br.length%3Ffunction%20u%28%29%7Bif%28i%3E%3Dr.length%29t%28%29%3Belse%20for%28%3Bn%3Ca%26%26e%3Cr.length%3B%29%28function%28t%29%7Bn%2B%2B%2Ce%2B%2B%2CPromise.resolve%28o%28r%5Bt%5D%2Ct%29%29.then%28function%28%29%7Bn--%2Ci%2B%2B%2Cu%28%29%7D%2Cfunction%28%29%7Bn--%2Ci%2B%2B%2Cu%28%29%7D%29%7D%29%28e%29%7D%28%29%3At%28%29%7D%29%29%2C%7BmonthKey%3Ai%2CbyDate%3Ay%2Ctotal%3Af%2Cdays%3Ap%2CfailedDays%3Am%7D%7Dasync%20function%20b%28t%2Ce%2Cn%29%7Bvar%20r%2Ca%3De%2B%22-%22%2Bu%28n%29%2Co%3D%7B%7D%2Ci%3D0%3Btry%7Br%3Dawait%20async%20function%28t%2Ce%2Cn%29%7Bvar%20r%3DJSON.parse%28JSON.stringify%28t.body%29%29%3Br.data.dmSearch.etLbrYmdFrom%3Dc%28e%2Cn%2C1%29%2Cr.data.dmSearch.etLbrYmdTo%3Dc%28e%2Cn%2Cd%28e%2Cn%29%29%3Bvar%20a%3Dawait%20fetch%28t.endpoint%2C%7Bmethod%3A%22POST%22%2Ccredentials%3A%22include%22%2Cheaders%3A%7BAccept%3A%22application%2Fjson%22%2C%22Content-Type%22%3A%22application%2Fjson%3B%20charset%3DUTF-8%22%2C%22X-Requested-With%22%3A%22XMLHttpRequest%22%2Cui%3A%22eXbuilder%22%7D%2Cbody%3AJSON.stringify%28r%29%7D%29%3Bif%28%21a.ok%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%28%22%2Ba.status%2B%22%29%22%29%3Bvar%20o%3Dawait%20a.json%28%29%3Breturn%20Array.isArray%28o.dsMain%29%3Fo.dsMain%3A%5B%5D%7D%28t%2Ce%2Cn%29%7Dcatch%28t%29%7Breturn%20console.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%ED%86%B5%ED%95%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%2F%EC%B4%88%EA%B3%BC%EA%B7%BC%EB%AC%B4%5D%22%2Ca%2Ct%29%2C%7BmonthKey%3Aa%2CbyDate%3Ao%2Ctotal%3A0%2Cfailed%3A%210%7D%7Dreturn%20r.filter%28function%28t%29%7Breturn%20l%28t%29%26%26function%28t%29%7Breturn%22%EC%99%84%EA%B2%B0%22%3D%3D%3Ds%28t%26%26t.atrzStsNm%29%7D%28t%29%7D%29.map%28function%28t%29%7Breturn%7Bname%3As%28t.invlFlnm%29%2Cdate%3As%28t.etLbrYmd%29%2CworkRange%3Ap%28t.lbrBgngHm%29%2B%22~%22%2Bp%28t.lbrEndHm%29%2CaplyRange%3Ap%28t.aplyBgngHm%29%2B%22~%22%2Bp%28t.aplyEndHm%29%2Chours%3Ap%28t.etLbrAplyHm%29%2Creason%3As%28t.etLbrRsnCn%29%2Choliday%3A%22Y%22%3D%3D%3Ds%28t.hldyYn%29%7D%7D%29.forEach%28function%28t%29%7Bvar%20e%3D8%3D%3D%3Dt.date.length%3Ft.date.slice%280%2C4%29%2B%22-%22%2Bt.date.slice%284%2C6%29%2B%22-%22%2Bt.date.slice%286%2C8%29%3At.date%3Bo%5Be%5D%7C%7C%28o%5Be%5D%3D%5B%5D%29%2Co%5Be%5D.push%28t%29%2Ci%2B%2B%7D%29%2C%7BmonthKey%3Aa%2CbyDate%3Ao%2Ctotal%3Ai%2Cfailed%3A%211%7D%7Dfunction%20S%28t%2Ce%2Cn%2Cr%2Ca%2Co%29%7Breturn%20new%20Promise%28function%28i%2Cu%29%7Bvar%20c%3Dwindow.open%28t%2Ce%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28c%29%7Bvar%20d%3D%211%2Cs%3DsetTimeout%28function%28%29%7Bd%7C%7C%28d%3D%210%2Cwindow.removeEventListener%28%22message%22%2Cl%29%2Cu%28new%20Error%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%ED%99%94%EB%A9%B4%EC%9D%B4%20%EC%9D%91%EB%8B%B5%ED%95%98%EC%A7%80%20%EC%95%8A%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%20%EC%84%A4%EC%A0%95%EC%9D%84%20%ED%99%95%EC%9D%B8%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%29%7D%2C3e4%29%3Bwindow.addEventListener%28%22message%22%2Cl%29%7Delse%20u%28new%20Error%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%3Bfunction%20l%28t%29%7Bif%28t%26%26t.data%29if%28t.data.type%3D%3D%3Dn%29try%7Bc.postMessage%28%7Btype%3Ar%2Cpayload%3Ao%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28t.data.type%3D%3D%3Da%29%7Bif%28d%29return%3Bd%3D%210%2CclearTimeout%28s%29%2Cwindow.removeEventListener%28%22message%22%2Cl%29%2Ct.data.ok%3Fi%28%29%3Au%28new%20Error%28t.data.error%7C%7C%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%8B%A4%ED%8C%A8%22%29%29%7D%7D%7D%29%7D%7D%28%29%3B";
+var BUDGET_SYNC_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bvar%20t%3D%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fbudget-sync-bridge.html%22%2Ce%3D%22__jbeBudgetCapturing%22%2Cn%3D%22__jbeBudgetItems%22%2Cr%3D%22__jbeBudgetRestore%22%2Ci%3D%2FselectDetlIemInqireList%5C.do%2Fi%2Co%3DString.fromCharCode%2830%29%2Cs%3DString.fromCharCode%2831%29%2Ca%3DString.fromCharCode%283%29%3Bfunction%20d%28t%29%7Bvar%20e%3DparseFloat%28t%29%3Breturn%20isNaN%28e%29%3F0%3Ae%7Dfunction%20c%28t%2Ce%29%7Bif%28i.test%28String%28t%7C%7C%22%22%29%29%29try%7Bvar%20r%3Dfunction%28t%29%7Bfor%28var%20e%3D%5B%5D%2Cn%3DString%28t%7C%7C%22%22%29.split%28a%29%2Cr%3D0%3Br%3Cn.length%3Br%2B%2B%29%7Bvar%20i%3Dn%5Br%5D%3Bif%28i%29%7Bfor%28var%20d%3Di.split%28o%29%2Cc%3D%22%22%2Cp%3D-1%2Cl%3D0%3Bl%3Cd.length%3Bl%2B%2B%29%7Bvar%20f%3Dd%5Bl%5D%3Bif%280%3D%3D%3Df.indexOf%28%22Dataset%3A%22%29%26%26%28c%3Df.slice%288%29%29%2C0%3D%3D%3Df.indexOf%28%22_RowType_%22%29%29%7Bp%3Dl%3Bbreak%7D%7Dif%28-1%21%3D%3Dp%29%7Bfor%28var%20u%3Dd%5Bp%5D.split%28s%29.map%28function%28t%29%7Breturn%20String%28t%29.split%28%22%3A%22%29%5B0%5D%7D%29%2Cg%3D%5B%5D%2Cm%3Dp%2B1%3Bm%3Cd.length%3Bm%2B%2B%29%7Bvar%20h%3Dd%5Bm%5D%3Bif%28h%29%7Bvar%20w%3Dh.split%28s%29%3Bif%28w.length%3D%3D%3Du.length%29%7Bfor%28var%20v%3D%7B%7D%2Cy%3D0%3By%3Cu.length%3By%2B%2B%29v%5Bu%5By%5D%5D%3Dw%5By%5D%3Bg.push%28v%29%7D%7D%7De.push%28%7Bname%3Ac%2Ccols%3Au%2Crows%3Ag%7D%29%7D%7D%7Dreturn%20e%7D%28e%29%2Cc%3Dwindow%5Bn%5D%3Bif%28%21c%29return%3Bfor%28var%20p%3D0%3Bp%3Cr.length%3Bp%2B%2B%29%7Bvar%20l%3Dr%5Bp%5D%3Bif%28-1%21%3D%3Dl.cols.indexOf%28%22sclDetlBsnsCd%22%29%26%26-1%21%3D%3Dl.cols.indexOf%28%22bgtCrntam%22%29%29for%28var%20f%3D0%3Bf%3Cl.rows.length%3Bf%2B%2B%29%7Bvar%20u%3Dl.rows%5Bf%5D%3Bc%5B%28u.sclDetlBsnsCd%7C%7C%22%22%29%2B%22_%22%2B%28u.detlIemCd%7C%7C%22%22%29%2B%22_%22%2B%28u.prmpcStatsExpitmCd%7C%7Cf%29%5D%3D%7BsclDetlBsnsCd%3Au.sclDetlBsnsCd%7C%7C%22%22%2CdetlIemCd%3Au.detlIemCd%7C%7C%22%22%2CprmpcStatsExpitmCd%3Au.prmpcStatsExpitmCd%7C%7C%22%22%2CschlDetlBizNm%3Au.schlDetlBizNm%7C%7C%22%22%2CcptBasisCn%3Au.cptBasisCn%7C%7C%22%22%2CoribdgtAmt%3Ad%28u.oribdgtAmt%29%2CirdsBgt%3Ad%28u.irdsBgt%29%2CbgtCrntam%3Ad%28u.bgtCrntam%29%2CexpdCnsulAmt%3Ad%28u.expdCnsulAmt%29%2CepnsAmt%3Ad%28u.epnsAmt%29%2CexcutRt%3Ad%28u.excutRt%29%2CexpdDecisAmt%3Ad%28u.expdDecisAmt%29%2CpymntAmt%3Ad%28u.pymntAmt%29%2CbgtBlce%3Ad%28u.bgtBlce%29%7D%7D%7D%7Dcatch%28t%29%7B%7D%7Dif%28window%5Be%5D%29%7Bwindow%5Be%5D%3D%211%3Bvar%20p%3Dwindow%5Bn%5D%7C%7C%7B%7D%3Bif%28%22function%22%3D%3Dtypeof%20window%5Br%5D%29try%7Bwindow%5Br%5D%28%29%7Dcatch%28t%29%7B%7Dvar%20l%3DObject.keys%28p%29.map%28function%28t%29%7Breturn%20p%5Bt%5D%7D%29%3Breturn%20l.length%3Fvoid%20function%28e%29%7Bvar%20n%3Dwindow.open%28t%2C%22jbeBudgetSyncBridge%22%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28%21n%29return%20void%20alert%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20r%3D%211%2Ci%3DsetTimeout%28function%28%29%7Br%7C%7C%28r%3D%210%2Cwindow.removeEventListener%28%22message%22%2Co%29%29%7D%2C3e4%29%3Bfunction%20o%28t%29%7Bif%28t%26%26t.data%29if%28%22JBE_BUDGET_SYNC_READY%22%3D%3D%3Dt.data.type%29try%7Bn.postMessage%28%7Btype%3A%22JBE_BUDGET_SYNC%22%2Cpayload%3A%7Bitems%3Ae%7D%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28%22JBE_BUDGET_SYNC_RESULT%22%3D%3D%3Dt.data.type%29%7Bif%28r%29return%3Br%3D%210%2CclearTimeout%28i%29%2Cwindow.removeEventListener%28%22message%22%2Co%29%2Ct.data.ok%3Falert%28%22%E2%9C%85%20%EC%98%88%EC%82%B0%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EA%B0%80%20%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%EB%A1%9C%20%EC%A0%84%EC%86%A1%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4%20%28%22%2Be.length%2B%22%EA%B1%B4%29.%22%29%3Aalert%28%22%EC%A0%84%EC%86%A1%20%EC%8B%A4%ED%8C%A8%3A%20%22%2B%28t.data.error%7C%7C%22%EC%95%8C%20%EC%88%98%20%EC%97%86%EB%8A%94%20%EC%98%A4%EB%A5%98%22%29%29%7D%7Dwindow.addEventListener%28%22message%22%2Co%29%7D%28l%29%3Avoid%20alert%28%22%EC%BA%A1%EC%B2%98%EB%90%9C%20%EC%98%88%EC%82%B0%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EA%B0%80%20%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4.%5Cn%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%5B%EC%84%B8%EB%B6%80%ED%95%AD%EB%AA%A9%EB%B3%84%20%EC%A7%91%ED%96%89%ED%98%84%ED%99%A9%5D%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%A1%B0%ED%9A%8C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%7Dwindow%5Be%5D%3D%210%2Cwindow%5Bn%5D%3D%7B%7D%2Calert%28%22%EC%98%88%EC%82%B0%20%EB%8F%99%EA%B8%B0%ED%99%94%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4.%5Cn%5Cn%EC%A7%80%EA%B8%88%EB%B6%80%ED%84%B0%20%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%5B%EC%84%B8%EB%B6%80%ED%95%AD%EB%AA%A9%EB%B3%84%20%EC%A7%91%ED%96%89%ED%98%84%ED%99%A9%5D%20%EC%A1%B0%ED%9A%8C%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%97%B4%EC%96%B4%20%EC%A1%B0%ED%9A%8C%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EB%B6%80%EC%84%9C%2F%EC%82%AC%EC%97%85%EB%B3%84%EB%A1%9C%20%EB%82%98%EB%88%A0%EC%84%9C%20%EC%97%AC%EB%9F%AC%20%EB%B2%88%20%EC%A1%B0%ED%9A%8C%ED%95%98%EC%85%94%EB%8F%84%20%EA%B3%84%EC%86%8D%20%EC%8C%93%EC%9E%85%EB%8B%88%EB%8B%A4.%5Cn%EB%8B%A4%20%EB%B3%B4%EC%85%A8%EC%9C%BC%EB%A9%B4%20%EA%B0%99%EC%9D%80%20%EC%A6%90%EA%B2%A8%EC%B0%BE%EA%B8%B0%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EB%8D%94%20%EB%88%8C%EB%9F%AC%EC%84%9C%20%EC%BA%A1%EC%B2%98%EB%A5%BC%20%EC%A2%85%EB%A3%8C%ED%95%98%EA%B3%A0%20%EC%A0%84%EC%86%A1%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20f%3Dwindow.fetch%2Cu%3DXMLHttpRequest.prototype.open%2Cg%3DXMLHttpRequest.prototype.send%3Bwindow.fetch%3Dfunction%28t%2Ce%29%7Bvar%20n%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Cr%3Df.apply%28this%2Carguments%29%3Bif%28%21i.test%28String%28n%7C%7C%22%22%29%29%29return%20r%3Btry%7Br.then%28function%28t%29%7Btry%7Bt.clone%28%29.text%28%29.then%28function%28t%29%7Bc%28n%2Ct%29%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7D%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7Dreturn%20r%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeUrl%3De%2Cu.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Bvar%20e%3Dthis%3Bif%28i.test%28String%28e.__jbeUrl%7C%7C%22%22%29%29%29try%7Be.addEventListener%28%22loadend%22%2Cfunction%28%29%7Btry%7Bc%28e.__jbeUrl%2Ce.responseText%29%7Dcatch%28t%29%7B%7D%7D%29%7Dcatch%28t%29%7B%7Dreturn%20g.apply%28this%2Carguments%29%7D%2Cwindow%5Br%5D%3Dfunction%28%29%7Bwindow.fetch%3Df%2CXMLHttpRequest.prototype.open%3Du%2CXMLHttpRequest.prototype.send%3Dg%2Cwindow%5Br%5D%3Dnull%7D%7D%28%29%3B";
 
 function showEdufineSyncModal(){
   if (document.getElementById("edufineSyncOverlay")) return;
@@ -974,109 +989,58 @@ function showEdufineSyncModal(){
   overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
 }
 
-/* ---------------- 나이스 초과근무 동기화 (나이스 복무 동기화와 동일한 즐겨찾기 방식) ----------------
-   나이스 복무 동기화와 같은 구조: 이 사이트는 나이스 데이터를 직접 읽어올 수 없으므로,
-   나이스 화면 안에서 실행되는 즐겨찾기(북마클릿)가 초과근무 신청 내역을 읽어와 사이버행정실로 전달함.
-   결재 완결 여부는 atrzStsNm 필드로 내려오며 완결 건은 "완결"로 표기됨(실제 캡처 데이터로 확인) —
-   나이스 복무 동기화의 atrzStsNm === "승인완료"와 동일한 방식으로, 여기서는 "완결" 건만 표시함. */
-function showOvertimeSyncModal(){
-  if (document.getElementById("overtimeSyncOverlay")) return;
+/* ---------------- 예산 동기화 (에듀파인 세부항목별 집행현황 → 예산 대시보드) ----------------
+   에듀파인의 실제 응답 포맷("SSV:UTF-8"로 시작하는 nexacro/eXBuilder5 고유 직렬화 텍스트)을
+   캡처된 데이터로 분석해 필드 구조(세부사업명/예산현액/집행액/집행률/잔액 등)를 확인했고,
+   이 북마클릿 안에 전용 파서를 내장해서 조회할 때마다 구조화된 데이터를 바로 사이버행정실로 전송함. */
+function showBudgetSyncModal(){
+  if (document.getElementById("budgetSyncOverlay")) return;
   var overlay = document.createElement("div");
-  overlay.id = "overtimeSyncOverlay";
+  overlay.id = "budgetSyncOverlay";
   overlay.className = "modal-overlay";
   var ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="4.5" rx="1.3"/><path d="M12 21l3.6-7.5H8.4L12 21z"/><path d="M12 12.5V9"/></svg>';
   var ICON_CLICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M6.5 8.5h6M6.5 12h4"/><path d="M14 14.5l6.5 2.3-2.6 1-1 2.6-2.9-5.9z" fill="currentColor" stroke="none"/></svg>';
   var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
   overlay.innerHTML =
     '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
-      '<h3>⏱️ 초과근무 동기화</h3>' +
-      '<p class="modal-desc">아래 3단계만 따라 하면 돼요. (버튼 내용이 업데이트되었어요 — 이미 즐겨찾기에 등록해두셨다면 아래 버튼을 다시 드래그해서 덮어써 주세요.)</p>' +
-      '<div class="neis-modal-notice">⚠️ <b>이 창에서 버튼을 누르는 것만으로는 동기화되지 않아요.</b> 반드시 나이스 화면으로 가서 즐겨찾기를 눌러야 실제로 동기화가 진행됩니다.<br>※ 나이스 복무 동기화(승인완료)와 같은 방식으로, 결재가 <b>완결</b>된 초과근무 신청 내역만 표시됩니다. 결재 진행 중이거나 반려된 건은 표시되지 않아요.</div>' +
+      '<h3>💰 예산 동기화 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(베타)</span></h3>' +
+      '<p class="modal-desc">에듀파인의 <b>세부항목별 집행현황</b> 조회 화면(예산현액·집행액·집행률·잔액이 나오는 화면)에서 실제 데이터를 가져와요. 나이스 동기화와 똑같은 방식(즐겨찾기 버튼)입니다.<br>※ 부서·사업별로 화면을 나눠서 여러 번 조회해도 항목이 계속 쌓여요. 다 조회하신 뒤 한 번만 종료하시면 됩니다.</p>' +
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
           '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
         '</div>' +
       '</div>' +
-      dragIllustrationHtml("⏱️", "초과근무 동기화") +
+      dragIllustrationHtml("💰", "예산 동기화") +
       '<div class="neis-bm-row">' +
-        '<a class="neis-bm-btn" href="' + OVERTIME_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">⏱️ 초과근무 동기화</a>' +
+        '<a class="neis-bm-btn" href="' + BUDGET_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">💰 예산 동기화</a>' +
         '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
       '</div>' +
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
-          '<div class="neis-visual-text"><div class="t">② 나이스에서 초과근무 화면을 열고 즐겨찾기 클릭</div><div class="d">나이스에 로그인한 채로 [초과근무] 신청/조회 화면을 열고 즐겨찾기를 누르세요. 처음 사용 시에는 안내에 따라 아무 기간으로나 조회를 한 번 실행해 주시면 이후로는 자동으로 동기화됩니다. 팝업이 뜨지 않으면 주소창 오른쪽의 팝업 차단 아이콘을 눌러 허용으로 바꿔 주세요.</div></div>' +
+          '<div class="neis-visual-text"><div class="t">② 에듀파인에서 [세부항목별 집행현황] 화면을 조회하고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 세부항목별 집행현황(예산현액/집행액/집행률/잔액) 화면을 조회해 주세요. 즐겨찾기를 한 번 누르면 캡처가 시작돼요.</div></div>' +
         '</div>' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
-          '<div class="neis-visual-text"><div class="t">③ 완료!</div><div class="d">"완료" 알림이 뜨면 끝. 직원 일정표에 자동으로 반영돼요.</div></div>' +
+          '<div class="neis-visual-text"><div class="t">③ 같은 즐겨찾기를 한 번 더 누르면 종료 + 전송</div><div class="d">필요한 부서·사업 화면을 다 둘러본 뒤 즐겨찾기를 다시 누르면 캡처가 끝나고 예산 대시보드로 전송돼요.</div></div>' +
         '</div>' +
       '</div>' +
       '<div class="modal-actions">' +
-        '<button type="button" class="primary" id="overtimeSyncClose">닫기</button>' +
+        '<button type="button" class="primary" id="budgetSyncClose">닫기</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
 
   function close(){ overlay.remove(); }
-  overlay.querySelector("#overtimeSyncClose").addEventListener("click", close);
-  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
-}
-
-/* ---------------- 통합 동기화 (나이스 복무 + 초과근무를 즐겨찾기 하나로) ----------------
-   두 화면(일일근무상황조회 / 초과근무)에서 이미 저장된 요청 형식(로컬스토리지 템플릿)을 그대로 재사용해서
-   즐겨찾기 하나로 두 가지를 한 번에 동기화함. 둘 다 처음이면, 두 화면 중 어느 쪽을 먼저 조회해도
-   자동으로 인식하고(순서 무관, 5분 내), 인식되는 대로 이어서 나머지 화면 조회를 기다림. */
-function showCombinedSyncModal(){
-  if (document.getElementById("combinedSyncOverlay")) return;
-  var overlay = document.createElement("div");
-  overlay.id = "combinedSyncOverlay";
-  overlay.className = "modal-overlay";
-  var ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="4.5" rx="1.3"/><path d="M12 21l3.6-7.5H8.4L12 21z"/><path d="M12 12.5V9"/></svg>';
-  var ICON_CLICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M6.5 8.5h6M6.5 12h4"/><path d="M14 14.5l6.5 2.3-2.6 1-1 2.6-2.9-5.9z" fill="currentColor" stroke="none"/></svg>';
-  var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
-  overlay.innerHTML =
-    '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
-      '<h3>🔄⏱️ 통합 동기화 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(신규)</span></h3>' +
-      '<p class="modal-desc">나이스 복무 동기화 + 초과근무 동기화를 즐겨찾기 하나로 한 번에 실행해요. 아래 3단계만 따라 하면 돼요.</p>' +
-      '<div class="neis-modal-notice">⚠️ <b>이 창에서 버튼을 누르는 것만으로는 동기화되지 않아요.</b> 반드시 나이스 화면으로 가서 즐겨찾기를 눌러야 실제로 동기화가 진행됩니다.<br>※ 이미 [나이스 동기화]나 [초과근무 동기화]를 한 번이라도 성공적으로 사용해두셨다면, 그 설정을 그대로 재사용하므로 화면 조회 없이 바로 통합 동기화가 시작됩니다.<br>※ 둘 다 처음이라면, 두 화면(일일근무상황조회·초과근무)을 순서 상관없이 오가며 한 번씩만 조회해 주시면 자동으로 인식됩니다(5분 이내).</div>' +
-      '<div class="neis-visual-steps">' +
-        '<div class="neis-visual-step">' +
-          '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
-          '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
-        '</div>' +
-      '</div>' +
-      dragIllustrationHtml("🔄⏱️", "통합 동기화") +
-      '<div class="neis-bm-row">' +
-        '<a class="neis-bm-btn" href="' + COMBINED_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔄⏱️ 통합 동기화</a>' +
-        '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
-      '</div>' +
-      '<div class="neis-visual-steps">' +
-        '<div class="neis-visual-step">' +
-          '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
-          '<div class="neis-visual-text"><div class="t">② 나이스에서 즐겨찾기 클릭</div><div class="d">나이스에 로그인한 채로 즐겨찾기를 누르세요. 두 화면 모두 처음이라면 안내에 따라 [일일근무상황조회]와 [초과근무] 화면에서 조회를 한 번씩 실행해 주세요(순서 무관). 이미 둘 다 써본 적이 있다면 바로 동기화가 시작됩니다.</div></div>' +
-        '</div>' +
-        '<div class="neis-visual-step">' +
-          '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
-          '<div class="neis-visual-text"><div class="t">③ 완료!</div><div class="d">"통합 동기화 완료" 알림이 뜨면 끝. 직원 일정표에 복무·초과근무 내역이 모두 자동으로 반영돼요. (개별 [나이스 동기화]·[초과근무 동기화] 버튼은 그대로 남아있어서, 하나만 다시 동기화하고 싶을 때도 쓸 수 있어요.)</div></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="modal-actions">' +
-        '<button type="button" class="primary" id="combinedSyncClose">닫기</button>' +
-      '</div>' +
-    '</div>';
-  document.body.appendChild(overlay);
-
-  function close(){ overlay.remove(); }
-  overlay.querySelector("#combinedSyncClose").addEventListener("click", close);
+  overlay.querySelector("#budgetSyncClose").addEventListener("click", close);
   overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
 }
 
 /* "제작중" 탭: 아직 완성되지 않은 기능을 미리 넣어두는 곳. */
 var WORKSHOP_ITEMS = [
   { key:"budget_dashboard", title:"예산 대시보드", icon:"💰",
-    desc:"에듀파인 예산 편성·집행 현황을 한눈에 보여주는 화면을 준비하고 있어요." }
+    desc:"에듀파인 세부항목별 예산현액·집행액·집행률·잔액을 한눈에 보여줘요. (베타)" }
 ];
 
 function renderWorkshopSection(panel, cfg){
@@ -1109,45 +1073,109 @@ function renderWorkshopSection(panel, cfg){
     });
   }
 
+  var budgetItemsCache = [];
+  var budgetSearchTerm = "";
+
+  function fmtWon(n){
+    var v = Number(n) || 0;
+    try { return v.toLocaleString("ko-KR"); } catch(e){ return String(v); }
+  }
+
+  function rtBadgeHtml(rt){
+    var v = Number(rt) || 0;
+    var cls = v >= 100 ? "budget-rt-danger" : (v >= 70 ? "budget-rt-warn" : "budget-rt-good");
+    return '<span class="budget-rt-badge ' + cls + '">' + v.toFixed(1) + '%</span>';
+  }
+
   function paintBudgetDashboard(){
     panel.innerHTML =
       '<button type="button" class="workshop-back">← 제작중 목록으로</button>' +
-      '<h2>💰 예산 대시보드 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(제작중)</span></h2>' +
-      '<p class="desc">에듀파인 예산 편성·집행 현황을 나이스 동기화와 같은 방식(즐겨찾기 버튼)으로 가져올 예정이에요.</p>' +
-      '<div class="neis-modal-notice" style="margin-bottom:12px;">⚠️ 지난번 캡처를 직접 확인해보니, 조회 버튼을 누르지 않으신 게 아니라 <b>캡처 도구 자체에 문제가 있었어요.</b> 화면이 뜨는 과정에서 불러오는 화면 구성 파일(.xfdl.js 등, 총 15건)만 잡히고, 정작 조회 결과 응답은 하나도 기록되지 않았습니다 — 버퍼(40건)가 다 찬 것도 아니어서, 실제 데이터 요청이 애초에 JSON 형태(<code>{</code> 포함)로 잡히지 않았던 것으로 보여요(에듀파인이 나이스와 다른 방식으로 데이터를 주고받는 것으로 추정).<br><br>' +
-        '그래서 캡처 도구를 다시 만들었어요: 화면 구성 파일(.js 등)은 자동으로 걸러내고, 실제 데이터 요청은 JSON이 아니어도(형식 상관없이) 전부 기록하도록 바꿨습니다. 아래 버튼으로 <b>새 캡처 도구를 다시 즐겨찾기에 등록</b>한 뒤, 예산 편성/집행/잔액 화면에서 조회를 몇 번 해보시고 캡처를 종료해 주세요. 이번엔 실제 응답 형식이 무엇이든 잡힐 거예요.</div>' +
-      '<div class="budget-empty" id="budgetEmptyState">아직 사용 가능한 예산 데이터가 없어요.<br>위 안내대로 에듀파인 캡처를 다시 진행해 주세요.</div>' +
-      '<div class="neis-bm-row" style="margin-top:14px;">' +
-        '<button type="button" class="neis-sync-btn" id="edufineSyncOpenBtn" style="cursor:pointer;">🔖 에듀파인 캡처 안내 보기</button>' +
+      '<h2>💰 예산 대시보드 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(베타)</span></h2>' +
+      '<p class="desc">에듀파인 [세부항목별 집행현황] 데이터를 예산 동기화로 가져와서 보여주는 화면이에요. 최신 상태로 갱신하려면 아래 버튼으로 다시 동기화해 주세요.</p>' +
+      '<div class="neis-bm-row" style="margin-bottom:14px;">' +
+        '<button type="button" class="neis-sync-btn" id="budgetSyncOpenBtn" style="cursor:pointer;">💰 예산 동기화 안내 보기</button>' +
       '</div>' +
-      '<div id="budgetCaptureLog"></div>';
+      '<div id="budgetDashHost"><div class="budget-empty">아직 동기화된 예산 데이터가 없어요.<br>위 안내대로 예산 동기화를 진행해 주세요.</div></div>';
     panel.querySelector(".workshop-back").addEventListener("click", function(){ state.view = "list"; paint(); });
-    panel.querySelector("#edufineSyncOpenBtn").addEventListener("click", showEdufineSyncModal);
-    subscribeEdufineCaptureLog();
+    panel.querySelector("#budgetSyncOpenBtn").addEventListener("click", showBudgetSyncModal);
+    budgetItemsCache = [];
+    budgetSearchTerm = "";
+    subscribeBudgetSnapshot();
   }
 
-  function subscribeEdufineCaptureLog(){
+  function subscribeBudgetSnapshot(){
     clearLocalUnsub();
     if (!db) return;
-    localUnsub = db.doc("status/edufine_capture_log").onSnapshot(function(snap){
-      var host = document.getElementById("budgetCaptureLog");
+    localUnsub = db.doc("status/budget_snapshot").onSnapshot(function(snap){
+      var host = document.getElementById("budgetDashHost");
       if (!host) return;
-      if (!snap.exists) { host.innerHTML = ""; return; }
+      if (!snap.exists) return;
       var d = snap.data() || {};
-      var entries = [];
-      try { entries = JSON.parse(d.entriesJson || "[]"); } catch(e){ entries = []; }
-      if (!entries.length) { host.innerHTML = ""; return; }
-      var emptyState = document.getElementById("budgetEmptyState");
-      if (emptyState){
-        emptyState.innerHTML = "🔎 캡처된 요청 " + entries.length + "건이 있어요. 이 데이터를 바탕으로 다음 업데이트에서 실제 예산 화면을 만들 예정입니다.<br>마지막 캡처: " +
-          escapeHtml(formatUpdated(d.capturedAt || ""));
-      }
-      host.innerHTML = '<div class="budget-loglist">' + entries.slice(0, 10).map(function(en){
-        return '<div class="budget-logitem"><div class="lt">' + escapeHtml(en.method || "") + ' ' + escapeHtml(String(en.url || "").slice(0, 70)) + '</div>' +
-          escapeHtml(String(en.resPreview || "").slice(0, 140)) + '</div>';
-      }).join("") + '</div>';
+      var items = [];
+      try { items = JSON.parse(d.itemsJson || "[]"); } catch(e){ items = []; }
+      if (!items.length) return;
+      budgetItemsCache = items;
+      renderBudgetDash(host, items, d.capturedAt || "");
     }, function(){ /* ignore */ });
     unsubs.push(localUnsub);
+  }
+
+  function renderBudgetDash(host, items, capturedAt){
+    var totalBgt = 0, totalExec = 0, totalBlce = 0;
+    items.forEach(function(it){
+      totalBgt += Number(it.bgtCrntam) || 0;
+      totalExec += Number(it.epnsAmt) || 0;
+      totalBlce += Number(it.bgtBlce) || 0;
+    });
+    var avgRt = totalBgt > 0 ? (totalExec / totalBgt * 100) : 0;
+
+    host.innerHTML =
+      '<div class="budget-kpis">' +
+        '<div class="budget-kpi"><div class="kl">총 예산현액</div><div class="kv">' + fmtWon(totalBgt) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">총 집행액</div><div class="kv">' + fmtWon(totalExec) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">총 잔액</div><div class="kv">' + fmtWon(totalBlce) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">전체 집행률</div><div class="kv">' + avgRt.toFixed(1) + '%</div></div>' +
+      '</div>' +
+      '<div class="budget-meta">마지막 동기화: ' + escapeHtml(formatUpdated(capturedAt)) + ' · 세부항목 ' + items.length + '건</div>' +
+      '<div class="budget-searchrow"><input type="text" id="budgetSearchInput" placeholder="세부사업명으로 검색..." value="' + escapeHtml(budgetSearchTerm) + '"></div>' +
+      '<div id="budgetTableHost"></div>';
+
+    renderBudgetTable(document.getElementById("budgetTableHost"), items);
+
+    var searchInput = document.getElementById("budgetSearchInput");
+    if (searchInput){
+      searchInput.addEventListener("input", function(){
+        budgetSearchTerm = searchInput.value || "";
+        renderBudgetTable(document.getElementById("budgetTableHost"), budgetItemsCache);
+      });
+    }
+  }
+
+  function renderBudgetTable(tableHost, items){
+    if (!tableHost) return;
+    var term = (budgetSearchTerm || "").trim().toLowerCase();
+    var filtered = !term ? items : items.filter(function(it){
+      return String(it.schlDetlBizNm || "").toLowerCase().indexOf(term) !== -1;
+    });
+    var sorted = filtered.slice().sort(function(a, b){ return (Number(b.bgtCrntam) || 0) - (Number(a.bgtCrntam) || 0); });
+    if (!sorted.length){
+      tableHost.innerHTML = '<div class="budget-empty">검색 결과가 없어요.</div>';
+      return;
+    }
+    var rows = sorted.map(function(it){
+      return '<tr>' +
+        '<td class="bn"><div class="biz">' + escapeHtml(it.schlDetlBizNm || "") + '</div>' +
+          (it.cptBasisCn ? '<div class="basis">' + escapeHtml(it.cptBasisCn) + '</div>' : "") + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.bgtCrntam) + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.epnsAmt) + '</td>' +
+        '<td style="text-align:center;">' + rtBadgeHtml(it.excutRt) + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.bgtBlce) + '</td>' +
+      '</tr>';
+    }).join("");
+    tableHost.innerHTML =
+      '<div class="tablewrap"><table class="datagrid budget-tbl"><thead><tr>' +
+        '<th>세부사업명</th><th style="text-align:right;">예산현액</th><th style="text-align:right;">집행액</th><th style="text-align:center;">집행률</th><th style="text-align:right;">잔액</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
 
   function paint(){
@@ -1822,10 +1850,6 @@ function renderScheduleSection(panel, cfg){
   var dutySyncMeta = null; // {monthKey, syncedAt, scope}
   var dutySyncUnsub = null;
 
-  var overtimeSyncByDate = {}; // ymd -> [{name,date,workRange,aplyRange,hours,reason,holiday}] (나이스 초과근무 동기화)
-  var overtimeSyncMeta = null; // {monthKey, syncedAt, scope}
-  var overtimeSyncUnsub = null;
-
   function fmt(d){
     var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
     return y + "-" + m + "-" + dd;
@@ -1873,22 +1897,11 @@ function renderScheduleSection(panel, cfg){
         var label = escapeHtml(item.name || "") + " " + escapeHtml(item.type || "복무") + (item.pending ? " (결재중)" : "");
         return '<div class="entry synced" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">🔄</span>'+label+'</div>';
       }).join("");
-      var overtimeRows = inMonth ? (overtimeSyncByDate[key] || []) : [];
-      var overtimeHtml = overtimeRows.map(function(item){
-        var titleParts = [];
-        if (item.workRange) titleParts.push("근무 " + item.workRange);
-        if (item.aplyRange) titleParts.push("신청 " + item.aplyRange);
-        if (item.reason) titleParts.push(item.reason);
-        var titleAttr = "나이스 초과근무 신청" + (titleParts.length ? " · " + titleParts.join(" · ") : "");
-        var label = escapeHtml(item.name || "") + " 초과근무" + (item.hours ? " " + escapeHtml(item.hours) : "") + (item.holiday ? " (휴일)" : "");
-        return '<div class="entry synced overtime" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">⏱️</span>'+label+'</div>';
-      }).join("");
       cellsHtml +=
         '<div class="daycell'+(inMonth ? '' : ' otherMonth')+(isToday(d) ? ' today' : '')+'">' +
           '<div class="dnum '+numCls+'">'+d.getDate()+'</div>' +
           entries +
           syncedHtml +
-          overtimeHtml +
           '<button class="addentry" data-adddate="'+key+'">+ 추가</button>' +
         '</div>';
     }
@@ -1897,12 +1910,8 @@ function renderScheduleSection(panel, cfg){
       ? '<p class="duty-sync-line">🔄 나이스 복무 동기화: '+escapeHtml(dutySyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(dutySyncMeta.syncedAt))+' 기준 ('+escapeHtml(dutySyncMeta.monthKey)+') · <button type="button" class="linklike" id="dutySyncInfoBtn">동기화 방법 안내</button></p>'
       : '<p class="duty-sync-line">🔄 '+escapeHtml(currentMonthKey())+'월은 아직 나이스 복무 동기화 데이터가 없습니다 · <button type="button" class="linklike" id="dutySyncInfoBtn">동기화 방법 보기</button></p>';
 
-    var overtimeSyncLine = (overtimeSyncMeta && overtimeSyncMeta.syncedAt)
-      ? '<p class="duty-sync-line">⏱️ 나이스 초과근무 동기화: '+escapeHtml(overtimeSyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(overtimeSyncMeta.syncedAt))+' 기준 ('+escapeHtml(overtimeSyncMeta.monthKey)+') · <button type="button" class="linklike" id="overtimeSyncInfoBtn">동기화 방법 안내</button></p>'
-      : '<p class="duty-sync-line">⏱️ '+escapeHtml(currentMonthKey())+'월은 아직 나이스 초과근무 동기화 데이터가 없습니다 · <button type="button" class="linklike" id="overtimeSyncInfoBtn">동기화 방법 보기</button></p>';
-
     panel.innerHTML =
-      '<div class="sec-head-row"><h2>🗓️ 직원 일정표</h2><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="neis-sync-btn" id="combinedSyncOpenBtn">🔄⏱️ 통합 동기화</button><button type="button" class="neis-sync-btn" id="neisSyncOpenBtn">🔄 나이스 동기화</button><button type="button" class="neis-sync-btn" id="overtimeSyncOpenBtn">⏱️ 초과근무 동기화</button></div></div>' +
+      '<div class="sec-head-row"><h2>🗓️ 직원 일정표</h2><button type="button" class="neis-sync-btn" id="neisSyncOpenBtn">🔄 나이스 동기화</button></div>' +
       '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다. 점선 테두리(🔄🕐) 항목은 나이스에서 자동 동기화된 내용이라 직접 수정할 수 없어요.</p>' +
       '<div class="monthnav">' +
         '<button id="prevMonth">‹ 이전 달</button>' +
@@ -1914,25 +1923,20 @@ function renderScheduleSection(panel, cfg){
         '<div class="dowrow">'+dowHtml+'</div>' +
         '<div class="monthgrid">'+cellsHtml+'</div>' +
       '</div>' +
-      dutySyncLine +
-      overtimeSyncLine;
+      dutySyncLine;
 
-    panel.querySelector("#combinedSyncOpenBtn").addEventListener("click", showCombinedSyncModal);
     panel.querySelector("#neisSyncOpenBtn").addEventListener("click", showNeisSyncModal);
     var dutySyncInfoBtn = panel.querySelector("#dutySyncInfoBtn");
     if (dutySyncInfoBtn) dutySyncInfoBtn.addEventListener("click", showNeisSyncModal);
-    panel.querySelector("#overtimeSyncOpenBtn").addEventListener("click", showOvertimeSyncModal);
-    var overtimeSyncInfoBtn = panel.querySelector("#overtimeSyncInfoBtn");
-    if (overtimeSyncInfoBtn) overtimeSyncInfoBtn.addEventListener("click", showOvertimeSyncModal);
 
     panel.querySelector("#prevMonth").addEventListener("click", function(){
-      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } subscribeDutySync(); subscribeOvertimeSync(); paint();
+      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } subscribeDutySync(); paint();
     });
     panel.querySelector("#nextMonth").addEventListener("click", function(){
-      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } subscribeDutySync(); subscribeOvertimeSync(); paint();
+      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } subscribeDutySync(); paint();
     });
     panel.querySelector("#todayMonth").addEventListener("click", function(){
-      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); subscribeDutySync(); subscribeOvertimeSync(); paint();
+      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); subscribeDutySync(); paint();
     });
 
     panel.querySelectorAll("input[data-date]").forEach(function(inp){
@@ -1993,32 +1997,8 @@ function renderScheduleSection(panel, cfg){
     unsubs.push(dutySyncUnsub);
   }
 
-  /* 나이스 초과근무 동기화 즐겨찾기가 채워주는 문서를 구독. 복무 동기화와 완전히 별도 저장소.
-     ※ 결재 상태(승인/반려 등)와 무관하게 신청된 내역이 모두 표시됨(즐겨찾기 안내에도 동일하게 고지). */
-  function subscribeOvertimeSync(){
-    if (overtimeSyncUnsub) { overtimeSyncUnsub(); overtimeSyncUnsub = null; }
-    overtimeSyncByDate = {};
-    overtimeSyncMeta = null;
-    if (!db) return;
-    var monthKey = currentMonthKey();
-    overtimeSyncUnsub = db.doc("status/overtime_sync_" + monthKey).onSnapshot(function(snap){
-      if (snap.exists) {
-        var data = snap.data();
-        var parsed = data && typeof data.byDateJson === "string" ? safeJsonParse(data.byDateJson) : null;
-        overtimeSyncByDate = parsed || {};
-        overtimeSyncMeta = { monthKey: monthKey, syncedAt: data && data.syncedAt, scope: data && data.scope };
-      } else {
-        overtimeSyncByDate = {};
-        overtimeSyncMeta = null;
-      }
-      paint();
-    }, function(){ /* ignore */ });
-    unsubs.push(overtimeSyncUnsub);
-  }
-
   paint();
   subscribeDutySync();
-  subscribeOvertimeSync();
 
   if (db) {
     var unsub = db.doc("sections/schedule").onSnapshot(function(snap){
