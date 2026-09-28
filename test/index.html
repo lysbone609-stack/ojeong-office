@@ -339,6 +339,10 @@
   .budget-upload-status.busy{color:var(--ink-dim);}
   .budget-upload-label.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);}
   .budget-upload-note{font-size:11.5px;color:var(--ink-dim);line-height:1.6;flex:1 1 100%;margin-top:2px;}
+  .budget-diag-row{margin-bottom:14px;}
+  .budget-diag-link{font:inherit;font-size:12px;color:var(--ink-dim);background:none;border:none;
+    text-decoration:underline;cursor:pointer;padding:2px 0;}
+  .budget-diag-link:hover{color:var(--accent);}
   .budget-meta{font-size:11px;color:var(--ink-dim);margin-bottom:8px;}
   table.datagrid.budget-tbl td{padding:6px 8px;font-variant-numeric:tabular-nums;}
   table.datagrid.budget-tbl th{white-space:nowrap;}
@@ -969,23 +973,23 @@ function showEdufineSyncModal(){
   var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
   overlay.innerHTML =
     '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
-      '<h3>🔖 에듀파인 예산 캡처 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(제작중 · v2)</span></h3>' +
-      '<p class="modal-desc">아직 실험 단계예요. 지금은 에듀파인 화면에서 오가는 데이터를 캡처해서 사이버행정실로 보내주는 기능만 있어요 — 이 데이터를 바탕으로 다음 업데이트에서 실제 예산 대시보드를 만들 예정입니다.<br>※ 이전 캡처 도구는 화면 구성 파일만 잡히고 실제 데이터를 놓치는 문제가 있어서 새로 고쳤어요. <b>즐겨찾기를 새로 등록</b>해서 다시 캡처해 주세요.</p>' +
+      '<h3>🔍 에듀파인 화면 진단 캡처 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(실험용)</span></h3>' +
+      '<p class="modal-desc">엑셀 없이 화면에서 바로 예산 데이터를 가져올 수 있는지 알아보기 위한 <b>진단 도구</b>예요. 에듀파인 화면에서 오가는 요청들을 그대로 캡처해서 사이버행정실로 보내주기만 해요(최대 60건, 화면에는 아무것도 안 뜸) — 이걸로 실제 어떤 요청이 오가는지 확인한 뒤, 잘 잡히면 나이스 동기화처럼 엑셀 없이 바로 되는 기능을 만들 수 있어요.<br>※ <b>"사업관리 → 사업관리카드 → 사업관리카드(예산)"</b> 화면에서 먼저 시도해 주세요(엑셀 저장 화면보다 이 화면이 될 가능성이 더 높아요).</p>' +
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
           '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
         '</div>' +
       '</div>' +
-      dragIllustrationHtml("🔖", "에듀파인 캡처") +
+      dragIllustrationHtml("🔍", "에듀파인 진단") +
       '<div class="neis-bm-row">' +
-        '<a class="neis-bm-btn" href="' + EDUFINE_CAPTURE_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔖 에듀파인 캡처</a>' +
+        '<a class="neis-bm-btn" href="' + EDUFINE_CAPTURE_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔍 에듀파인 진단</a>' +
         '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
       '</div>' +
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
-          '<div class="neis-visual-text"><div class="t">② 에듀파인에서 예산 화면을 열고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 예산 편성·집행·잔액 등 원하는 화면을 열어보세요. 즐겨찾기를 한 번 누르면 캡처가 시작돼요.</div></div>' +
+          '<div class="neis-visual-text"><div class="t">② "사업관리카드(예산)" 화면을 열고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 그 화면을 열고, 즐겨찾기를 한 번 누르면 캡처가 시작돼요. 그다음 "조회" 버튼을 눌러서 예산 데이터가 화면에 뜨게 해주세요.</div></div>' +
         '</div>' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
@@ -1250,6 +1254,9 @@ function renderWorkshopSection(panel, cfg){
         '</div>' +
         '<div id="budgetUploadStatus" class="budget-upload-status"></div>' +
       '</div>' +
+      '<div class="budget-diag-row">' +
+        '<button type="button" class="budget-diag-link" id="budgetDiagBtn">🔍 (실험) 엑셀 없이 화면에서 바로 되는지 진단해보기</button>' +
+      '</div>' +
       '<div id="budgetDashHost"><div class="budget-empty">아직 업로드된 예산 데이터가 없어요.<br>위에서 엑셀 파일을 올려 주세요.</div></div>';
     panel.querySelector(".workshop-back").addEventListener("click", function(){ state.view = "list"; paint(); });
     panel.querySelector("#budgetFileInput").addEventListener("change", function(e){
@@ -1257,6 +1264,7 @@ function renderWorkshopSection(panel, cfg){
       if (file) processBudgetFile(file);
       e.target.value = "";
     });
+    panel.querySelector("#budgetDiagBtn").addEventListener("click", showEdufineSyncModal);
     budgetItemsCache = [];
     budgetSearchTerm = "";
     initBudgetFolderUI();
