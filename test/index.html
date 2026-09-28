@@ -1,0 +1,3245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오정초등학교 사이버 행정실</title>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem("ojeong_theme");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  }catch(e){}
+})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap');
+
+  :root{
+    --bg:#eef1f6;
+    --surface:#ffffff;
+    --surface-2:#f3f5f9;
+    --line:#dbe1ea;
+    --ink:#1b212c;
+    --ink-dim:#69707d;
+    --accent:#2255a4;
+    --accent-soft:#e2ecfb;
+    --good:#2f8a5b;
+    --good-soft:#e0f3e8;
+    --danger:#b8492f;
+    --danger-soft:#f8e2da;
+    --warn:#a3690f;
+    --warn-soft:#faedd4;
+    --shadow:0 1px 2px rgba(20,26,38,.05), 0 10px 26px -16px rgba(20,26,38,.22);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#10141b; --surface:#1a2029; --surface-2:#20273349;
+      --surface-2:#212836; --line:#2c3444; --ink:#e6e9ee; --ink-dim:#8b93a0;
+      --accent:#6fa2e8; --accent-soft:#182338; --good:#6fcf9d; --good-soft:#173226;
+      --danger:#e88968; --danger-soft:#3a2019;
+      --warn:#e8b768; --warn-soft:#3a2f19;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#10141b; --surface:#1a2029; --surface-2:#212836; --line:#2c3444;
+    --ink:#e6e9ee; --ink-dim:#8b93a0; --accent:#6fa2e8; --accent-soft:#182338;
+    --good:#6fcf9d; --good-soft:#173226; --danger:#e88968; --danger-soft:#3a2019;
+    --warn:#e8b768; --warn-soft:#3a2f19;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -16px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;
+    padding-inline:16px;padding-block:16px;min-height:100%;font-size:14px;}
+  .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:14px;}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding-bottom:12px;border-bottom:2px solid var(--line);}
+  header.top h1{font-family:'Gowun Batang',serif;font-size:clamp(19px,2.6vw,25px);margin:0;}
+  header.top .meta{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;}
+  .clockwrap{text-align:right;line-height:1.3;}
+  .clock-time{display:block;font-variant-numeric:tabular-nums;font-weight:900;font-size:clamp(17px,2.2vw,22px);color:var(--ink);}
+  .clock-date{display:block;color:var(--ink-dim);font-size:11px;}
+  .syncwrap{display:flex;align-items:center;gap:6px;color:var(--ink-dim);font-size:12px;}
+.theme-toggle{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+  border-radius:50%;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;font-size:16px;}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-dim);flex:none;}
+  .sync-dot.on{background:var(--good);box-shadow:0 0 0 0 rgba(47,138,91,.5);animation:pulse 2.2s infinite;}
+  @media (prefers-reduced-motion: reduce){ .sync-dot.on{animation:none;} }
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,138,91,.45);}70%{box-shadow:0 0 0 6px rgba(47,138,91,0);}100%{box-shadow:0 0 0 0 rgba(47,138,91,0);}}
+  .sync-line{color:var(--ink-dim);font-size:12px;margin:10px 0 0;}
+
+  /* 급식 / 시간표 / 다가오는 일정 (자동 동기화, 조회 전용) */
+  .meal-badge{display:inline-block;background:var(--accent-soft);color:var(--accent);
+    font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;margin-bottom:10px;}
+  .menu-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .menu-list li{font-size:15px;font-weight:500;padding-block:7px;border-bottom:1px dashed var(--line);
+    display:flex;align-items:baseline;gap:9px;}
+  .menu-list li:last-child{border-bottom:none;}
+  .menu-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none;transform:translateY(-2px);}
+  .cal-row{margin-top:12px;padding-top:12px;border-top:2px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;color:var(--ink-dim);font-size:12px;}
+  .cal-row b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:14px;}
+  .no-meal{color:var(--ink-dim);font-size:14px;padding-block:8px;}
+
+    .week-meal-scroll{overflow-x:auto;padding-block:2px 4px;margin:0 -2px;}
+    .week-meal-grid{display:grid;grid-auto-flow:column;grid-auto-columns:200px;gap:10px;min-width:min-content;}
+    @media (min-width:760px){
+          .week-meal-grid{grid-auto-flow:row;grid-template-columns:repeat(5,1fr);grid-auto-columns:unset;}
+    }
+    .meal-day{background:var(--surface-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;border:1px solid transparent;}
+    .meal-day.today{border-color:var(--accent);background:var(--accent-soft);}
+    .meal-day-head{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:6px;border-bottom:1px dashed var(--line);}
+    .meal-day-head .mdw{font-weight:800;font-size:13px;}
+    .meal-day.today .meal-day-head .mdw{color:var(--accent);}
+    .meal-day-head .mdd{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
+    .menu-list-sm{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;}
+    .menu-list-sm li{font-size:12.5px;font-weight:500;line-height:1.35;}
+    .nutri-wrap{display:flex;align-items:center;gap:10px;margin-top:2px;}
+    .nutri-donut{flex:none;transform:rotate(-90deg);}
+    .seg-carb{stroke:var(--accent);}
+    .seg-protein{stroke:var(--good);}
+    .seg-fat{stroke:var(--danger);}
+    .nutri-legend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+    .nl{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-dim);white-space:nowrap;}
+    .nl span{white-space:nowrap;}
+    .nl::before{content:'';width:7px;height:7px;border-radius:50%;flex:none;}
+    .nl.carb::before{background:var(--accent);}
+    .nl.protein::before{background:var(--good);}
+    .nl.fat::before{background:var(--danger);}
+    .nl b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums;margin-left:auto;}
+    .no-nutri{font-size:11px;color:var(--ink-dim);}
+
+    .meal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    .meal-toggle{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);flex:none;}
+    .meal-toggle button{font:inherit;font-weight:700;font-size:12px;color:var(--ink-dim);background:transparent;border:none;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;}
+    .meal-toggle button.active{background:var(--accent);color:#fff;}
+    .meal-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .meal-nav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
+    .meal-nav button:hover{border-color:var(--accent);color:var(--accent);}
+    .meal-nav .range{font-weight:700;font-size:13px;min-width:96px;text-align:center;}
+    .meal-loading{color:var(--ink-dim);font-size:12px;margin:0 0 10px;}
+
+    .meal-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:640px;}
+    .meal-month-cell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:64px;min-width:0;display:flex;flex-direction:column;gap:3px;}
+    .meal-month-cell.otherMonth{opacity:.42;}
+    .meal-month-cell.today{box-shadow:inset 0 0 0 2px var(--accent);}
+    .meal-month-cell .mdnum{font-size:11px;font-weight:700;color:var(--ink-dim);}
+    .meal-month-cell .mdnum.sun{color:var(--danger);}
+    .meal-month-cell .mdnum.sat{color:var(--accent);}
+    .meal-month-cell.today .mdnum{color:var(--accent);}
+    .meal-month-cell.has-meal{cursor:pointer;}
+    .meal-month-cell.has-meal:hover{background:var(--accent-soft);}
+    .meal-month-cell .mcal{font-size:10.5px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;}
+    .meal-month-cell .mmenu{font-size:10px;color:var(--ink-dim);line-height:1.35;white-space:normal;word-break:keep-all;}
+    .meal-month-cell .mmenu div{overflow-wrap:break-word;}
+
+    /* 공용 모달 (수정 잠금 팝업 / 급식 상세 팝업) */
+    .modal-overlay{position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;padding:20px;}
+    .modal-card{box-sizing:border-box;width:min(420px,100%);max-height:min(80vh,640px);overflow:auto;background:var(--surface);border-radius:14px;box-shadow:var(--shadow);padding:20px;}
+    .modal-card h3{margin:0 0 6px;font-size:16px;}
+    .modal-card .modal-desc{color:var(--ink-dim);font-size:12px;margin:0 0 14px;}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+    .modal-actions button{font:inherit;font-weight:700;font-size:13px;border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);}
+    .modal-actions button.primary{border-color:var(--accent);background:var(--accent);color:#fff;}
+
+    .editlock-input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:16px;letter-spacing:.1em;padding:10px 12px;margin-bottom:8px;}
+    .editlock-input:focus{outline:none;border-color:var(--accent);}
+    .editlock-error{color:var(--danger);font-size:12px;margin:-2px 0 10px;display:none;}
+    .editlock-remember{display:flex;align-items:center;gap:7px;color:var(--ink-dim);font-size:12px;cursor:pointer;}
+    .editlock-remember input{margin:0;}
+
+  .tt-selects{display:flex;gap:8px;margin-bottom:12px;}
+  .tt-selects select{font-family:inherit;font-size:13px;font-weight:600;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+    padding:7px 9px;flex:1;min-width:0;}
+  .tt-periods{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  .tt-periods li{display:flex;align-items:center;gap:12px;background:var(--surface-2);border-radius:10px;padding:9px 11px;}
+  .pnum{font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent);background:var(--accent-soft);
+    border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px;}
+  .psub{font-size:14px;font-weight:600;}
+  .tt-empty{color:var(--ink-dim);font-size:13px;padding-block:8px;}
+
+  .sched-scroll{display:flex;gap:10px;overflow-x:auto;padding-block:2px 4px;}
+  .sched-chip{flex:none;width:130px;background:var(--surface-2);border-radius:12px;padding:11px;
+    display:flex;flex-direction:column;gap:5px;}
+  .sched-chip .dday{align-self:flex-start;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;
+    background:var(--good-soft);color:var(--good);}
+  .sched-chip.urgent .dday{background:var(--danger-soft);color:var(--danger);}
+  .sched-chip .d{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-size:11px;}
+  .sched-chip .n{font-weight:700;font-size:13px;line-height:1.3;}
+
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  nav.tabs button{
+    flex:none;font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-dim);
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:8px 14px;cursor:pointer;white-space:nowrap;
+  }
+  nav.tabs button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .other-tab-select{flex:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-dim);
+    background:var(--surface);border:1px solid var(--line);border-radius:999px;
+    padding:7px 10px;cursor:pointer;white-space:nowrap;max-width:180px;}
+
+  section.panel{display:none;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:16px;}
+  section.panel.active{display:block;}
+  section.panel h2{margin:0 0 4px;font-size:16px;font-weight:700;}
+  section.panel .desc{color:var(--ink-dim);font-size:12px;margin:0 0 12px;}
+  section.panel .desc a{color:var(--accent);font-weight:700;text-decoration:none;}
+  section.panel .desc a:hover{text-decoration:underline;}
+
+  .tablewrap{overflow-x:auto;}
+  table.datagrid{width:100%;border-collapse:collapse;font-size:13px;}
+  table.datagrid th{
+    background:var(--surface-2);color:var(--ink-dim);font-weight:700;font-size:11px;
+    text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:8px 8px;
+    border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;
+  }
+  table.datagrid td{border-bottom:1px solid var(--line);padding:2px;vertical-align:top;}
+  table.datagrid tr:hover td{background:var(--surface-2);}
+  table.datagrid input, table.datagrid textarea{
+    width:100%;border:1px solid transparent;background:transparent;color:var(--ink);
+    font:inherit;padding:6px 6px;border-radius:6px;resize:vertical;
+  }
+  table.datagrid input:hover, table.datagrid textarea:hover{border-color:var(--line);}
+  table.datagrid input:focus, table.datagrid textarea:focus{
+    outline:none;border-color:var(--accent);background:var(--surface);
+  }
+  .rowdel{
+    border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:15px;
+    padding:4px 8px;border-radius:6px;
+  }
+  .rowdel:hover{background:var(--danger-soft);color:var(--danger);}
+  .addrow{
+    margin-top:10px;font:inherit;font-weight:700;font-size:12px;color:var(--good);
+    background:var(--good-soft);border:1px solid transparent;border-radius:8px;
+    padding:7px 12px;cursor:pointer;
+  }
+  .addrow:hover{filter:brightness(0.96);}
+  .note-area{margin-top:12px;}
+  .note-area label{display:block;font-size:11px;font-weight:700;color:var(--ink-dim);
+    text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .note-area textarea{
+    width:100%;min-height:64px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--ink);font:inherit;padding:8px 10px;resize:vertical;
+  }
+  .note-area textarea:focus{outline:none;border-color:var(--accent);}
+
+  /* staff schedule (month calendar) */
+  .sec-head-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 4px;}
+  .sec-head-row h2{margin:0;}
+  .neis-sync-btn{font:inherit;font-weight:700;font-size:12px;color:var(--accent);background:var(--accent-soft);
+    border:1px solid var(--accent);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex:none;}
+  .neis-sync-btn:hover{opacity:.85;}
+  .neis-modal-card{width:min(420px,100%);}
+  .neis-visual-steps{display:flex;flex-direction:column;gap:10px;margin:14px 0;}
+  .neis-visual-step{display:flex;align-items:center;gap:12px;background:var(--surface-2);border-radius:12px;padding:10px 12px;}
+  .neis-visual-icon{flex:none;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+    background:var(--accent-soft);color:var(--accent);border-radius:10px;}
+  .neis-visual-icon svg{width:24px;height:24px;}
+  .neis-visual-text{flex:1;min-width:0;}
+  .neis-visual-text .t{font-weight:800;font-size:13px;margin-bottom:2px;}
+  .neis-visual-text .d{font-size:12px;line-height:1.5;color:var(--ink-dim);}
+  .neis-bm-row{background:var(--surface-2);border:1px dashed var(--accent);border-radius:12px;padding:14px;text-align:center;margin:2px 0 0;}
+  .neis-bm-btn{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+    padding:11px 20px;border-radius:8px;text-decoration:none;cursor:grab;user-select:none;}
+  .neis-bm-hint{font-size:11.5px;color:var(--ink-dim);margin-top:8px;}
+  .neis-modal-notice{background:var(--accent-soft);color:var(--ink);border-left:3px solid var(--accent);
+    padding:10px 12px;border-radius:8px;font-size:12.5px;line-height:1.6;margin:10px 0 0;}
+
+  /* 즐겨찾기 드래그 안내용 일러스트레이션 애니메이션(실제 화면 녹화가 아니라, 크롬 브라우저를 본뜬 도식화된 그림) */
+  .drag-illustration{position:relative;height:150px;margin:2px 0 0;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .drag-illustration .browser-chrome{position:absolute;top:0;left:0;right:0;}
+  .drag-illustration .chrome-tabs{height:22px;background:var(--surface-2);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:5px;padding:0 0 0 8px;}
+  .drag-illustration .win-controls{margin-left:auto;display:flex;align-items:stretch;height:100%;flex:none;}
+  .drag-illustration .win-btn{width:26px;display:flex;align-items:center;justify-content:center;
+    font-size:9px;color:var(--ink-dim);font-family:"Segoe UI",Arial,sans-serif;}
+  .drag-illustration .win-btn.close{font-size:10px;}
+  .drag-illustration .chrome-tab{background:var(--surface);border-radius:6px 6px 0 0;
+    padding:4px 12px;font-size:9px;display:flex;align-items:center;gap:5px;}
+  .drag-illustration .chrome-tab .ic{font-size:9px;}
+  .drag-illustration .tab-line{width:28px;height:4px;border-radius:2px;background:var(--line);}
+  .drag-illustration .chrome-address{height:28px;background:var(--surface);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;padding:0 10px;}
+  .drag-illustration .chrome-url{flex:1;height:15px;background:var(--surface-2);border-radius:999px;
+    display:flex;align-items:center;padding:0 8px;gap:5px;min-width:0;}
+  .drag-illustration .chrome-url .ic{font-size:8px;flex:none;}
+  .drag-illustration .url-line{flex:1;height:4px;border-radius:2px;background:var(--line);max-width:130px;}
+  .drag-illustration .chrome-star{font-size:12px;color:var(--ink-dim);flex:none;}
+  .drag-illustration .chrome-bookmarks{height:26px;background:var(--surface-2);display:flex;align-items:center;
+    gap:10px;padding:0 10px;border-bottom:1px solid var(--line);}
+  .drag-illustration .bm-chip{display:flex;align-items:center;gap:4px;opacity:.55;flex:none;}
+  .drag-illustration .bm-chip .ic{font-size:10px;}
+  .drag-illustration .chip-line{width:22px;height:4px;border-radius:2px;background:var(--line);}
+  .drag-illustration .bm-slot{width:auto;min-width:80px;height:15px;border-radius:5px;
+    border:1.5px dashed var(--accent);opacity:.6;flex:none;}
+  .drag-illustration .bm-pill{position:absolute;left:50%;top:112px;transform:translateX(-50%) scale(.92);
+    background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:999px;
+    white-space:nowrap;opacity:0;animation:dragPillMove 2.8s ease-in-out infinite;}
+  @keyframes dragPillMove{
+    0%{top:112px;opacity:0;transform:translateX(-50%) scale(.9);}
+    14%{opacity:1;transform:translateX(-50%) scale(1);}
+    55%{top:52px;opacity:1;transform:translateX(-50%) scale(1);}
+    70%{top:48px;opacity:.3;transform:translateX(-50%) scale(.92);}
+    72%,100%{top:112px;opacity:0;transform:translateX(-50%) scale(.9);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .drag-illustration .bm-pill{animation:none;top:52px;opacity:1;transform:translateX(-50%) scale(1);}
+  }
+  .other-select-row{margin:0 0 14px;}
+  .other-select-row select.other-tab-select{font:inherit;font-weight:700;font-size:13px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;}
+
+  /* 제작중 탭 */
+  .workshop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:14px;}
+  .workshop-card{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px;
+    cursor:pointer;text-align:left;font:inherit;color:inherit;}
+  .workshop-card:hover{border-color:var(--accent);}
+  .workshop-card .wc-icon{font-size:26px;margin-bottom:8px;}
+  .workshop-card .wc-title{font-weight:800;font-size:14px;margin-bottom:4px;}
+  .workshop-card .wc-desc{font-size:12px;color:var(--ink-dim);line-height:1.5;}
+  .workshop-back{font:inherit;font-weight:700;font-size:12.5px;color:var(--ink-dim);background:none;
+    border:none;cursor:pointer;padding:4px 0;margin-bottom:10px;}
+  .workshop-back:hover{color:var(--accent);}
+  .budget-empty{background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;
+    padding:26px 16px;text-align:center;color:var(--ink-dim);font-size:13px;line-height:1.7;margin-top:14px;}
+  .budget-loglist{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+  .budget-logitem{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:11px;color:var(--ink-dim);overflow-wrap:break-word;}
+  .budget-logitem .lt{font-weight:700;color:var(--ink);font-size:12px;margin-bottom:2px;}
+  .budget-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .budget-kpi{flex:1 1 140px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .budget-kpi .kl{font-size:11px;color:var(--ink-dim);font-weight:700;margin-bottom:4px;}
+  .budget-kpi .kv{font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;overflow-wrap:break-word;}
+  .budget-rt-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;}
+  .budget-rt-good{background:var(--good-soft);color:var(--good);}
+  .budget-rt-warn{background:var(--warn-soft);color:var(--warn);}
+  .budget-rt-danger{background:var(--danger-soft);color:var(--danger);}
+  .budget-searchrow{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .budget-searchrow input{flex:1 1 200px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);
+    border-radius:8px;background:var(--surface);color:var(--ink);}
+  .budget-upload-box{background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;
+    padding:16px;margin-bottom:14px;}
+  .budget-upload-box .bu-title{font-weight:800;font-size:13.5px;margin-bottom:6px;}
+  .budget-upload-box .bu-desc{font-size:12px;color:var(--ink-dim);line-height:1.7;margin-bottom:12px;}
+  .budget-upload-box .bu-desc b{color:var(--ink);}
+  .budget-upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .budget-upload-label{display:inline-flex;align-items:center;gap:6px;font:inherit;font-weight:700;font-size:13px;
+    padding:9px 16px;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;white-space:nowrap;}
+  .budget-upload-label:hover{opacity:.9;}
+  .budget-upload-label input[type=file]{display:none;}
+  .budget-upload-status{font-size:12px;margin-top:10px;line-height:1.6;}
+  .budget-upload-status.ok{color:var(--good);}
+  .budget-upload-status.err{color:var(--danger);}
+  .budget-upload-status.busy{color:var(--ink-dim);}
+  .budget-upload-label.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line);}
+  .budget-upload-note{font-size:11.5px;color:var(--ink-dim);line-height:1.6;flex:1 1 100%;margin-top:2px;}
+  .budget-meta{font-size:11px;color:var(--ink-dim);margin-bottom:8px;}
+  table.datagrid.budget-tbl td{padding:6px 8px;font-variant-numeric:tabular-nums;}
+  table.datagrid.budget-tbl th{white-space:nowrap;}
+  table.datagrid.budget-tbl td.bn{font-variant-numeric:normal;max-width:260px;}
+  table.datagrid.budget-tbl td.bn .biz{font-weight:700;color:var(--ink);}
+  table.datagrid.budget-tbl td.bn .basis{font-size:11px;color:var(--ink-dim);margin-top:2px;overflow-wrap:break-word;}
+  .monthnav{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .monthnav button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surface-2);
+    color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;white-space:nowrap;}
+  .monthnav button:hover{border-color:var(--accent);color:var(--accent);}
+  .monthnav .range{font-weight:700;font-size:14px;min-width:84px;text-align:center;}
+  .calwrap{overflow-x:auto;padding-bottom:4px;}
+  .dowrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:6px;min-width:640px;}
+  .dowrow span{text-align:center;font-size:11px;font-weight:700;color:var(--ink-dim);}
+  .dowrow span.sun{color:var(--danger);}
+  .dowrow span.sat{color:var(--accent);}
+  .monthgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:640px;}
+  .daycell{background:var(--surface-2);border-radius:8px;padding:6px;min-height:78px;min-width:0;
+    display:flex;flex-direction:column;gap:3px;}
+  .daycell.otherMonth{opacity:.42;}
+  .daycell.today{box-shadow:inset 0 0 0 2px var(--accent);}
+  .daycell .dnum{font-size:11px;font-weight:700;color:var(--ink-dim);}
+  .daycell .dnum.sun{color:var(--danger);}
+  .daycell .dnum.sat{color:var(--accent);}
+  .daycell.today .dnum{color:var(--accent);}
+  .entry{background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:0;
+    padding:3px 5px;font-size:11px;display:flex;align-items:center;gap:3px;overflow-wrap:break-word;}
+  .entry input{border:none;background:transparent;color:var(--ink);font:inherit;flex:1;min-width:0;padding:0;font-size:11px;}
+  .entry input:focus{outline:none;}
+  .entry button{border:none;background:transparent;color:var(--ink-dim);cursor:pointer;font-size:11px;flex:none;padding:0;}
+  .entry button:hover{color:var(--danger);}
+  .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);word-break:keep-all;}
+  .entry.synced .sync-tag{flex:none;}
+  .duty-sync-line{color:var(--ink-dim);font-size:12px;margin:12px 0 0;}
+  .duty-sync-line .linklike{font:inherit;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
+  .daycell .addentry{font:inherit;font-size:10px;font-weight:700;color:var(--good);background:transparent;
+    border:1px dashed var(--good);border-radius:6px;padding:2px;cursor:pointer;margin-top:auto;}
+
+  /* periods */
+  .periodgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .periodgroup{background:var(--surface-2);border-radius:10px;padding:12px;}
+  .periodgroup h3{margin:0 0 8px;font-size:13px;}
+
+  /* classroom map */
+  .mapbox{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  .mapbox img{max-width:100%;border-radius:10px;border:1px solid var(--line);}
+  .uploadbtn{font:inherit;font-weight:700;font-size:12px;color:var(--accent);background:var(--accent-soft);
+    border:none;border-radius:8px;padding:8px 14px;cursor:pointer;}
+  .uploadbtn:hover{filter:brightness(0.97);}
+  .placeholder{color:var(--ink-dim);font-size:13px;background:var(--surface-2);border-radius:10px;padding:16px;}
+  .archive-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .archive-phase-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+  .archive-phase-tabs button{font:inherit;font-size:12.5px;font-weight:700;color:var(--ink-dim);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;}
+  .archive-phase-tabs button.active{color:#fff;background:var(--accent);border-color:var(--accent);}
+  .archive-addbtn{font:inherit;font-weight:700;font-size:13px;color:#fff;background:var(--accent);border:none;
+    border-radius:9px;padding:9px 16px;cursor:pointer;flex:none;}
+  .archive-cat-wrap{position:relative;display:inline-flex;flex:none;}
+  .archive-cat-x{position:absolute;top:-5px;right:-5px;width:15px;height:15px;border-radius:50%;border:none;
+    background:rgba(15,23,42,.55);color:#fff;font-size:9px;line-height:15px;text-align:center;cursor:pointer;padding:0;z-index:1;}
+  .archive-cat-x:hover{background:var(--danger);}
+  .archive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .archive-card{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;position:relative;}
+  .archive-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--surface);}
+  .archive-card .meta{padding:8px 10px 10px;}
+  .archive-card .badge{display:inline-block;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;margin-bottom:5px;}
+  .archive-card .badge.before{color:var(--ink-dim);background:var(--surface);}
+  .archive-card .badge.during{color:#fff;background:var(--accent);}
+  .archive-card .badge.after{color:#fff;background:var(--good);}
+  .archive-card .badge.processing{color:#fff;background:var(--accent);}
+  .archive-card .badge.done{color:#fff;background:var(--good);}
+  .archive-card .badge.rejected{color:#fff;background:var(--danger);}
+  .repair-actions{display:flex;gap:6px;margin-top:8px;}
+  .repair-donebtn,.repair-rejectbtn{flex:1;font:inherit;font-size:11.5px;font-weight:700;border:none;
+    border-radius:8px;padding:7px 4px;cursor:pointer;}
+  .repair-donebtn{color:#fff;background:var(--good);}
+  .repair-rejectbtn{color:#fff;background:var(--danger);}
+  .archive-card .loc{font-size:12.5px;font-weight:700;color:var(--ink);overflow-wrap:break-word;}
+  .archive-card .dt{font-size:11px;color:var(--ink-dim);margin-top:2px;}
+  .archive-card .delbtn{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:none;
+    background:rgba(15,23,42,.55);color:#fff;font-size:13px;line-height:1;cursor:pointer;}
+  .archive-empty{grid-column:1/-1;}
+  .archive-date-group{margin-bottom:18px;}
+  .archive-date-heading{font-size:12.5px;font-weight:700;color:var(--ink-dim);margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);}
+  .archive-phase-tabs #archiveAddCatBtn{color:var(--accent);}
+  .archive-lightbox-img{display:block;width:100%;border-radius:10px;margin-bottom:10px;}
+  .archive-form-row{margin-bottom:10px;}
+  .archive-form-row label{display:block;font-size:11px;font-weight:700;color:var(--ink-dim);margin-bottom:4px;}
+  .archive-form-row input[type="text"],.archive-form-row input[type="datetime-local"],.archive-form-row select,.archive-form-row textarea{
+    width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--ink);font:inherit;font-size:13.5px;padding:8px 10px;}
+  .archive-form-row textarea{resize:vertical;min-height:50px;}
+  .archive-form-error{color:var(--danger);font-size:12px;margin:-4px 0 10px;display:none;}
+
+  footer.foot{color:var(--ink-dim);font-size:11px;text-align:center;}
+  .setup-banner{background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:10px 14px;
+    font-size:12px;font-weight:600;margin-bottom:12px;display:none;}
+  .setup-banner.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="setup-banner" id="setupBanner">⚠️ 아직 Firebase 설정이 안 되어 있어요 — 이 화면은 지금 예시 데이터만 보여주고 있고, 수정 내용은 저장되지 않습니다. 함께 보내드린 설정 가이드를 따라 firebaseConfig 값을 채워주세요.</div>
+
+<div class="wrap">
+  <header class="top">
+    <h1>오정초등학교 사이버 행정실</h1>
+    <div class="meta">
+      <div class="clockwrap">
+        <span class="clock-time" id="clockTime">--:--</span>
+        <span class="clock-date" id="clockDate">날짜 불러오는 중…</span>
+      </div>
+      <div class="syncwrap"><span class="sync-dot" id="syncDot"></span><span id="syncText">동기화 대기 중</span></div>
+      <button type="button" class="theme-toggle" id="themeToggleBtn" title="화면 밝기 전환" aria-label="화면 밝기 전환"></button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div id="panels"></div>
+
+  <footer class="foot">표 탭은 이 링크를 열어본 분들이 함께 실시간으로 수정할 수 있습니다(셀을 클릭해 바로 편집) · 이 링크를 아는 사람은 누구나 로그인 없이 보고 고칠 수 있으니, 외부에 함부로 공유하지 마세요</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- section configs & seed data ---------------- */
+
+var ALL_SECTION_DEFS = [
+  { key:"meal", title:"이번 주 급식", icon:"🍚", kind:"meal" },
+  { key:"timetable", title:"시간표", icon:"🕘", kind:"timetable" },
+  { key:"upcoming", title:"다가오는 일정", icon:"📅", kind:"upcoming" },
+  { key:"schedule", title:"직원 일정표", icon:"🗓️", kind:"schedule" },
+  { key:"vendors_regular", title:"정기용역", icon:"🔧", kind:"table",
+    columns:[["seq","순번","48px"],["name","상호(사업자번호)","220px"],["item","건명","220px"],["phone","전화번호","190px"],["note","비고","220px"]],
+    seed:[
+      ["1","나래엔시스 (130-35-53872)","디지털복합기 및 프린터 임대","032-666-7900 최창권:010-4573-7512","2024.3.1~2027.02.28(3년약정) 유치원 2025.3.1~2028.2.28"],
+      ["2","나래넷츠 (728-86-00795)","학내망 및 컴퓨터 유지보수","032-323-7901 조진성:010-4653-7927",""],
+      ["3","(주)태산엔지니어링 (130-81-58952)","승강기 유지보수","032-613-1300 조일수:010-3769-0685",""],
+      ["4","(주)부천방재 (130-86-04674)","소방설비 안전관리","032-668-6100 김태현:010-9924-4223",""],
+      ["5","한국안전기술단(주) (130-86-06430)","전기설비 안전관리","032-326-2740 천명조:010-3100-2644",""],
+      ["6","(주)에스원 (208-81-13302)","무인기계경비용역","1588-3112",""],
+      ["7","아쿠아 (130-40-69742)","정수기 관리 유지보수","032-679-6133","4대(구입2·임대2), 2026.2 3년약정만료"],
+      ["8","코웨이(주) (307-81-06054)","정수기 관리 유지보수","032-330-2086","교무실·행정실 등 다수 교체 이력"],
+      ["9","청호나이스(주) (130-81-49813)","정수기 관리 유지보수","032-441-2141","3대(임대), 얼음정수기로 교체(2025.12)"],
+      ["10","(주)구츠 (217-81-23615)","정수기 관리 유지보수","02-976-2233 윤경수:010-2296-2427","8대(구입), 복도6·급식실2"],
+      ["11","에스제이바이오 (131-86-53784)","폐식용유 수거 용역","032-811-5182","단가계약"],
+      ["12","그린코리아 (130-93-37945)","음식물쓰레기처리","032-343-0070","단가계약(월배출량 청구)"],
+      ["13","한국안전기술협회 사회적협동조합 (562-82-00144)","놀이시설안전점검","1800-6832","초/66,000원 유/44,000원(클라이밍 포함)"],
+      ["14","다원 (667-39-00948)","공기청정키트유지관리","010-2074-9209","연10회 점검·연2회 세척"],
+      ["15","다원 (667-39-00948)","공기순환기 유지관리","010-2074-9209","연10회 점검·연2회 필터교체"],
+      ["16","(주)나린기업","기계설비 유지관리자 위탁선임 및 유지관리점검","031-979-6405","연1회 성능점검(체육관 포함 전체1동)"],
+      ["17","(주)아이센텍 (687-85-01685)","물품관리시스템","031-356-1155 조숙경:010-3339-3370","물품관리 연4회·재물조사 연1회"],
+      ["18","삼성엔지니어링","에어컨수리","1588-3366 010-4341-3874(정찬일)",""],
+      ["19","원종열쇠","열쇠","032-682-1313",""],
+      ["20","코끼리상사","","010-7443-8609",""],
+      ["21","한결상사","","1588-9383 010-7149-4273",""],
+      ["22","HG종합공사","","070-7124-9595 010-8109-2424",""],
+      ["23","이음안전기술(3종시설물)","","02-2671-7003 010-2788-5557(손경식)",""],
+      ["24","(주)우일이알에스(김옥희)","배수로준설 및 그레이팅 교체","010-8753-1283",""],
+      ["25","아이토스","학교 소독","1544-3059",""],
+      ["26","한국공원체육산업","탄성포장재(우레탄)교체공사","032-322-8272 010-4902-2508","부천 길주로 284 [신규]"],
+      ["27","대한산업안전협회","교육시설안전인증","02-860-4703","[신규]"]
+    ]},
+  { key:"contractors", title:"공사업체", icon:"🏗️", kind:"table",
+    columns:[["project","공사구분","200px"],["role","직","90px"],["name","상호","190px"],["contact","전화번호","190px"],["note","비고","220px"]],
+    note:"공사별 준공예정일 — 방수공사: 2026.9.7 / 공간드림공사: 2026.9.19",
+    seed:[
+      ["방수공사(후관) 2026.7.27~9.7","총괄","(주)동호건업","010-2705-4382(이동호 대표)","옥상 비밀번호 1010"],
+      ["방수공사(후관)","교육지원청","오종철 주무관","032-620-0367 / 010-3396-8046",""],
+      ["방수공사(본관)","설계","신화건축사무소(김계수)","032-710-4591 (010-5211-2415)",""],
+      ["방수공사(본관)","교육지원청","김일","010-7569-6022",""],
+      ["논슬립","논슬립","영화테크","010-5240-3211 (010-5178-3308)",""],
+      ["공간드림공사 2026.7.22~9.19","총괄","주식회사다온(방정욱)","070-8872-1611 (010-9100-7067)","오정초 신관 3~5층 담당"],
+      ["공간드림공사","전기공사","주식회사 우민전설","010-3829-8190",""],
+      ["공간드림공사","통신공사","주식회사 와치캠","02-1800-5143 (010-9973-3219)",""],
+      ["공간드림공사","소방공사","삼정기전(주)","032-666-0966",""],
+      ["공간드림공사","재해예방기술지도","중부종합안전(주)","032-654-9114",""],
+      ["공간드림공사","담당감독자","부천교육지원청","건축(안이주)032-620-0322 / 전기통신소방(최현준)032-620-0325",""]
+    ]},
+  { key:"vendors_misc", title:"거래처", icon:"📇", kind:"table",
+    columns:[["no","번호","44px"],["cat","구분","70px"],["name","상호","170px"],["item","건명","190px"],["phone","전화번호","170px"],["email","이메일","150px"],["fax","팩스","110px"],["note","비고","180px"]],
+    seed:[
+      ["2","물품구입","부천문구","문구류","032-651-1440","orijw@naver.com","032-651-8619",""],
+      ["3","물품구입","학생문구","문구류","032-654-4200","jines77@hanmail.net","032-654-4208",""],
+      ["4","유지보수","㈜에스텍퍼스트","당직용역","031-898-5160 임승권(010-4244-3700)","","",""],
+      ["5","물품구입","일광유리","유리","032-664-4666","","",""],
+      ["7","시설","㈜한길종합건설","시설공사 및 보수등","032-345-6001 임성환(010-3711-3652)","","032-351-3350",""],
+      ["8","시설","까치울정수장","수질검사","032-625-3387","","","급수관정체수 및 저수조"],
+      ["9","공사","(주)하디스","탁구장 바닥교체","032-556-3868","","010-8985-2571","인천 계양구"],
+      ["10","시설","경남환경","정화조청소","032-653-8001 010-5017-1535","","",""],
+      ["11","시설","알렉스","물탱크청소, 방역","032-464-3527 010-8761-5699","","",""],
+      ["12","유지보수","서울보증보험","재정보증","031-706-2388","","",""],
+      ["15","시설","영풍건설","학교보수","010-3760-8685","","",""],
+      ["16","물품구입","코끼리마트","마트","682-6002","","682-6003",""],
+      ["17","물품구입","부천시장애인직업재활시설","현수막","674-8880","","","정문 60,500원"],
+      ["18","물품구입","서인당","졸업생도장","02-764-0646 010-7739-4411","","02-764-0648",""],
+      ["19","물품구입","한얼기획","졸업장케이스","031-566-3512","","",""],
+      ["20","시설","학교안전공제중앙회","놀이시설보험","070-7996-0148","","","이희수대리(대인대물 1억)"],
+      ["21","시설","한국체육시설안전기술원","놀이시설 모래소독","010-8756-3374","","",""],
+      ["22","시설","시험검사기술원","놀이시설 정기검사","1566-3947","","",""],
+      ["23","물품구입","","교장실 연혁판","031-357-7240","","031-357-7249",""],
+      ["24","물품구입","신세계길벗여행사","버스","328-8670 부장(010-4860-6447)","","328-8673",""],
+      ["25","물품구입","정신OA시스템","문서세단기","032-673-5511","","032-672-3272","모델명 6260CR"],
+      ["26","물품구입","코세스","디지털시계","070-7565-0020(02-3422-4300)","","",""],
+      ["27","물품구입","디에스지","현황판","031-357-7240","","",""],
+      ["28","물품구입","부영조합광고","표찰스티커","010-6225-7164 010-5467-1546","","349-1545",""],
+      ["29","물품구입","신영카피사","상장용지","032-344-4479","","",""],
+      ["30","물품구입","굿다이어리","다이어리, 속지","031-904-4416","","",""],
+      ["31","물품구입","풍산기업","과학물품","032-556-6400","","",""],
+      ["32","물품구입","새담","과학물품","02-766-9943","","",""],
+      ["33","물품","시청담당부서","대형폐기물","032-625-3194","","",""],
+      ["34","물품","시청(수거업체)","대형폐기물(스티커)","032-676-8470","","",""],
+      ["35","물품","연테크(성원테크)","매각업체(폐품)","010-8924-0077","nauisd@daum.net","",""],
+      ["36","폐기물","하나자원","폐품","010-6244-7676","","",""],
+      ["37","폐기물","박지훈(시흥)","폐품","010-4018-9901","","",""],
+      ["38","물품","코끼리상사","시설물품","010-7443-8609","","",""],
+      ["39","물품구입","노비타비데","비데","1588-6560","","",""],
+      ["40","물품구입","가온푸드","유치원, 돌봄 간식","031-315-4775","","",""],
+      ["41","물품구입","아이가좋은세상","돌봄간식업체","070-7576-0112 010-2467-1868","","",""],
+      ["42","물품구입","드림푸드","돌봄간식업체","010-8181-3588","","",""],
+      ["44","시설","온세계하수공사","하수도","","","",""],
+      ["45","공사","미산건축","실내건축업","010-9021-1567","","","고등학교추천"],
+      ["46","유지보수","동양전기(진엔지니어링)","전기업체","010-5474-0897","","","도원초소개"],
+      ["47","시설","교동설비","시설","032-347-5235","","",""],
+      ["48","시설","돌담건설","방수전문","010-5203-4301","","","체육관외벽 공사"],
+      ["49","시설","에스엔화성","방수전문","010-4932-7704(김명규) 345-0166","","","113-86-46460"],
+      ["50","시설","마사토산업개발","시설(운동장마사토)","010-9906-6001","","",""],
+      ["51","시설","영화전력","시설(전기)","010-2362-4933","","",""],
+      ["52","시설","동은전기","시설(전기)","010-3896-9618","","",""],
+      ["53","시설","지성건설산업","시설(체육관외벽)","010-3024-6011","","",""],
+      ["54","시설","해성에너지","가스시설","010-5244-3840","","",""],
+      ["55","시설","동광전자","방송","031-443-2544","","",""],
+      ["56","시설","엘림미디어","방송","010-3311-0687","","",""],
+      ["57","시설","지니트","방송","032-623-7600","","",""],
+      ["58","시설","진경이엔텍","화장실 절수기기","032-321-1982 010-5321-1982","","",""],
+      ["59","시설","지엔그린","조경","010-7578-9578 / 032-677-0151","","",""],
+      ["60","시설","대정조경","수목전지","032-324-5592","","",""],
+      ["61","물품구입","신영인테리어","커텐, 인테리어","010-9495-5353","","",""],
+      ["62","물품구입","한국흑판","칠판","031-667-8171","sampan01@naver.com","","서비스 좋음. 일정, 가격 힘듬"],
+      ["63","물품구입","한결상사","시설소모품, 청소용품","010-7149-4273 1588-9383","hg077@naver.com","",""],
+      ["64","물품구입","HG종합공사","입간판, 인테리어","010-8109-2424","","boeunad@naver.com","복도 명패"],
+      ["65","시설","HG종합공사","설치팀","010-9260-7606","","",""],
+      ["66","물품구입","나래화물","운송","010-9733-8864 070-7353-9622","","","1톤(텃밭) 왕복 66,000원/편도 44,000원"],
+      ["67","물품구입","우드메탈","사물함","010-5048-0531 031-594-9900","","","www.woodmetal.co.kr"],
+      ["68","물품구입","파라디수영장","생존수영","032-677-1177","","",""],
+      ["69","물품구입","복사골여행사","전세버스","032-663-7788","","",""],
+      ["70","물품구입","월드여행사","전세버스","032-668-1400","","",""],
+      ["71","물품구입","하나신정관광(김포)","전세버스","02-433-7880","","","45인승 380,000원/25인승 250,000원"],
+      ["72","유지보수","도시가스 오정점","보일러실·체육관·유치원보일러 설치","1544-3002","","",""],
+      ["73","시설","모던방재시스템","","010-5448-6721","","",""],
+      ["74","유지보수","부천지원(등기무료발급)","","032-320-1172","","",""],
+      ["75","유지보수","KB손해보험","승강기보험","02-6900-5000","","",""],
+      ["76","유지보수","현대해상화재보험","가스보험","02-720-0047 010-3239-8152","","",""],
+      ["77","물품구입","신원종서점","도서","032-672-8911","","",""],
+      ["78","물품구입","농협","학교담당","032-610-6031","","",""],
+      ["79","물품구입","이화사","표지판","010-9645-9192","ockhy@naver.com","",""],
+      ["80","물품구입","원종열쇠","열쇠","032-682-1313","","",""],
+      ["81","시설","성광용역","용역","032-673-0640","","",""],
+      ["82","폐기물","성주자원","고물상","032-611-0103","","",""],
+      ["83","물품구입","이룸디자인","블라인드 등","032-322-3676","","",""],
+      ["84","물품구입","청양직물","현수막업체","032-682-0488","","",""],
+      ["85","물품구입","부영종합광고","현수막업체, 표찰","032-349-1545","bu1545@hanmail.net","",""],
+      ["86","폐기물","지엠알","폐기물정리","010-5174-1015","","",""],
+      ["88","유지보수","창디자인","체육관1층커튼","031-227-9091","","",""],
+      ["89","물품구입","꿈에그린꽂직매장","꽃, 수목전지","010-2324-3697","","",""],
+      ["98","시설","광우기업","철거","032-663-2427","kw2427@hanmail.net","","카드결제 가능"],
+      ["99","냉난방기","정선택(개인)","에어컨","010-3669-9720","","","빠르고 확실한 대신 비용 높음"],
+      ["100","공사","영화테크","논슬립","032-612-2700 010-5240-3211","yhw182@naver.com","","부천 위치, 학교 공사 경력 많음"],
+      ["101","물품구입","학생화방문구센터","물품","032-654-4200","haksaeng4200@naver.com","","학습준비물 카드결제시 수수료 있음"],
+      ["102","물품구입","부천문구","물품","032-651-1440","orijw@naver.com","032-651-8619","학습준비물 카드결제시 수수료 없음"],
+      ["103","물품","신낙현(개인)","책걸상 무료 수거","010-4216-5939","","","무료 수거, 쇠·나무 분리 적재"],
+      ["104","물품구입","다함씨앤에스","인테리어","032-612-3157","","","복도 교실 명패, 비쌈"],
+      ["105","폐기물","성진자원","고물상","032-677-0120","","",""],
+      ["106","폐기물","지구하다","폐기물 처리","1660-3114 (010-8749-1001)","","","https://new.zguhada.com/"],
+      ["107","시설","대한산업안전협회","교육시설안전인증","02-860-4709,4783,4746,4749","edukisa@safety.or.kr","",""],
+      ["108","시설","아이토스","소독, 방역","1544-3059 / 010-4437-2326","wwkddla@naver.com","",""],
+      ["109","폐기물","GMR","불용물품","010-5174-1015","gmr3377@hanmail.net","",""],
+      ["110","물품","효성렌터카","렌터카","02-2637-5454","","",""],
+      ["111","물품","우드미","가구","032-341-3220 010-8458-3220","","",""],
+      ["112","물품구입","부천 오피스","학습준비물 납품","070-5035-9981","","",""],
+      ["113","물품","하나감정평가법인 서부지사","온비드 매각 물품 감정 평가","032-271-2121","hana22@kapaland.co.kr","","엑셀+공문 필요"],
+      ["114","용역","이지에스","청소(실내·외부·저수조·후드 등)","02-3158-5062 010-6354-8774","","","장애인기업"],
+      ["115","용역","안양다인치과","학생 구강검진","031-8091-0592","dain2874@naver.com","",""],
+      ["116","폐기물","성광용역","종량제 쓰레기 수거","032-673-0640","","",""],
+      ["117","폐기물","천일에너지","폐목재 무상 수거","010-9361-6088","","","~2028.2.19."],
+      ["118","용역","다비드아키텍처","실내건축인테리어·청소용역·장애인기업","010-9476-8436","","","정문·후문 차량경고등 설치"],
+      ["119","용역","(주)상록","나무병원/수목소독(나무의사)","032-677-1547/010-3332-1547","","",""],
+      ["120","유지보수","꿈에그린꽂직매장(수목)","화분, 수목관리 업체","010-2324-3697","","",""],
+      ["121","유지보수","플라워에듀(난영플라워)","조경관리, 수목관리","010-2962-5235","","",""],
+      ["122","용역","성원씨앤에스(구영희)","불용폐기물, 청소","010-8924-0077","","","경기도 안산"],
+      ["123","용역","학교더하기 경기","건물위생관리업(체육관 샌딩 및 라인마킹)","1533-8504","schoolplus1977@naver.com","","부천시 소사구 송내동"],
+      ["124","용역","진종합공사","인테리어·도장공사·설비 등","032-212-7606/010-9260-7606","","","부천시 서촌로32번길 3"]
+    ]},
+  { key:"calendar", title:"학사일정", icon:"📆", kind:"table",
+    columns:[["event","행사","150px"],["period","기간","220px"],["note","비고","150px"]],
+    note:"수업일수: 1학기 98일(재량휴업 2일 포함), 2학기 92일, 총 190일 · 7/17(금) 제헌절 예정 포함, 임시공휴일 발생 시 방학식을 순연함.",
+    seed:[
+      ["시업식","2026.03.03.(화)",""],
+      ["입학식","2026.03.03.(화)",""],
+      ["여름방학식","2026.07.24.(금)",""],
+      ["여름방학","2026.07.25.(토)~2026.08.17.(월)","24일"],
+      ["2학기 개학식","2026.08.18.(화)",""],
+      ["졸업식","2026.12.30.(수)",""],
+      ["종업식","2026.12.30.(수)",""],
+      ["겨울방학","2026.12.31.(목)~2027.02.28.(일)","60일"],
+      ["학교장재량휴업일","2026.05.01.(금)","노동자의날"],
+      ["학교장재량휴업일","2026.05.04.(월)",""],
+      ["추석연휴","2026.09.24.(목)~2026.09.27.(일)","4일"],
+      ["설연휴","2027.02.06.(토)~2027.02.09.(화)","4일"]
+    ]},
+  { key:"periods", title:"시정표", icon:"⏰", kind:"periods",
+    groups:[
+      { label:"1~2학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["점심시간","11:20–12:10"],["4교시 (월·금)","12:10–12:50"],["5교시 (화·수·목)","13:00–13:40"]] },
+      { label:"3~4학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시","13:00–13:40"],["6교시 (목)","13:50–14:30"]] },
+      { label:"5~6학년", rows:[["아침맞이","08:50–09:00"],["1교시","09:00–09:40"],["2교시","09:50–10:30"],["3교시","10:40–11:20"],["4교시","11:30–12:10"],["점심시간","12:10–13:00"],["5교시 (수)","13:10–13:40"],["6교시","13:50–14:30"]] }
+    ]},
+  { key:"classroom_map", title:"교실배치도", icon:"🗺️", kind:"map" },
+  { key:"construction_archive", title:"공사 현장 사진", icon:"📷", kind:"construction_archive" },
+  { key:"facility_repair", title:"시설 보수 현황", icon:"🛠️", kind:"facility_repair" },
+  { key:"workshop", title:"제작중", icon:"🚧", kind:"workshop" }
+];
+
+/* 메뉴 탭 노출 순서: 자주 쓰는 것만 상단에 두고, 나머지는 "기타" 탭 안에서 드롭다운으로 고르게 함.
+   기존 섹션 정의(ALL_SECTION_DEFS)와 Firestore 저장 경로(sections/<key>)는 그대로 두고,
+   화면에 보여줄 순서만 이 두 목록으로 다시 배치함. */
+var MAIN_TAB_ORDER = ["schedule","meal","construction_archive","facility_repair","vendors_regular","vendors_misc","classroom_map"];
+var OTHER_TAB_ORDER = ["timetable","upcoming","periods","contractors","calendar"];
+function findSectionDef(key){
+  for (var i=0;i<ALL_SECTION_DEFS.length;i++){ if (ALL_SECTION_DEFS[i].key === key) return ALL_SECTION_DEFS[i]; }
+  return null;
+}
+var OTHER_SECTIONS = OTHER_TAB_ORDER.map(findSectionDef).filter(Boolean);
+var SECTIONS = MAIN_TAB_ORDER.map(findSectionDef).filter(Boolean);
+SECTIONS.push({ key:"other", title:"기타", icon:"📁", kind:"other" });
+SECTIONS.push(findSectionDef("workshop"));
+
+/* 급식/시간표/다가오는 일정 초기값 — 나이스 오픈API 기준, 매일 자동 갱신(실시간 공동편집 아님) */
+var STATUS_SEED = {
+  date: "2026-09-16",
+  dateDisplay: "2026년 9월 16일 (수)",
+  updatedAt: "2026-09-16T16:07:00+09:00",
+  meal: {
+    name: "중식",
+    menu: ["단호박카레라이스","통새우꼬치","감자빵","깍두기","오미자에이드"],
+    calorie: "516.4 Kcal"
+  },
+    weekMeals: [
+      {date:"2026-09-14", weekday:"월", shortDate:"9/14", hasMeal:true, name:"중식",
+            menu:["보리밥","계란찌개","돈까스","실곤약야채무침","배추김치"],
+            calorie:"620.5 Kcal", nutrients:{carbs:98.2, protein:24.6, fat:15.3}},
+      {date:"2026-09-15", weekday:"화", shortDate:"9/15", hasMeal:true, name:"중식",
+            menu:["흑미밥","순두부찌개","제육볶음","콩나물무침","깍두기"],
+            calorie:"598.1 Kcal", nutrients:{carbs:88.4, protein:27.1, fat:18.9}},
+      {date:"2026-09-16", weekday:"수", shortDate:"9/16", hasMeal:true, name:"중식",
+            menu:["단호박카레라이스","통새우꼬치","감자빵","깍두기","오미자에이드"],
+            calorie:"516.4 Kcal", nutrients:{carbs:82.7, protein:18.5, fat:12.4}},
+      {date:"2026-09-17", weekday:"목", shortDate:"9/17", hasMeal:true, name:"중식",
+            menu:["잡곡밥","어묵국","닭갈비","시금치나물","백김치"],
+            calorie:"605.8 Kcal", nutrients:{carbs:92.0, protein:26.3, fat:16.7}},
+      {date:"2026-09-18", weekday:"금", shortDate:"9/18", hasMeal:true, name:"중식",
+            menu:["짜장밥","계란탕","치즈스틱","단무지","요구르트"],
+            calorie:"572.3 Kcal", nutrients:{carbs:95.5, protein:19.8, fat:14.1}}
+        ],
+  classList: {"1":[1,2,3],"2":[1,2,3],"3":[1,2,3],"4":[1,2,3],"5":[1,2,3],"6":[1,2,3,4]},
+  timetable: {
+    "1-1": ["즐거운생활","수학","수학","슬기로운생활","자율·자치활동"],
+    "1-2": ["국어","즐거운생활","수학","슬기로운생활","자율·자치활동"],
+    "1-3": ["국어","수학","슬기로운생활","즐거운생활","수학"],
+    "2-1": ["국어","수학","즐거운생활","바른생활","즐거운생활"],
+    "2-2": ["자율·자치활동","수학","자율·자치활동","즐거운생활","자율·자치활동"],
+    "2-3": ["국어","수학","동아리활동","즐거운생활","자율·자치활동"],
+    "3-1": ["국어","사회","수학","미술","미술"],
+    "3-2": ["국어","수학","미술","미술","사회"],
+    "3-3": ["국어","수학","사회","동아리활동","사회"],
+    "4-1": ["수학","사회","영어","과학","음악"],
+    "4-2": ["수학","영어","사회","과학","과학"],
+    "4-3": ["영어","수학","수학","과학","과학"],
+    "5-1": ["체육","실과","영어","국어","수학"],
+    "5-2": ["국어","영어","체육","사회","수학"],
+    "5-3": ["영어","체육","국어","수학","실과"],
+    "6-1": ["국어","국어","실과","체육","실과"],
+    "6-2": ["국어","체육","수학","도덕","음악"],
+    "6-3": ["과학","과학","체육","수학","사회"],
+    "6-4": ["체육","사회","과학","과학","사회"]
+  },
+  schedule: [
+    {date:"2026-09-19", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-09-24", name:"추석연휴", type:"공휴일"},
+    {date:"2026-09-25", name:"추석", type:"공휴일"},
+    {date:"2026-09-26", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-03", name:"개천절", type:"공휴일"},
+    {date:"2026-10-05", name:"대체공휴일", type:"공휴일"},
+    {date:"2026-10-09", name:"한글날", type:"공휴일"},
+    {date:"2026-10-10", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-17", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-24", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-10-31", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-07", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-14", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-21", name:"토요휴업일", type:"휴업일"},
+    {date:"2026-11-28", name:"토요휴업일", type:"휴업일"}
+  ]
+};
+
+/* 나이스 복무 동기화(북마클릿)로 앞으로 자동 채워질 예정이라, 그동안 수기로 넣어둔 예시 일정은 모두 비워둠.
+   기능(달력, 직접 입력/삭제, 나이스 동기화 버튼)은 그대로 유지됨 — 데이터만 빈 상태로 시작. */
+var STAFF_SCHEDULE_SEED = {};
+
+/* ---------------- runtime ---------------- */
+
+var db = null;
+var assets = null;
+var activeKey = SECTIONS[0].key;
+var docCache = {}; // key -> latest doc data
+var unsubs = [];
+
+/* ---------------- 수정 잠금 (비밀번호를 통과해야 표를 고치거나 추가/삭제할 수 있음) ---------------- */
+var EDIT_PASSWORD = "1932";
+var EDIT_UNLOCK_KEY = "ojeong_edit_unlocked";
+var editUnlockedSession = false;
+
+function isEditUnlocked(){
+  if (editUnlockedSession) return true;
+  try { return localStorage.getItem(EDIT_UNLOCK_KEY) === "1"; } catch(e){ return false; }
+}
+
+/* 공사 현장 사진 "업로드" 전용 비밀번호(0000) — 수정용 1932와는 별개.
+   한 번 통과하면 그 휴대폰(브라우저)에서는 7일간 다시 묻지 않고, 7일이 지나면 다시 팝업이 뜸. */
+var ARCHIVE_UPLOAD_PASSWORD = "0000";
+var ARCHIVE_UPLOAD_UNLOCK_KEY = "ojeong_archive_upload_unlocked_at";
+var ARCHIVE_UPLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isArchiveUploadUnlocked(){
+  try {
+    var t = parseInt(localStorage.getItem(ARCHIVE_UPLOAD_UNLOCK_KEY), 10);
+    return !!t && (Date.now() - t < ARCHIVE_UPLOAD_TTL_MS);
+  } catch(e){ return false; }
+}
+
+function showArchiveUploadLockModal(onSuccess){
+  if (document.getElementById("archiveUploadLockOverlay")) return;
+  var overlay = document.createElement("div");
+  overlay.id = "archiveUploadLockOverlay";
+  overlay.className = "modal-overlay";
+  overlay.innerHTML =
+    '<div class="modal-card" role="dialog" aria-modal="true">' +
+      '<h3>🔒 사진 업로드 비밀번호</h3>' +
+      '<p class="modal-desc">공사 현장 사진을 올리려면 비밀번호가 필요합니다. 한 번 입력하면 이 휴대폰에서는 7일간 다시 묻지 않아요.</p>' +
+      '<input type="password" class="editlock-input" id="archiveUploadLockInput" placeholder="비밀번호" inputmode="numeric" autocomplete="off">' +
+      '<div class="editlock-error" id="archiveUploadLockError">비밀번호가 올바르지 않습니다.</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" id="archiveUploadLockCancel">취소</button>' +
+        '<button type="button" class="primary" id="archiveUploadLockConfirm">확인</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var input = overlay.querySelector("#archiveUploadLockInput");
+  var errorEl = overlay.querySelector("#archiveUploadLockError");
+
+  function close(){ overlay.remove(); }
+  function tryUnlock(){
+    if (input.value === ARCHIVE_UPLOAD_PASSWORD){
+      try { localStorage.setItem(ARCHIVE_UPLOAD_UNLOCK_KEY, String(Date.now())); } catch(e){ /* ignore */ }
+      close();
+      onSuccess();
+    } else {
+      errorEl.style.display = "block";
+      input.value = "";
+      input.focus();
+    }
+  }
+
+  overlay.querySelector("#archiveUploadLockCancel").addEventListener("click", close);
+  overlay.querySelector("#archiveUploadLockConfirm").addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter") tryUnlock(); });
+  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  setTimeout(function(){ input.focus(); }, 30);
+}
+
+function showEditLockModal(){
+  if (document.getElementById("editlockOverlay")) return;
+  var overlay = document.createElement("div");
+  overlay.id = "editlockOverlay";
+  overlay.className = "modal-overlay";
+  overlay.innerHTML =
+    '<div class="modal-card" role="dialog" aria-modal="true">' +
+      '<h3>🔒 수정하려면 비밀번호를 입력하세요</h3>' +
+      '<p class="modal-desc">내용을 고치거나 추가·삭제하려면 비밀번호가 필요합니다.</p>' +
+      '<input type="password" class="editlock-input" id="editlockInput" placeholder="비밀번호" inputmode="numeric" autocomplete="off">' +
+      '<div class="editlock-error" id="editlockError">비밀번호가 올바르지 않습니다.</div>' +
+      '<label class="editlock-remember"><input type="checkbox" id="editlockRemember"> 이 컴퓨터에서는 더 이상 팝업 창 뜨지 않음</label>' +
+      '<div class="modal-actions">' +
+        '<button type="button" id="editlockCancel">취소</button>' +
+        '<button type="button" class="primary" id="editlockConfirm">확인</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  var input = overlay.querySelector("#editlockInput");
+  var errorEl = overlay.querySelector("#editlockError");
+
+  function close(){ overlay.remove(); }
+  function tryUnlock(){
+    if (input.value === EDIT_PASSWORD){
+      editUnlockedSession = true;
+      if (overlay.querySelector("#editlockRemember").checked){
+        try { localStorage.setItem(EDIT_UNLOCK_KEY, "1"); } catch(e){ /* ignore */ }
+      }
+      close();
+    } else {
+      errorEl.style.display = "block";
+      input.value = "";
+      input.focus();
+    }
+  }
+
+  overlay.querySelector("#editlockCancel").addEventListener("click", close);
+  overlay.querySelector("#editlockConfirm").addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", function(e){ if (e.key === "Enter") tryUnlock(); });
+  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  setTimeout(function(){ input.focus(); }, 30);
+}
+
+/* ---------------- 나이스 복무 동기화 (확장 설치 없이, 즐겨찾기 버튼 방식) ----------------
+   실제 동기화 실행은 반드시 나이스 페이지(neis.go.kr) 안에서 일어나야 함 — 브라우저 보안 정책(동일 출처 정책) 때문에
+   이 사이트(cyber office)의 자바스크립트는 나이스의 로그인 세션이나 데이터를 직접 읽어올 수 없음(확장 프로그램 없이는 불가능).
+   그래서 "직원 일정표" 옆의 이 버튼은 실제 동기화를 대신 실행해주는 게 아니라, 즐겨찾기(북마클릿) 등록·사용 안내를
+   바로 이 자리에서 보여주는 역할을 함 — 한 번 등록해두면 이후에는 나이스 로그인 후 그 즐겨찾기만 누르면 됨. */
+var NEIS_SYNC_TARGET_NAMES = ["석광일","심경아","오규민","이중현","이강현","주지영"];
+var NEIS_SYNC_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bif%28window.__jbeSyncRunning%29alert%28%22%EC%9D%B4%EB%AF%B8%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%9E%91%EC%97%85%EC%9D%B4%20%EC%A7%84%ED%96%89%20%EC%A4%91%EC%9E%85%EB%8B%88%EB%8B%A4.%20%EC%9E%A0%EC%8B%9C%20%EA%B8%B0%EB%8B%A4%EB%A0%A4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Belse%7Bwindow.__jbeSyncRunning%3D%210%3Bvar%20t%3D%22jbeNeisDutyTemplateV1%22%2Ce%3D%22jbeNeisDutyEndpointV1%22%2Cn%3D%5B%22%EC%84%9D%EA%B4%91%EC%9D%BC%22%2C%22%EC%8B%AC%EA%B2%BD%EC%95%84%22%2C%22%EC%98%A4%EA%B7%9C%EB%AF%BC%22%2C%22%EC%9D%B4%EC%A4%91%ED%98%84%22%2C%22%EC%9D%B4%EA%B0%95%ED%98%84%22%2C%22%EC%A3%BC%EC%A7%80%EC%98%81%22%5D%2Cr%3D%5B-1%2C0%2C1%2C2%5D%2Co%3D%22__jbeSyncToast%22%3B%21async%20function%28%29%7Btry%7Bvar%20n%3Dfunction%28%29%7Btry%7Bvar%20n%3DlocalStorage.getItem%28t%29%2Cr%3DlocalStorage.getItem%28e%29%3Breturn%20n%26%26r%3F%7Bbody%3AJSON.parse%28n%29%2Cendpoint%3Ar%7D%3Anull%7Dcatch%28t%29%7Breturn%20null%7D%7D%28%29%3Bif%28%21n%29%7Balert%28%22%EC%B2%98%EC%9D%8C%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%8B%9C%EB%8A%94%EA%B5%B0%EC%9A%94%21%5Cn%5Cn%ED%99%95%EC%9D%B8%EC%9D%84%20%EB%88%84%EB%A5%B8%20%EB%92%A4%2C%20%EB%82%98%EC%9D%B4%EC%8A%A4%EC%97%90%EC%84%9C%20%5B%EC%9D%BC%EC%9D%BC%EA%B7%BC%EB%AC%B4%EC%83%81%ED%99%A9%EC%A1%B0%ED%9A%8C%5D%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%97%B4%EA%B3%A0%20%EC%95%84%EB%AC%B4%20%EB%82%A0%EC%A7%9C%EB%A1%9C%EB%82%98%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EC%8B%A4%ED%96%89%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EC%A1%B0%ED%9A%8C%20%EB%B2%84%ED%8A%BC%EC%9D%84%20%EB%88%84%EB%A5%B4%EB%8A%94%20%EC%88%9C%EA%B0%84%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%EC%9D%B8%EC%8B%9D%EB%90%98%EC%96%B4%2C%20%EC%9D%B4%EB%B2%88%20%EB%8B%AC%20%EA%B8%B0%EC%A4%80%20%EC%A0%84%EC%9B%94~%EB%8B%A4%EC%9D%8C%202%EA%B0%9C%EC%9B%94%28%EC%B4%9D%204%EA%B0%9C%EC%9B%94%EC%B9%98%29%20%EB%8F%99%EA%B8%B0%ED%99%94%EA%B0%80%20%EC%8B%9C%EC%9E%91%EB%90%A9%EB%8B%88%EB%8B%A4.%22%29%2Cc%28%22%F0%9F%94%84%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%ED%99%94%EB%A9%B4%EC%97%90%EC%84%9C%20%EC%A1%B0%ED%9A%8C%EB%A5%BC%20%EA%B8%B0%EB%8B%A4%EB%A6%AC%EB%8A%94%20%EC%A4%91%E2%80%A6%22%29%3Bvar%20r%3Dawait%20u%28%29%3B%21function%28n%2Cr%29%7Btry%7BlocalStorage.setItem%28t%2CJSON.stringify%28n%29%29%2ClocalStorage.setItem%28e%2Cr%29%7Dcatch%28t%29%7B%7D%7D%28r.body%2Cr.url%29%2Cn%3Dr%7Dc%28%22%F0%9F%94%84%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%ED%98%84%ED%99%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4%E2%80%A6%22%29%2Cawait%20p%28%7Bbody%3An.body%2Cendpoint%3An.endpoint%7D%29%7Dcatch%28t%29%7Bconsole.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%EB%8F%99%EA%B8%B0%ED%99%94%5D%22%2Ct%29%2Cs%28%29%2Calert%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%20%EB%AC%B8%EC%A0%9C%EA%B0%80%20%EB%B0%9C%EC%83%9D%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4%3A%20%22%2B%28t%26%26t.message%7C%7Ct%29%29%7Dfinally%7Bwindow.__jbeSyncRunning%3D%211%7D%7D%28%29%7Dfunction%20i%28t%29%7Breturn%20String%28t%29.length%3C2%3F%220%22%2Bt%3AString%28t%29%7Dfunction%20a%28t%29%7Breturn%20String%28t%7C%7C%22%22%29.replace%28/%5Cs%2B/g%2C%22%20%22%29.trim%28%29%7Dfunction%20c%28t%29%7Bvar%20e%3Ddocument.getElementById%28o%29%3Breturn%20e%7C%7C%28%28e%3Ddocument.createElement%28%22div%22%29%29.id%3Do%2Ce.style.cssText%3D%22position%3Afixed%3Btop%3A16px%3Bright%3A16px%3Bz-index%3A2147483647%3Bbackground%3A%231b212c%3Bcolor%3A%23fff%3Bpadding%3A12px%2016px%3Bborder-radius%3A10px%3Bfont-size%3A13px%3Bfont-family%3A-apple-system%2C%27Malgun%20Gothic%27%2Csans-serif%3Bline-height%3A1.6%3Bbox-shadow%3A0%206px%2020px%20rgba%280%2C0%2C0%2C.35%29%3Bmax-width%3A280px%3Bwhite-space%3Apre-line%3B%22%2C%28document.body%7C%7Cdocument.documentElement%29.appendChild%28e%29%29%2Ce.textContent%3Dt%2Ce%7Dfunction%20s%28%29%7Bvar%20t%3Ddocument.getElementById%28o%29%3Bt%26%26t.parentNode%26%26t.parentNode.removeChild%28t%29%7Dfunction%20u%28%29%7Breturn%20new%20Promise%28function%28t%29%7Bvar%20e%3Dwindow.fetch%2Cn%3DXMLHttpRequest.prototype.open%2Cr%3DXMLHttpRequest.prototype.send%2Co%3D%211%3Bfunction%20i%28i%2Ca%29%7Bif%28%21o%26%26String%28i%7C%7C%22%22%29.indexOf%26%26-1%21%3D%3DString%28i%7C%7C%22%22%29.indexOf%28%22srv_mym_mm01_001.do%22%29%29%7Bvar%20c%3Btry%7Bc%3DJSON.parse%28a%29%7Dcatch%28t%29%7Breturn%7Dif%28function%28t%29%7Breturn%21%21%28t%26%26t.data%26%26t.data.dmSearch%26%26Object.prototype.hasOwnProperty.call%28t.data.dmSearch%2C%22workYmd%22%29%29%7D%28c%29%29%7Bo%3D%210%2Cwindow.fetch%3De%2CXMLHttpRequest.prototype.open%3Dn%2CXMLHttpRequest.prototype.send%3Dr%3Bvar%20s%3Di%3Btry%7Bs%3Dnew%20URL%28i%2Clocation.href%29.pathname%7Dcatch%28t%29%7B%7Dt%28%7Burl%3As%2Cbody%3Ac%7D%29%7D%7D%7Dwindow.fetch%3Dfunction%28t%2Cn%29%7Btry%7Bvar%20r%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Co%3Dn%26%26n.body%3B%22string%22%3D%3Dtypeof%20o%26%26i%28r%2Co%29%7Dcatch%28t%29%7B%7Dreturn%20e.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeUrl%3De%2Cn.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Btry%7B%22string%22%3D%3Dtypeof%20t%26%26i%28this.__jbeUrl%2Ct%29%7Dcatch%28t%29%7B%7Dreturn%20r.apply%28this%2Carguments%29%7D%7D%29%7Dfunction%20d%28t%29%7Bvar%20e%3Dnew%20Date%2Cn%3De.getMonth%28%29%2Bt%3Breturn%7By%3Ae.getFullYear%28%29%2BMath.floor%28n/12%29%2Cm%3A%28n%2512%2B12%29%2512%2B1%7D%7Dasync%20function%20l%28t%2Ce%2Cr%29%7Bfor%28var%20o%2Cc%2Cs%2Cu%3De%2B%22-%22%2Bi%28r%29%2Cd%3Dfunction%28t%2Ce%29%7Breturn%20new%20Date%28t%2Ce%2C0%29.getDate%28%29%7D%28e%2Cr%29%2Cl%3D%7B%7D%2Cp%3D0%2Cf%3D0%2Cy%3D%5B%5D%2Ch%3D1%3Bh%3C%3Dd%3Bh%2B%2B%29y.push%28h%29%3Breturn%20await%28o%3Dy%2Cc%3D6%2Cs%3Dasync%20function%28o%29%7Bvar%20c%2Cs%3Dfunction%28t%2Ce%2Cn%29%7Breturn%22%22%2Bt%2Bi%28e%29%2Bi%28n%29%7D%28e%2Cr%2Co%29%2Cu%3Dfunction%28t%2Ce%2Cn%29%7Breturn%20t%2B%22-%22%2Bi%28e%29%2B%22-%22%2Bi%28n%29%7D%28e%2Cr%2Co%29%3Btry%7Bc%3Dawait%20async%20function%28t%2Ce%29%7Bvar%20n%3DJSON.parse%28JSON.stringify%28t.body%29%29%3Bn.data.dmSearch.workYmd%3De%3Bvar%20r%3Dawait%20fetch%28t.endpoint%2C%7Bmethod%3A%22POST%22%2Ccredentials%3A%22include%22%2Cheaders%3A%7BAccept%3A%22application/json%22%2C%22Content-Type%22%3A%22application/json%3B%20charset%3DUTF-8%22%2C%22X-Requested-With%22%3A%22XMLHttpRequest%22%2Cui%3A%22eXbuilder%22%7D%2Cbody%3AJSON.stringify%28n%29%7D%29%3Bif%28%21r.ok%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%28%22%2Br.status%2B%22%29%22%29%3Bvar%20o%3Dawait%20r.json%28%29%3Breturn%20Array.isArray%28o.dsMain%29%3Fo.dsMain%3A%5B%5D%7D%28t%2Cs%29%7Dcatch%28t%29%7Breturn%20console.error%28%22%5B%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%20%EB%8F%99%EA%B8%B0%ED%99%94%5D%22%2Cu%2Ct%29%2Cvoid%20f%2B%2B%7Dvar%20d%3Dc.filter%28function%28t%29%7Breturn%20function%28t%29%7Breturn%22%EC%8A%B9%EC%9D%B8%EC%99%84%EB%A3%8C%22%3D%3D%3Da%28t%26%26t.atrzStsNm%29%7D%28t%29%26%26function%28t%29%7Breturn-1%21%3D%3Dn.indexOf%28a%28t%26%26t.invlFlnm%29%29%7D%28t%29%7D%29.map%28function%28t%29%7Breturn%7Bname%3Aa%28t.invlFlnm%29%2Ctype%3Aa%28t.workSittnNm%29%2Cperiod%3Aa%28t.workSittnPrd%29%2Cdestination%3Aa%28t.destiNm%29%2Cpending%3A%211%7D%7D%29%3Bd.length%26%26%28l%5Bu%5D%3Dd%2Cp%2B%3Dd.length%29%7D%2Cnew%20Promise%28function%28t%29%7Bvar%20e%3D0%2Cn%3D0%2Cr%3D0%3Bo.length%3Ffunction%20i%28%29%7Bif%28r%3E%3Do.length%29t%28%29%3Belse%20for%28%3Bn%3Cc%26%26e%3Co.length%3B%29%28function%28t%29%7Bn%2B%2B%2Ce%2B%2B%2CPromise.resolve%28s%28o%5Bt%5D%2Ct%29%29.then%28function%28%29%7Bn--%2Cr%2B%2B%2Ci%28%29%7D%2Cfunction%28%29%7Bn--%2Cr%2B%2B%2Ci%28%29%7D%29%7D%29%28e%29%7D%28%29%3At%28%29%7D%29%29%2C%7BmonthKey%3Au%2CbyDate%3Al%2Ctotal%3Ap%2Cdays%3Ad%2CfailedDays%3Af%7D%7Dasync%20function%20p%28t%29%7Bfor%28var%20e%3D%5B%5D%2Co%3D0%3Bo%3Cr.length%3Bo%2B%2B%29%7Bvar%20i%3Dd%28r%5Bo%5D%29%3Bc%28%22%F0%9F%94%84%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%ED%98%84%ED%99%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Bo%2B%22/%22%2Br.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%29%22%29%3Bvar%20a%3Dawait%20l%28t%2Ci.y%2Ci.m%29%3Be.push%28a%29%7Dc%28%22%F0%9F%94%84%20%EB%82%98%EC%9D%B4%EC%8A%A4%20%EB%B3%B5%EB%AC%B4%ED%98%84%ED%99%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%A4%91%E2%80%A6%5Cn%28%22%2Br.length%2B%22/%22%2Br.length%2B%22%EA%B0%9C%EC%9B%94%20%EC%99%84%EB%A3%8C%2C%20%EC%A0%80%EC%9E%A5%ED%95%98%EB%8A%94%20%EC%A4%91%E2%80%A6%29%22%29%3Bvar%20u%3De.filter%28function%28t%29%7Breturn%20t.failedDays%3Ct.days%7D%29%3Bif%28%21u.length%29throw%20new%20Error%28%22%EB%82%98%EC%9D%B4%EC%8A%A4%20%EC%A1%B0%ED%9A%8C%EC%97%90%20%EB%AA%A8%EB%91%90%20%EC%8B%A4%ED%8C%A8%ED%96%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EB%A1%9C%EA%B7%B8%EC%9D%B8%20%EC%83%81%ED%83%9C%EB%A5%BC%20%ED%99%95%EC%9D%B8%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20p%2Cf%3Du.reduce%28function%28t%2Ce%29%7Breturn%20t%2Be.total%7D%2C0%29%2Cy%3Du.map%28function%28t%29%7Bvar%20e%3D%22%EC%A7%80%EC%A0%95%20%EC%9D%B8%EC%9B%90%206%EB%AA%85%28%22%2Bn.join%28%22%C2%B7%22%29%2B%22%29%20%C2%B7%20%EC%8A%B9%EC%9D%B8%EC%99%84%EB%A3%8C%EB%A7%8C%20%C2%B7%20%EC%B4%9D%20%22%2Bt.total%2B%22%EA%B1%B4%22%2B%28t.failedDays%3F%22%20%C2%B7%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%20%22%2Bt.failedDays%2B%22%EC%9D%BC%22%3A%22%22%29%3Breturn%7BmonthKey%3At.monthKey%2CbyDate%3At.byDate%2Cscope%3Ae%7D%7D%29%3Bawait%28p%3D%7Bmonths%3Ay%7D%2Cnew%20Promise%28function%28t%2Ce%29%7Bvar%20n%3Dwindow.open%28%22https%3A//lysbone609-stack.github.io/ojeong-office/neis-sync-bridge.html%22%2C%22jbeNeisSyncBridge%22%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28n%29%7Bvar%20r%3D%211%2Co%3DsetTimeout%28function%28%29%7Br%7C%7C%28r%3D%210%2Cwindow.removeEventListener%28%22message%22%2Ci%29%2Ce%28new%20Error%28%22%EB%8F%99%EA%B8%B0%ED%99%94%20%ED%99%94%EB%A9%B4%EC%9D%B4%20%EC%9D%91%EB%8B%B5%ED%95%98%EC%A7%80%20%EC%95%8A%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%20%EC%84%A4%EC%A0%95%EC%9D%84%20%ED%99%95%EC%9D%B8%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%29%7D%2C3e4%29%3Bwindow.addEventListener%28%22message%22%2Ci%29%7Delse%20e%28new%20Error%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%29%3Bfunction%20i%28a%29%7Bif%28a%26%26a.data%29if%28%22JBE_NEIS_DUTY_SYNC_READY%22%3D%3D%3Da.data.type%29try%7Bn.postMessage%28%7Btype%3A%22JBE_NEIS_DUTY_SYNC%22%2Cpayload%3Ap%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28%22JBE_NEIS_DUTY_SYNC_RESULT%22%3D%3D%3Da.data.type%29%7Bif%28r%29return%3Br%3D%210%2CclearTimeout%28o%29%2Cwindow.removeEventListener%28%22message%22%2Ci%29%2Ca.data.ok%3Ft%28%29%3Ae%28new%20Error%28a.data.error%7C%7C%22%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%8B%A4%ED%8C%A8%22%29%29%7D%7D%7D%29%29%3Bvar%20h%3Du.map%28function%28t%29%7Breturn%20t.monthKey%2B%22%3A%20%22%2Bt.total%2B%22%EA%B1%B4%22%7D%29.join%28%22%2C%20%22%29%2Cm%3De.length-u.length%3Bs%28%29%2Calert%28%22%E2%9C%85%20%EB%B3%B5%EB%AC%B4%ED%98%84%ED%99%A9%20%EB%8F%99%EA%B8%B0%ED%99%94%20%EC%99%84%EB%A3%8C%20%28%EC%B4%9D%20%22%2Bf%2B%22%EA%B1%B4%29%5Cn%22%2Bh%2B%28m%3F%22%5Cn%28%22%2Bm%2B%22%EA%B0%9C%EC%9B%94%EC%9D%80%20%EC%A1%B0%ED%9A%8C%20%EC%8B%A4%ED%8C%A8%EB%A1%9C%20%EC%A0%9C%EC%99%B8%EB%90%A8%29%22%3A%22%22%29%29%7D%7D%28%29%3B";
+
+function showNeisSyncModal(){
+  if (document.getElementById("neisSyncOverlay")) return;
+  var overlay = document.createElement("div");
+  overlay.id = "neisSyncOverlay";
+  overlay.className = "modal-overlay";
+  var ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="4.5" rx="1.3"/><path d="M12 21l3.6-7.5H8.4L12 21z"/><path d="M12 12.5V9"/></svg>';
+  var ICON_CLICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M6.5 8.5h6M6.5 12h4"/><path d="M14 14.5l6.5 2.3-2.6 1-1 2.6-2.9-5.9z" fill="currentColor" stroke="none"/></svg>';
+  var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
+  overlay.innerHTML =
+    '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
+      '<h3>🔄 나이스 복무 동기화</h3>' +
+      '<p class="modal-desc">아래 3단계만 따라 하면 돼요.</p>' +
+      '<div class="neis-modal-notice">⚠️ <b>이 창에서 버튼을 누르는 것만으로는 동기화되지 않아요.</b> 반드시 나이스 화면으로 가서 즐겨찾기를 눌러야 실제로 동기화가 진행됩니다.</div>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
+          '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
+        '</div>' +
+      '</div>' +
+      dragIllustrationHtml("🔄", "사이버행정실 동기화") +
+      '<div class="neis-bm-row">' +
+        '<a class="neis-bm-btn" href="' + NEIS_SYNC_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔄 사이버행정실 동기화</a>' +
+        '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
+      '</div>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
+          '<div class="neis-visual-text"><div class="t">② 나이스 화면에서 즐겨찾기 클릭</div><div class="d">나이스에 로그인한 채로, 그 화면에서 방금 등록한 즐겨찾기를 누르세요. 동기화가 진행되는 동안 작은 팝업창이 하나 뜹니다 — 혹시 이 사이트의 팝업이 차단되어 있어 창이 뜨지 않으면, 주소창 오른쪽의 팝업 차단 아이콘을 눌러 허용으로 바꾼 뒤 즐겨찾기를 다시 눌러 주세요.</div></div>' +
+        '</div>' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
+          '<div class="neis-visual-text"><div class="t">③ 완료!</div><div class="d">"완료" 알림이 뜨면 끝. 직원 일정표에 자동으로 반영돼요.</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="primary" id="neisSyncClose">닫기</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  function close(){ overlay.remove(); }
+  overlay.querySelector("#neisSyncClose").addEventListener("click", close);
+  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+}
+
+/* 즐겨찾기 표시줄로 드래그하는 동작을 그림으로 보여주는 작은 애니메이션.
+   실제 브라우저 즐겨찾기 표시줄은 웹페이지 바깥(브라우저 자체 UI) 영역이라 화면을 그대로 녹화할 수 없어서,
+   크롬 브라우저 창(탭 바 + 주소창 + 즐겨찾기 표시줄)을 도식화한 그림 + 실제로 드래그하는 버튼과
+   똑같은 이름표가 즐겨찾기 표시줄로 올라갔다 사라지는 애니메이션으로 표현함(라이트/다크 테마 모두 대응).
+   emoji/label을 넘기면 실제 버튼(예: "🔄 사이버행정실 동기화", "🔖 에듀파인 캡처")과 정확히 같은 문구가 보임. */
+function dragIllustrationHtml(emoji, label){
+  emoji = emoji || "🔖";
+  label = label || "버튼";
+  return '<div class="drag-illustration" aria-hidden="true">' +
+      '<div class="browser-chrome">' +
+        '<div class="chrome-tabs">' +
+          '<div class="chrome-tab"><span class="ic">🌐</span><span class="tab-line"></span></div>' +
+          '<div class="win-controls"><span class="win-btn min">─</span><span class="win-btn max">▢</span><span class="win-btn close">✕</span></div>' +
+        '</div>' +
+        '<div class="chrome-address">' +
+          '<div class="chrome-url"><span class="ic">🔒</span><span class="url-line"></span></div>' +
+          '<span class="chrome-star">☆</span>' +
+        '</div>' +
+        '<div class="chrome-bookmarks">' +
+          '<span class="bm-chip"><span class="ic">📁</span><span class="chip-line"></span></span>' +
+          '<span class="bm-chip"><span class="ic">🔖</span><span class="chip-line"></span></span>' +
+          '<div class="bm-slot"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bm-pill">' + emoji + ' ' + escapeHtml(label) + '</div>' +
+    '</div>';
+}
+
+/* ---------------- 에듀파인 예산 캡처 (제작중 "예산 대시보드" 준비 단계) ----------------
+   나이스 동기화와 동일한 이유로, 이 사이트에서 에듀파인 데이터를 직접 읽어올 수 없음(동일 출처 정책).
+   또한 에듀파인의 실제 화면/API 구조를 아직 몰라서 "정식 동기화"는 만들 수 없고,
+   지금은 에듀파인 화면에서 오가는 요청을 캡처해 사이버행정실로 보내주는 "캡처 모드"만 제공함 —
+   이렇게 모인 데이터를 바탕으로 다음 단계에서 실제 예산 대시보드 동기화 로직을 만들 예정. */
+var EDUFINE_CAPTURE_BOOKMARKLET_HREF = "javascript:%21function%28%29%7Bvar%20t%3D%22https%3A%2F%2Flysbone609-stack.github.io%2Fojeong-office%2Fedufine-sync-bridge.html%22%2Ce%3D%22__jbeEdufineCapturing%22%2Cn%3D%22__jbeEdufineBuffer%22%2Ci%3D%22__jbeEdufineRestore%22%2Co%3D%2F%5C.%28js%7Ccss%7Cpng%7Cjpe%3Fg%7Cgif%7Csvg%7Cico%7Cwoff2%3F%7Cttf%7Ceot%7Cxfdl%7Cxjs%29%28%5C%3F%7C%24%29%2Fi%3Bfunction%20r%28%29%7Btry%7Breturn%28new%20Date%29.toLocaleString%28%22ko-KR%22%29%7Dcatch%28t%29%7Breturn%28new%20Date%29.toISOString%28%29%7D%7Dif%28window%5Be%5D%29%7Bwindow%5Be%5D%3D%211%3Bvar%20s%3Dwindow%5Bn%5D%7C%7C%5B%5D%3Bif%28%22function%22%3D%3Dtypeof%20window%5Bi%5D%29try%7Bwindow%5Bi%5D%28%29%7Dcatch%28t%29%7B%7Dreturn%20s.length%3Fvoid%20function%28e%29%7Bvar%20n%3Dwindow.open%28t%2C%22jbeEdufineCaptureBridge%22%2C%22width%3D440%2Cheight%3D380%22%29%3Bif%28%21n%29return%20void%20alert%28%22%ED%8C%9D%EC%97%85%EC%9D%B4%20%EC%B0%A8%EB%8B%A8%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%9D%B4%20%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%9D%98%20%ED%8C%9D%EC%97%85%20%EC%B0%A8%EB%8B%A8%EC%9D%84%20%ED%95%B4%EC%A0%9C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%3Bvar%20i%3D%211%2Co%3DsetTimeout%28function%28%29%7Bi%7C%7C%28i%3D%210%2Cwindow.removeEventListener%28%22message%22%2Cr%29%29%7D%2C3e4%29%3Bfunction%20r%28t%29%7Bif%28t%26%26t.data%29if%28%22JBE_EDUFINE_CAPTURE_READY%22%3D%3D%3Dt.data.type%29try%7Bn.postMessage%28%7Btype%3A%22JBE_EDUFINE_CAPTURE%22%2Cpayload%3A%7Bentries%3Ae%7D%7D%2C%22%2A%22%29%7Dcatch%28t%29%7B%7Delse%20if%28%22JBE_EDUFINE_CAPTURE_RESULT%22%3D%3D%3Dt.data.type%29%7Bif%28i%29return%3Bi%3D%210%2CclearTimeout%28o%29%2Cwindow.removeEventListener%28%22message%22%2Cr%29%2Ct.data.ok%3Falert%28%22%E2%9C%85%20%EC%BA%A1%EC%B2%98%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EA%B0%80%20%EC%82%AC%EC%9D%B4%EB%B2%84%ED%96%89%EC%A0%95%EC%8B%A4%EB%A1%9C%20%EC%A0%84%EC%86%A1%EB%90%98%EC%97%88%EC%8A%B5%EB%8B%88%EB%8B%A4%20%28%22%2Be.length%2B%22%EA%B1%B4%29.%22%29%3Aalert%28%22%EC%A0%84%EC%86%A1%20%EC%8B%A4%ED%8C%A8%3A%20%22%2B%28t.data.error%7C%7C%22%EC%95%8C%20%EC%88%98%20%EC%97%86%EB%8A%94%20%EC%98%A4%EB%A5%98%22%29%29%7D%7Dwindow.addEventListener%28%22message%22%2Cr%29%7D%28s%29%3Avoid%20alert%28%22%EC%BA%A1%EC%B2%98%EB%90%9C%20%EC%9A%94%EC%B2%AD%EC%9D%B4%20%EC%97%86%EC%8A%B5%EB%8B%88%EB%8B%A4.%20%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%EC%98%88%EC%82%B0%20%EA%B4%80%EB%A0%A8%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EC%A1%B0%ED%9A%8C%ED%95%9C%20%EB%92%A4%20%EB%8B%A4%EC%8B%9C%20%EC%8B%9C%EB%8F%84%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%22%29%7Dwindow%5Be%5D%3D%210%2Cwindow%5Bn%5D%3D%5B%5D%2Calert%28%22%EC%BA%A1%EC%B2%98%EB%A5%BC%20%EC%8B%9C%EC%9E%91%ED%95%A9%EB%8B%88%EB%8B%A4%28%EA%B0%9C%EC%84%A0%ED%8C%90%29.%5Cn%5Cn%EC%A7%80%EA%B8%88%EB%B6%80%ED%84%B0%20%EC%97%90%EB%93%80%ED%8C%8C%EC%9D%B8%EC%97%90%EC%84%9C%20%EC%98%88%EC%82%B0%28%ED%8E%B8%EC%84%B1%2F%EC%A7%91%ED%96%89%2F%EC%9E%94%EC%95%A1%20%EB%93%B1%29%20%ED%99%94%EB%A9%B4%EC%9D%84%20%EB%AA%87%20%EA%B0%9C%20%EB%91%98%EB%9F%AC%EB%B4%90%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%EB%8B%A4%20%EB%B3%B4%EC%85%A8%EC%9C%BC%EB%A9%B4%20%EA%B0%99%EC%9D%80%20%EC%A6%90%EA%B2%A8%EC%B0%BE%EA%B8%B0%EB%A5%BC%20%ED%95%9C%20%EB%B2%88%20%EB%8D%94%20%EB%88%8C%EB%9F%AC%EC%84%9C%20%EC%BA%A1%EC%B2%98%EB%A5%BC%20%EC%A2%85%EB%A3%8C%ED%95%98%EA%B3%A0%20%EC%A0%84%EC%86%A1%ED%95%B4%20%EC%A3%BC%EC%84%B8%EC%9A%94.%5Cn%5Cn%E2%80%BB%20%EC%9D%B4%EB%B2%88%20%EB%B2%84%EC%A0%84%EC%9D%80%20%ED%99%94%EB%A9%B4%20%EA%B5%AC%EC%84%B1%20%ED%8C%8C%EC%9D%BC%28.js%20%EB%93%B1%29%EC%9D%80%20%EC%9E%90%EB%8F%99%EC%9C%BC%EB%A1%9C%20%EC%A0%9C%EC%99%B8%ED%95%98%EA%B3%A0%2C%20%EC%8B%A4%EC%A0%9C%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%9A%94%EC%B2%AD%EC%9D%80%20%ED%98%95%EC%8B%9D%28JSON%2FXML%20%EB%93%B1%29%EC%97%90%20%EC%83%81%EA%B4%80%EC%97%86%EC%9D%B4%20%EB%AA%A8%EB%91%90%20%EA%B8%B0%EB%A1%9D%ED%95%A9%EB%8B%88%EB%8B%A4.%22%29%3Bvar%20a%3Dwindow.fetch%2Cc%3DXMLHttpRequest.prototype.open%2Cd%3DXMLHttpRequest.prototype.send%3Bfunction%20u%28t%29%7Breturn%20o.test%28String%28t%7C%7C%22%22%29.split%28%22%3F%22%29%5B0%5D%29%7Dfunction%20p%28t%2Ce%2Ci%2Co%2Cs%2Ca%29%7Bvar%20c%3Dwindow%5Bn%5D%3B%21c%7C%7Cc.length%3E%3D60%7C%7Cu%28e%29%7C%7Cc.push%28%7Bt%3Ar%28%29%2Cmethod%3AString%28t%7C%7C%22GET%22%29%2Curl%3AString%28e%7C%7C%22%22%29.slice%280%2C300%29%2Cstatus%3Aa%7C%7C%22%22%2CcontentType%3AString%28s%7C%7C%22%22%29.slice%280%2C100%29%2CreqPreview%3AString%28i%7C%7C%22%22%29.slice%280%2C300%29%2CresPreview%3AString%28o%7C%7C%22%22%29.slice%280%2C1500%29%7D%29%7Dwindow.fetch%3Dfunction%28t%2Ce%29%7Bvar%20n%3D%22string%22%3D%3Dtypeof%20t%3Ft%3At%26%26t.url%2Ci%3De%26%26e.method%7C%7Ct%26%26t.method%7C%7C%22GET%22%2Co%3De%26%26e.body%2Cr%3Da.apply%28this%2Carguments%29%3Bif%28u%28n%29%29return%20r%3Btry%7Br.then%28function%28t%29%7Btry%7Bvar%20e%3Dt.headers%26%26t.headers.get%3Ft.headers.get%28%22content-type%22%29%3A%22%22%3Bt.clone%28%29.text%28%29.then%28function%28r%29%7Bp%28i%2Cn%2Co%2Cr%2Ce%2Ct.status%29%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7D%7D%29.catch%28function%28%29%7B%7D%29%7Dcatch%28t%29%7B%7Dreturn%20r%7D%2CXMLHttpRequest.prototype.open%3Dfunction%28t%2Ce%29%7Breturn%20this.__jbeMethod%3Dt%2Cthis.__jbeUrl%3De%2Cc.apply%28this%2Carguments%29%7D%2CXMLHttpRequest.prototype.send%3Dfunction%28t%29%7Bvar%20e%3Dthis%3Bif%28%21u%28e.__jbeUrl%29%29try%7Be.addEventListener%28%22loadend%22%2Cfunction%28%29%7Btry%7Bvar%20n%3D%22%22%3Btry%7Bn%3De.getResponseHeader%28%22content-type%22%29%7Dcatch%28t%29%7B%7Dp%28e.__jbeMethod%2Ce.__jbeUrl%2Ct%2Ce.responseText%2Cn%2Ce.status%29%7Dcatch%28t%29%7B%7D%7D%29%7Dcatch%28t%29%7B%7Dreturn%20d.apply%28this%2Carguments%29%7D%2Cwindow%5Bi%5D%3Dfunction%28%29%7Bwindow.fetch%3Da%2CXMLHttpRequest.prototype.open%3Dc%2CXMLHttpRequest.prototype.send%3Dd%2Cwindow%5Bi%5D%3Dnull%7D%7D%28%29%3B";
+
+function showEdufineSyncModal(){
+  if (document.getElementById("edufineSyncOverlay")) return;
+  var overlay = document.createElement("div");
+  overlay.id = "edufineSyncOverlay";
+  overlay.className = "modal-overlay";
+  var ICON_DRAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="19" height="4.5" rx="1.3"/><path d="M12 21l3.6-7.5H8.4L12 21z"/><path d="M12 12.5V9"/></svg>';
+  var ICON_CLICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="13" height="16" rx="2"/><path d="M6.5 8.5h6M6.5 12h4"/><path d="M14 14.5l6.5 2.3-2.6 1-1 2.6-2.9-5.9z" fill="currentColor" stroke="none"/></svg>';
+  var ICON_DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>';
+  overlay.innerHTML =
+    '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
+      '<h3>🔖 에듀파인 예산 캡처 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(제작중 · v2)</span></h3>' +
+      '<p class="modal-desc">아직 실험 단계예요. 지금은 에듀파인 화면에서 오가는 데이터를 캡처해서 사이버행정실로 보내주는 기능만 있어요 — 이 데이터를 바탕으로 다음 업데이트에서 실제 예산 대시보드를 만들 예정입니다.<br>※ 이전 캡처 도구는 화면 구성 파일만 잡히고 실제 데이터를 놓치는 문제가 있어서 새로 고쳤어요. <b>즐겨찾기를 새로 등록</b>해서 다시 캡처해 주세요.</p>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
+          '<div class="neis-visual-text"><div class="t">① 버튼을 즐겨찾기로 드래그</div><div class="d">아래 버튼을 눌러서 브라우저 즐겨찾기 표시줄로 끌어다 놓으세요. (클릭 X, 드래그 O)</div></div>' +
+        '</div>' +
+      '</div>' +
+      dragIllustrationHtml("🔖", "에듀파인 캡처") +
+      '<div class="neis-bm-row">' +
+        '<a class="neis-bm-btn" href="' + EDUFINE_CAPTURE_BOOKMARKLET_HREF + '" onclick="alert(\'클릭이 아니라, 즐겨찾기 표시줄로 끌어다 놓아야 합니다.\'); return false;">🔖 에듀파인 캡처</a>' +
+        '<div class="neis-bm-hint">즐겨찾기 표시줄이 안 보이면 Ctrl+Shift+B(Mac은 Cmd+Shift+B)</div>' +
+      '</div>' +
+      '<div class="neis-visual-steps">' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
+          '<div class="neis-visual-text"><div class="t">② 에듀파인에서 예산 화면을 열고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 예산 편성·집행·잔액 등 원하는 화면을 열어보세요. 즐겨찾기를 한 번 누르면 캡처가 시작돼요.</div></div>' +
+        '</div>' +
+        '<div class="neis-visual-step">' +
+          '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
+          '<div class="neis-visual-text"><div class="t">③ 같은 즐겨찾기를 한 번 더 누르면 종료</div><div class="d">몇 개 화면을 둘러본 뒤 즐겨찾기를 다시 누르면 캡처가 끝나고 사이버행정실로 전송돼요.</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-actions">' +
+        '<button type="button" class="primary" id="edufineSyncClose">닫기</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  function close(){ overlay.remove(); }
+  overlay.querySelector("#edufineSyncClose").addEventListener("click", close);
+  overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+}
+
+/* ---------------- 예산 동기화 (에듀파인 엑셀 내보내기 → 예산 대시보드) ----------------
+   원래는 나이스 동기화처럼 북마클릿으로 에듀파인 화면의 네트워크 요청을 가로채는 방식이었으나,
+   실제 사용 중 "캡처된 예산 데이터가 없습니다" 오류로 데이터가 전혀 잡히지 않는 문제가 발견됨
+   (사업관리카드(예산) 화면의 데이터 전송 방식이 표준 fetch/XHR 후킹으로 잡히지 않는 것으로 추정).
+   대신 에듀파인이 기본 제공하는 [사업관리 → 사업관리카드 → 집행실적 액셀저장(실시간)] 화면에서
+   엑셀 파일을 내려받아 이 사이트에 직접 업로드하면, 브라우저에서 바로 파싱해서(SheetJS) 예산
+   대시보드에 반영하는 방식으로 교체함. 서버 왕복이나 팝업 브릿지 없이 같은 페이지에서 끝남.
+   보고서 101/102-1/102-2/103 등 형식이 달라도 헤더 텍스트로 열을 찾으므로 모두 지원됨. */
+var XLSX_LIB_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+var xlsxLibPromise = null;
+
+function ensureXlsxLib(){
+  if (window.XLSX) return Promise.resolve();
+  if (xlsxLibPromise) return xlsxLibPromise;
+  xlsxLibPromise = new Promise(function(resolve, reject){
+    var s = document.createElement("script");
+    s.src = XLSX_LIB_URL;
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ xlsxLibPromise = null; reject(new Error("xlsx 라이브러리를 불러오지 못했어요.")); };
+    document.head.appendChild(s);
+  });
+  return xlsxLibPromise;
+}
+
+/* 앞쪽 몇 줄 중 "회계연도"와 "세부사업"이 함께 있는 행을 헤더 행으로 판단.
+   (에듀파인 엑셀 내보내기는 보통 1행=제목, 2행=공백, 3행=헤더, 4행부터 데이터.) */
+function findHeaderRow(rows){
+  var limit = Math.min(rows.length, 10);
+  for (var i = 0; i < limit; i++){
+    var row = rows[i] || [];
+    var joined = row.join("|");
+    if (joined.indexOf("회계연도") !== -1 && joined.indexOf("세부사업") !== -1) return i;
+  }
+  return -1;
+}
+
+function colIndex(headers, matchFn){
+  for (var i = 0; i < headers.length; i++){
+    if (matchFn(String(headers[i] || "").trim())) return i;
+  }
+  return -1;
+}
+
+function parseBudgetWorkbook(arrayBuffer){
+  var wb = XLSX.read(arrayBuffer, { type: "array" });
+  var sheetName = wb.SheetNames[0];
+  var ws = wb.Sheets[sheetName];
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "" });
+  var headerRowIdx = findHeaderRow(rows);
+  if (headerRowIdx === -1) throw new Error("헤더 행을 찾을 수 없어요. 에듀파인에서 내려받은 엑셀 파일이 맞는지 확인해 주세요.");
+  var headers = rows[headerRowIdx];
+
+  var cBsnsCd = colIndex(headers, function(h){ return h === "세부사업코드"; });
+  var cBsnsNm = colIndex(headers, function(h){ return h === "세부사업"; });
+  var cItemCd = colIndex(headers, function(h){ return h === "세부항목코드"; });
+  var cItemNm = colIndex(headers, function(h){ return h === "세부항목"; });
+  var cStatCd = colIndex(headers, function(h){ return h === "원가통계비목코드"; });
+  var cBasis = colIndex(headers, function(h){ return h === "산출내역"; });
+  var cBgtCrntam = colIndex(headers, function(h){ return h.indexOf("예산현액") === 0; });
+  var cEpnsAmt = colIndex(headers, function(h){ return h.indexOf("원인행위금액") === 0; });
+  var cPymntAmt = colIndex(headers, function(h){ return h.indexOf("지출금액") === 0; });
+
+  if (cBsnsNm === -1 || cBgtCrntam === -1 || cEpnsAmt === -1){
+    throw new Error("필요한 열(세부사업 / 예산현액 / 원인행위금액)을 찾을 수 없어요. 보고서 형식을 확인해 주세요.");
+  }
+
+  function num(v){
+    if (typeof v === "number") return v;
+    var n = parseFloat(String(v == null ? "" : v).replace(/,/g, ""));
+    return isNaN(n) ? 0 : n;
+  }
+
+  var items = [];
+  for (var r = headerRowIdx + 1; r < rows.length; r++){
+    var row = rows[r];
+    if (!row || !row.length) continue;
+    var bsnsNm = row[cBsnsNm];
+    if (!bsnsNm) continue;
+    var bgtCrntam = num(row[cBgtCrntam]);
+    var epnsAmt = num(row[cEpnsAmt]);
+    var itemNm = cItemNm !== -1 ? String(row[cItemNm] || "").trim() : "";
+    var displayNm = itemNm ? (String(bsnsNm).trim() + " · " + itemNm) : String(bsnsNm).trim();
+    var key = (cBsnsCd !== -1 ? row[cBsnsCd] : bsnsNm) + "_" +
+      (cItemCd !== -1 ? row[cItemCd] : "") + "_" +
+      (cStatCd !== -1 ? row[cStatCd] : "") + "_" + r;
+    items.push({
+      sclDetlBsnsCd: cBsnsCd !== -1 ? String(row[cBsnsCd] || "") : "",
+      detlIemCd: cItemCd !== -1 ? String(row[cItemCd] || "") : "",
+      prmpcStatsExpitmCd: cStatCd !== -1 ? String(row[cStatCd] || "") : "",
+      schlDetlBizNm: displayNm,
+      cptBasisCn: cBasis !== -1 ? String(row[cBasis] || "").trim() : "",
+      bgtCrntam: bgtCrntam,
+      epnsAmt: epnsAmt,
+      pymntAmt: cPymntAmt !== -1 ? num(row[cPymntAmt]) : 0,
+      excutRt: bgtCrntam > 0 ? (epnsAmt / bgtCrntam * 100) : 0,
+      bgtBlce: bgtCrntam - epnsAmt,
+      _key: key
+    });
+  }
+  if (!items.length) throw new Error("파일에서 항목을 하나도 찾지 못했어요.");
+  return items;
+}
+
+/* ---------------- 다운로드 폴더 핸들 저장 (IndexedDB) ----------------
+   File System Access API의 폴더 핸들(FileSystemDirectoryHandle)은 크롬에서 구조적 복제가 가능해서
+   IndexedDB에 그대로 저장해두면 다음 방문 때도(권한 재확인만 하면) 같은 폴더를 다시 쓸 수 있음. */
+var BUDGET_FSA_DB_NAME = "ojeong_budget_fsa";
+var BUDGET_FSA_STORE = "handles";
+var BUDGET_FSA_KEY = "downloadsDir";
+
+function openBudgetFsaDb(){
+  return new Promise(function(resolve, reject){
+    var req = indexedDB.open(BUDGET_FSA_DB_NAME, 1);
+    req.onupgradeneeded = function(){ req.result.createObjectStore(BUDGET_FSA_STORE); };
+    req.onsuccess = function(){ resolve(req.result); };
+    req.onerror = function(){ reject(req.error); };
+  });
+}
+
+function saveBudgetDirHandle(handle){
+  return openBudgetFsaDb().then(function(idb){
+    return new Promise(function(resolve, reject){
+      var tx = idb.transaction(BUDGET_FSA_STORE, "readwrite");
+      tx.objectStore(BUDGET_FSA_STORE).put(handle, BUDGET_FSA_KEY);
+      tx.oncomplete = function(){ resolve(); };
+      tx.onerror = function(){ reject(tx.error); };
+    });
+  });
+}
+
+function loadBudgetDirHandle(){
+  return openBudgetFsaDb().then(function(idb){
+    return new Promise(function(resolve, reject){
+      var tx = idb.transaction(BUDGET_FSA_STORE, "readonly");
+      var req = tx.objectStore(BUDGET_FSA_STORE).get(BUDGET_FSA_KEY);
+      req.onsuccess = function(){ resolve(req.result || null); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  });
+}
+
+function ensureBudgetFolderPermission(handle){
+  return handle.queryPermission({ mode: "read" }).then(function(perm){
+    if (perm === "granted") return true;
+    return handle.requestPermission({ mode: "read" }).then(function(p2){ return p2 === "granted"; });
+  }).catch(function(){ return false; });
+}
+
+/* 연결된 폴더 안에서 "예산 보고서 형식"으로 실제 파싱되는 파일 중 수정시각이 가장 최근인 것을 찾음
+   (하위 폴더는 보지 않음 — 보통 다운로드 폴더 바로 아래에 파일이 받아지므로 충분함).
+   에듀파인 [집행실적 액셀저장(실시간)] 화면은 101~402까지 형식이 전혀 다른 보고서를 여러 개
+   내려받을 수 있는 화면이라, 사용자가 예산 파일 말고 다른 보고서(세입실적/기금 등)를 나중에
+   추가로 받으면 그게 가장 최신 .xlsx가 되어버리는 경우가 실제로 있음. 그래서 단순히 "가장 최근
+   .xlsx"를 고르는 대신, 최근 파일부터 순서대로 실제로 parseBudgetWorkbook()이 성공하는지 시도해서
+   예산 보고서 형식이 아닌 파일(세부사업/예산현액/원인행위금액 열이 없는 파일)은 자동으로 건너뛰고
+   그다음으로 최근인 파일을 확인함. */
+function findLatestBudgetFileInDir(dirHandle){
+  var MAX_CANDIDATES = 30;
+  return (async function(){
+    var candidates = [];
+    for await (var entry of dirHandle.values()){
+      if (entry.kind !== "file") continue;
+      if (!/\.xlsx?$/i.test(entry.name)) continue;
+      var file = await entry.getFile();
+      candidates.push(file);
+    }
+    candidates.sort(function(a, b){ return b.lastModified - a.lastModified; });
+    for (var i = 0; i < candidates.length && i < MAX_CANDIDATES; i++){
+      var file = candidates[i];
+      try {
+        var buf = await file.arrayBuffer();
+        var items = parseBudgetWorkbook(buf);
+        return { file: file, items: items };
+      } catch (e) {
+        /* 예산 보고서 형식이 아니거나 파싱 실패 — 그다음으로 최근인 파일을 계속 확인 */
+      }
+    }
+    return null;
+  })();
+}
+
+/* "제작중" 탭: 아직 완성되지 않은 기능을 미리 넣어두는 곳. */
+var WORKSHOP_ITEMS = [
+  { key:"budget_dashboard", title:"예산 대시보드", icon:"💰",
+    desc:"에듀파인 세부항목별 예산현액·집행액·집행률·잔액을 한눈에 보여줘요. (베타)" }
+];
+
+function renderWorkshopSection(panel, cfg){
+  var state = { view:"list" };
+  var localUnsub = null;
+
+  function clearLocalUnsub(){
+    if (localUnsub) { try { localUnsub(); } catch(e){} localUnsub = null; }
+  }
+
+  function paintList(){
+    clearLocalUnsub();
+    panel.innerHTML =
+      '<h2>🚧 제작중</h2>' +
+      '<p class="desc">아직 만들고 있는 기능들을 미리 볼 수 있는 곳이에요. 완성되면 정식 탭으로 옮겨질 수 있어요.</p>' +
+      '<div class="workshop-grid">' +
+        WORKSHOP_ITEMS.map(function(it){
+          return '<button type="button" class="workshop-card" data-key="' + it.key + '">' +
+            '<div class="wc-icon">' + it.icon + '</div>' +
+            '<div class="wc-title">' + escapeHtml(it.title) + '</div>' +
+            '<div class="wc-desc">' + escapeHtml(it.desc) + '</div>' +
+          '</button>';
+        }).join("") +
+      '</div>';
+    Array.prototype.forEach.call(panel.querySelectorAll(".workshop-card"), function(btn){
+      btn.addEventListener("click", function(){
+        state.view = btn.getAttribute("data-key");
+        paint();
+      });
+    });
+  }
+
+  var budgetItemsCache = [];
+  var budgetSearchTerm = "";
+  var budgetDirHandle = null;
+
+  function fmtWon(n){
+    var v = Number(n) || 0;
+    try { return v.toLocaleString("ko-KR"); } catch(e){ return String(v); }
+  }
+
+  function rtBadgeHtml(rt){
+    var v = Number(rt) || 0;
+    var cls = v >= 100 ? "budget-rt-danger" : (v >= 70 ? "budget-rt-warn" : "budget-rt-good");
+    return '<span class="budget-rt-badge ' + cls + '">' + v.toFixed(1) + '%</span>';
+  }
+
+  function paintBudgetDashboard(){
+    panel.innerHTML =
+      '<button type="button" class="workshop-back">← 제작중 목록으로</button>' +
+      '<h2>💰 예산 대시보드 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(베타)</span></h2>' +
+      '<p class="desc">에듀파인 [사업관리 → 사업관리카드 → 사업관리카드(예산)] 데이터를 엑셀 업로드로 가져와서 보여주는 화면이에요. 최신 상태로 갱신하려면 아래에서 엑셀 파일을 다시 올려 주세요.</p>' +
+      '<div class="budget-upload-box">' +
+        '<div class="bu-title">📄 엑셀 파일로 예산 데이터 올리기</div>' +
+        '<div class="bu-desc">에듀파인의 <b>사업관리 → 사업관리카드 → 집행실적 액셀저장(실시간)</b> 화면에서 <b>모든 보고서</b>를 "파일" 버튼으로 내려받은 뒤, 아래 "다운로드 폴더 연결"을 눌러주세요. (여러 개를 받아도 그중 예산 보고서를 자동으로 찾아서 반영해요)</div>' +
+        '<div id="budgetFolderRow" class="budget-upload-row"></div>' +
+        '<div class="budget-upload-row" style="margin-top:8px;">' +
+          '<label class="budget-upload-label secondary" for="budgetFileInput">📂 파일에서 직접 선택</label>' +
+          '<input type="file" id="budgetFileInput" accept=".xlsx,.xls">' +
+        '</div>' +
+        '<div id="budgetUploadStatus" class="budget-upload-status"></div>' +
+      '</div>' +
+      '<div id="budgetDashHost"><div class="budget-empty">아직 업로드된 예산 데이터가 없어요.<br>위에서 엑셀 파일을 올려 주세요.</div></div>';
+    panel.querySelector(".workshop-back").addEventListener("click", function(){ state.view = "list"; paint(); });
+    panel.querySelector("#budgetFileInput").addEventListener("change", function(e){
+      var file = e.target.files && e.target.files[0];
+      if (file) processBudgetFile(file);
+      e.target.value = "";
+    });
+    budgetItemsCache = [];
+    budgetSearchTerm = "";
+    initBudgetFolderUI();
+    subscribeBudgetSnapshot();
+  }
+
+  function setBudgetUploadStatus(msg, kind){
+    var el = document.getElementById("budgetUploadStatus");
+    if (!el) return;
+    el.className = "budget-upload-status" + (kind ? " " + kind : "");
+    el.textContent = msg;
+  }
+
+  /* 파싱된 예산 항목을 Firestore에 저장하는 공통 로직 — 수동 업로드/폴더 자동 인식 양쪽에서 재사용. */
+  function saveBudgetItems(items, fileLabel){
+    if (!db) return Promise.reject(new Error("사이버행정실 데이터베이스에 연결되지 않았어요. 잠시 후 다시 시도해 주세요."));
+    return db.doc("status/budget_snapshot").set({
+      itemsJson: JSON.stringify(items),
+      capturedAt: new Date().toISOString(),
+      count: items.length
+    }).then(function(){
+      setBudgetUploadStatus("✅ 예산 데이터 " + items.length + "건을 반영했어요. (" + fileLabel + ")", "ok");
+    });
+  }
+
+  /* 파일 선택("📂 파일에서 직접 선택")으로 고른 File 객체 하나를 파싱 → 저장까지 처리. */
+  function processBudgetFile(file){
+    setBudgetUploadStatus("⏳ 파일을 불러오는 중...", "busy");
+    ensureXlsxLib().then(function(){
+      return file.arrayBuffer();
+    }).then(function(buf){
+      var items = parseBudgetWorkbook(buf);
+      return saveBudgetItems(items, file.name);
+    }).catch(function(err){
+      setBudgetUploadStatus("❌ " + (err && err.message ? err.message : "파일을 처리하지 못했어요."), "err");
+    });
+  }
+
+  /* ---------------- 다운로드 폴더 자동 인식 (File System Access API, 크롬/엣지 전용) ----------------
+     처음 한 번 사용자가 다운로드 폴더 접근을 허용하면 그 폴더 핸들을 IndexedDB에 저장해두고,
+     다음부터는 "최신 파일 가져오기" 버튼 한 번으로 그 폴더 안의 가장 최근 .xlsx 파일을 자동으로
+     찾아서 업로드 없이 바로 반영함. 지원하지 않는 브라우저(사파리·파이어폭스 등)에서는 이 영역이
+     안내 문구만 보여주고, 아래 "파일에서 직접 선택"으로 대체됨. */
+  function initBudgetFolderUI(){
+    var row = document.getElementById("budgetFolderRow");
+    if (!row) return;
+    if (!("showDirectoryPicker" in window)){
+      row.innerHTML = '<div class="budget-upload-note">💡 크롬·엣지 브라우저에서는 다운로드 폴더를 연결해두면 파일을 직접 고르지 않아도 버튼 한 번으로 최신 예산 엑셀을 가져올 수 있어요.</div>';
+      return;
+    }
+    loadBudgetDirHandle().then(function(handle){
+      if (!handle) { renderBudgetConnectBtn(row); return; }
+      return handle.queryPermission({ mode: "read" }).then(function(perm){
+        budgetDirHandle = handle;
+        renderBudgetFetchBtn(row, handle, perm === "granted");
+      });
+    }).catch(function(){ renderBudgetConnectBtn(row); });
+  }
+
+  function renderBudgetConnectBtn(row){
+    row.innerHTML =
+      '<button type="button" class="budget-upload-label" id="budgetConnectFolderBtn">📁 다운로드 폴더 연결</button>' +
+      '<div class="budget-upload-note">처음 한 번만 다운로드 폴더 접근을 허용하면, 다음부턴 버튼 한 번으로 최신 파일을 가져와요.</div>';
+    var btn = document.getElementById("budgetConnectFolderBtn");
+    if (btn) btn.addEventListener("click", connectBudgetFolder);
+  }
+
+  function renderBudgetFetchBtn(row, handle, granted){
+    row.innerHTML =
+      '<button type="button" class="budget-upload-label" id="budgetFetchLatestBtn">🔄 최신 파일 가져오기</button>' +
+      '<button type="button" class="budget-upload-label secondary" id="budgetChangeFolderBtn">폴더 변경</button>' +
+      '<div class="budget-upload-note">연결된 폴더: 📁 ' + escapeHtml(handle.name) + (granted ? "" : " (버튼을 누르면 권한을 다시 확인해요)") + '</div>';
+    var fetchBtn = document.getElementById("budgetFetchLatestBtn");
+    if (fetchBtn) fetchBtn.addEventListener("click", fetchLatestBudgetFile);
+    var chgBtn = document.getElementById("budgetChangeFolderBtn");
+    if (chgBtn) chgBtn.addEventListener("click", connectBudgetFolder);
+  }
+
+  function connectBudgetFolder(){
+    if (!("showDirectoryPicker" in window)) return;
+    window.showDirectoryPicker({ mode: "read" }).then(function(handle){
+      return saveBudgetDirHandle(handle).then(function(){ return handle; });
+    }).then(function(handle){
+      budgetDirHandle = handle;
+      var row = document.getElementById("budgetFolderRow");
+      if (row) renderBudgetFetchBtn(row, handle, true);
+      setBudgetUploadStatus("✅ \"" + handle.name + "\" 폴더를 연결했어요. 이제 버튼으로 최신 파일을 가져올 수 있어요.", "ok");
+    }).catch(function(err){
+      if (err && err.name === "AbortError") return;
+      setBudgetUploadStatus("❌ 폴더 연결에 실패했어요: " + (err && err.message ? err.message : "알 수 없는 오류"), "err");
+    });
+  }
+
+  function fetchLatestBudgetFile(){
+    if (!budgetDirHandle) return;
+    setBudgetUploadStatus("⏳ 폴더 접근 권한을 확인하는 중...", "busy");
+    ensureBudgetFolderPermission(budgetDirHandle).then(function(ok){
+      if (!ok) throw new Error('폴더 접근 권한이 필요해요. "폴더 변경" 버튼으로 다시 허용해 주세요.');
+      setBudgetUploadStatus("⏳ 폴더에서 예산 보고서 형식의 최신 파일을 찾는 중...", "busy");
+      return ensureXlsxLib().then(function(){ return findLatestBudgetFileInDir(budgetDirHandle); });
+    }).then(function(result){
+      if (!result) throw new Error("연결된 폴더에서 예산 보고서 형식(세부사업·예산현액·원인행위금액 포함)의 엑셀 파일을 찾지 못했어요. 에듀파인 [집행실적 액셀저장(실시간)]에서 101/102-1/102-2/103/105 보고서 중 하나를 받아주세요.");
+      return saveBudgetItems(result.items, result.file.name);
+    }).catch(function(err){
+      setBudgetUploadStatus("❌ " + (err && err.message ? err.message : "가져오기에 실패했어요."), "err");
+    });
+  }
+
+  function subscribeBudgetSnapshot(){
+    clearLocalUnsub();
+    if (!db) return;
+    localUnsub = db.doc("status/budget_snapshot").onSnapshot(function(snap){
+      var host = document.getElementById("budgetDashHost");
+      if (!host) return;
+      if (!snap.exists) return;
+      var d = snap.data() || {};
+      var items = [];
+      try { items = JSON.parse(d.itemsJson || "[]"); } catch(e){ items = []; }
+      if (!items.length) return;
+      budgetItemsCache = items;
+      renderBudgetDash(host, items, d.capturedAt || "");
+    }, function(){ /* ignore */ });
+    unsubs.push(localUnsub);
+  }
+
+  function renderBudgetDash(host, items, capturedAt){
+    var totalBgt = 0, totalExec = 0, totalBlce = 0;
+    items.forEach(function(it){
+      totalBgt += Number(it.bgtCrntam) || 0;
+      totalExec += Number(it.epnsAmt) || 0;
+      totalBlce += Number(it.bgtBlce) || 0;
+    });
+    var avgRt = totalBgt > 0 ? (totalExec / totalBgt * 100) : 0;
+
+    host.innerHTML =
+      '<div class="budget-kpis">' +
+        '<div class="budget-kpi"><div class="kl">총 예산현액</div><div class="kv">' + fmtWon(totalBgt) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">총 집행액</div><div class="kv">' + fmtWon(totalExec) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">총 잔액</div><div class="kv">' + fmtWon(totalBlce) + '원</div></div>' +
+        '<div class="budget-kpi"><div class="kl">전체 집행률</div><div class="kv">' + avgRt.toFixed(1) + '%</div></div>' +
+      '</div>' +
+      '<div class="budget-meta">마지막 동기화: ' + escapeHtml(formatUpdated(capturedAt)) + ' · 세부항목 ' + items.length + '건</div>' +
+      '<div class="budget-searchrow"><input type="text" id="budgetSearchInput" placeholder="세부사업명으로 검색..." value="' + escapeHtml(budgetSearchTerm) + '"></div>' +
+      '<div id="budgetTableHost"></div>';
+
+    renderBudgetTable(document.getElementById("budgetTableHost"), items);
+
+    var searchInput = document.getElementById("budgetSearchInput");
+    if (searchInput){
+      searchInput.addEventListener("input", function(){
+        budgetSearchTerm = searchInput.value || "";
+        renderBudgetTable(document.getElementById("budgetTableHost"), budgetItemsCache);
+      });
+    }
+  }
+
+  function renderBudgetTable(tableHost, items){
+    if (!tableHost) return;
+    var term = (budgetSearchTerm || "").trim().toLowerCase();
+    var filtered = !term ? items : items.filter(function(it){
+      return String(it.schlDetlBizNm || "").toLowerCase().indexOf(term) !== -1;
+    });
+    var sorted = filtered.slice().sort(function(a, b){ return (Number(b.bgtCrntam) || 0) - (Number(a.bgtCrntam) || 0); });
+    if (!sorted.length){
+      tableHost.innerHTML = '<div class="budget-empty">검색 결과가 없어요.</div>';
+      return;
+    }
+    var rows = sorted.map(function(it){
+      return '<tr>' +
+        '<td class="bn"><div class="biz">' + escapeHtml(it.schlDetlBizNm || "") + '</div>' +
+          (it.cptBasisCn ? '<div class="basis">' + escapeHtml(it.cptBasisCn) + '</div>' : "") + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.bgtCrntam) + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.epnsAmt) + '</td>' +
+        '<td style="text-align:center;">' + rtBadgeHtml(it.excutRt) + '</td>' +
+        '<td style="text-align:right;">' + fmtWon(it.bgtBlce) + '</td>' +
+      '</tr>';
+    }).join("");
+    tableHost.innerHTML =
+      '<div class="tablewrap"><table class="datagrid budget-tbl"><thead><tr>' +
+        '<th>세부사업명</th><th style="text-align:right;">예산현액</th><th style="text-align:right;">집행액</th><th style="text-align:center;">집행률</th><th style="text-align:right;">잔액</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function paint(){
+    if (state.view === "budget_dashboard") paintBudgetDashboard();
+    else paintList();
+  }
+
+  paint();
+}
+
+/* 표 입력칸에 포커스하거나(문서 수정 시작), 행 추가/삭제·일정 추가/삭제·이미지 업로드 버튼을 누르는 순간을
+   캡처링 단계에서 가로채서 비밀번호를 통과하기 전까지는 실제 수정 동작이 실행되지 않도록 막습니다. */
+var EDIT_ACTION_SELECTOR = ".rowdel, .addrow, .addentry, .uploadbtn, [data-deldate]";
+
+document.addEventListener("focus", function(e){
+  var t = e.target;
+  if (!t || (t.tagName !== "INPUT" && t.tagName !== "TEXTAREA")) return;
+  var panelsHost = document.getElementById("panels");
+  if (!panelsHost || !panelsHost.contains(t)) return;
+  if (isEditUnlocked()) return;
+  t.blur();
+  showEditLockModal();
+}, true);
+
+document.addEventListener("click", function(e){
+  var target = e.target && e.target.closest ? e.target.closest(EDIT_ACTION_SELECTOR) : null;
+  if (!target) return;
+  var panelsHost = document.getElementById("panels");
+  if (!panelsHost || !panelsHost.contains(target)) return;
+  if (isEditUnlocked()) return;
+  e.preventDefault();
+  e.stopPropagation();
+  showEditLockModal();
+}, true);
+
+function escapeHtml(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function debounce(fn, ms){
+  var t;
+  return function(){
+    var args = arguments, ctx = this;
+    clearTimeout(t);
+    t = setTimeout(function(){ fn.apply(ctx, args); }, ms);
+  };
+}
+
+function safeJsonParse(text){
+  try { return JSON.parse(text); } catch(e){ return null; }
+}
+
+function rowsFromSeed(cols, seed){
+  return seed.map(function(arr){
+    var o = {};
+    cols.forEach(function(c, i){ o[c[0]] = arr[i] || ""; });
+    return o;
+  });
+}
+
+function safeGet(key){ try { return localStorage.getItem(key); } catch(e){ return null; } }
+function safeSet(key, val){ try { localStorage.setItem(key, val); } catch(e){ /* ignore */ } }
+
+function daysBetween(dateStr){
+  var target = new Date(dateStr + "T00:00:00");
+  var today = new Date();
+  today.setHours(0,0,0,0);
+  return Math.round((target - today) / 86400000);
+}
+
+function formatUpdated(iso){
+  try{
+    var d = new Date(iso);
+    var h = String(d.getHours()).padStart(2,"0");
+    var m = String(d.getMinutes()).padStart(2,"0");
+    return (d.getMonth()+1)+"."+d.getDate()+". "+h+":"+m;
+  }catch(e){ return ""; }
+}
+
+function syncLineHtml(data){
+  var upd = data && data.updatedAt ? formatUpdated(data.updatedAt) : "";
+  return '<p class="sync-line">🔄 나이스에서 평일 아침마다 자동으로 갱신돼요 · 마지막 자동 갱신: '+
+    (upd ? escapeHtml(upd) : "확인 중…") + '</p>';
+}
+
+/* status/latest 문서(급식·시간표·다가오는 일정)는 스케줄된 작업이 매일 자동으로 갱신합니다.
+   직원들이 직접 편집하는 표가 아니므로, 각 화면 하단에 실시간 동기화 대신 마지막 자동 갱신 시각을 보여줍니다. */
+function subscribeStatusDoc(handler){
+  if (!db) return;
+  var unsub = db.doc("status/latest").onSnapshot(function(snap){
+    if (snap.exists){
+      var d = snap.data();
+      if (d) handler(d);
+    }
+  }, function(){ /* ignore */ });
+  unsubs.push(unsub);
+}
+
+function buildTabs(){
+  var nav = document.getElementById("tabs");
+  nav.innerHTML = SECTIONS.map(function(s){
+    return '<button data-key="'+s.key+'" class="'+(s.key===activeKey?'active':'')+'">'+s.icon+' '+escapeHtml(s.title)+'</button>';
+  }).join("");
+  Array.prototype.forEach.call(nav.querySelectorAll("button"), function(btn){
+    btn.addEventListener("click", function(){ setActive(btn.getAttribute("data-key")); });
+  });
+}
+
+function setActive(key){
+  activeKey = key;
+  Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function(b){
+    b.classList.toggle("active", b.getAttribute("data-key") === key);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("section.panel"), function(p){
+    p.classList.toggle("active", p.id === "panel-" + key);
+  });
+}
+
+function renderSectionByKind(panel, s){
+  if (s.kind === "table") renderTableSection(panel, s);
+  else if (s.kind === "schedule") renderScheduleSection(panel, s);
+  else if (s.kind === "periods") renderPeriodsSection(panel, s);
+  else if (s.kind === "map") renderMapSection(panel, s);
+  else if (s.kind === "meal") renderMealSection(panel, s);
+  else if (s.kind === "timetable") renderTimetableSection(panel, s);
+  else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
+  else if (s.kind === "construction_archive") renderConstructionArchiveSection(panel, s);
+  else if (s.kind === "facility_repair") renderFacilityRepairSection(panel, s);
+  else if (s.kind === "workshop") renderWorkshopSection(panel, s);
+}
+
+/* "기타" 탭: 자주 안 쓰는 나머지 섹션들(시간표/공사업체/학사일정)을 하나로 모아 고르는 화면.
+   [2026-09-19] 이전에는 이 선택 드롭다운을 상단 탭 바의 "기타" 버튼 바로 옆에 별도로 붙여서 보여줬는데,
+   그러면 "기타" 버튼과 드롭다운(예: "🕘 시간표")이 나란히 있어 마치 탭이 2개인 것처럼 보여 혼란스럽다는
+   피드백을 받아, 드롭다운을 다시 패널 안으로 옮김 — 상단 탭 바에는 "기타" 버튼 하나만 보이고,
+   그 안에 들어가야 시간표/공사업체/학사일정을 고르는 선택창이 보이는 구조. */
+function renderOtherSection(panel, cfg){
+  var current = OTHER_SECTIONS.length ? OTHER_SECTIONS[0].key : null;
+  var localUnsub = null;
+
+  function renderCurrent(){
+    if (localUnsub) { try { localUnsub(); } catch(e){} localUnsub = null; }
+    var target = null;
+    for (var i=0;i<OTHER_SECTIONS.length;i++){ if (OTHER_SECTIONS[i].key === current){ target = OTHER_SECTIONS[i]; break; } }
+
+    var selectHtml = '<div class="other-select-row"><select id="otherTabSelect" class="other-tab-select">' +
+      OTHER_SECTIONS.map(function(s){
+        return '<option value="'+s.key+'"'+(s.key===current?" selected":"")+'>'+s.icon+' '+escapeHtml(s.title)+'</option>';
+      }).join("") +
+      '</select></div><div id="otherBody"></div>';
+    panel.innerHTML = selectHtml;
+
+    panel.querySelector("#otherTabSelect").addEventListener("change", function(e){
+      current = e.target.value;
+      renderCurrent();
+    });
+
+    if (target){
+      var body = panel.querySelector("#otherBody");
+      var before = unsubs.length;
+      renderSectionByKind(body, target);
+      if (unsubs.length > before) localUnsub = unsubs.pop(); // 드롭다운 전환 시 이전 실시간 구독 정리
+    }
+  }
+
+  renderCurrent();
+}
+
+function buildPanels(){
+  var host = document.getElementById("panels");
+  host.innerHTML = SECTIONS.map(function(s){
+    return '<section class="panel'+(s.key===activeKey?' active':'')+'" id="panel-'+s.key+'"></section>';
+  }).join("");
+  SECTIONS.forEach(function(s){
+    var panel = document.getElementById("panel-" + s.key);
+    if (s.kind === "other") renderOtherSection(panel, s);
+    else renderSectionByKind(panel, s);
+  });
+}
+
+/* ---- 이번 주 급식 (나이스 자동 갱신, 조회 전용) : 요일별 칼로리 + 영양소 원 다이어그램 ---- */
+  var MEAL_WEEKDAY_KO = ['일','월','화','수','목','금','토'];
+
+  function donutSvg(n){
+      var carbs = n ? Number(n.carbs)||0 : 0;
+      var protein = n ? Number(n.protein)||0 : 0;
+      var fat = n ? Number(n.fat)||0 : 0;
+      var total = carbs + protein + fat;
+      if (!n || total <= 0) return '<div class="no-nutri">영양정보 없음</div>';
+      var r = 15.9155, circ = 2 * Math.PI * r;
+      var parts = [["carb",carbs],["protein",protein],["fat",fat]];
+      var acc = 0;
+      var circles = parts.map(function(p){
+            var pct = p[1] / total * 100;
+            var dash = (pct / 100 * circ).toFixed(2) + ' ' + circ.toFixed(2);
+            var dashoffset = (-acc / 100 * circ).toFixed(2);
+            acc += pct;
+            return '<circle class="seg-'+p[0]+'" cx="18" cy="18" r="'+r+'" fill="none" stroke-width="5" stroke-dasharray="'+dash+'" stroke-dashoffset="'+dashoffset+'"/>';
+      }).join("");
+      return '<svg class="nutri-donut" viewBox="0 0 36 36" width="70" height="70" aria-hidden="true">'+circles+'</svg>';
+  }
+
+  function nutriLegendHtml(n){
+      if (!n) return "";
+      var carbs = Number(n.carbs)||0, protein = Number(n.protein)||0, fat = Number(n.fat)||0;
+      if (carbs+protein+fat <= 0) return "";
+      return '<ul class="nutri-legend">' +
+            '<li class="nl carb"><span>탄수화물</span><b>'+carbs.toFixed(1)+'g</b></li>' +
+            '<li class="nl protein"><span>단백질</span><b>'+protein.toFixed(1)+'g</b></li>' +
+            '<li class="nl fat"><span>지방</span><b>'+fat.toFixed(1)+'g</b></li>' +
+          '</ul>';
+  }
+
+  function dayCardHtml(day, isToday){
+      var body;
+      if (day.hasMeal && day.menu && day.menu.length){
+            body = '<ul class="menu-list-sm">' + day.menu.map(function(m){ return '<li>'+escapeHtml(m)+'</li>'; }).join("") + '</ul>' +
+                    (day.calorie ? '<div class="cal-row"><span>열량</span><b>'+escapeHtml(day.calorie)+'</b></div>' : "") +
+                    '<div class="nutri-wrap">' + donutSvg(day.nutrients) + nutriLegendHtml(day.nutrients) + '</div>';
+      } else {
+            body = '<div class="no-meal">급식 없음</div>';
+      }
+      return '<div class="meal-day'+(isToday?' today':'')+'">' +
+            '<div class="meal-day-head"><span class="mdw">'+escapeHtml(day.weekday)+'요일</span><span class="mdd">'+escapeHtml(day.shortDate)+'</span></div>' +
+            body +
+          '</div>';
+  }
+
+  /* 급식 상세 팝업 (월간보기에서 날짜를 누르면 그날 메뉴 전체를 보여줌) */
+  function showMealDetailModal(day){
+      var existing = document.getElementById("mealDetailOverlay");
+      if (existing) existing.remove();
+
+      var overlay = document.createElement("div");
+      overlay.id = "mealDetailOverlay";
+      overlay.className = "modal-overlay";
+
+      var body;
+      if (day.hasMeal && day.menu && day.menu.length){
+            body = '<ul class="menu-list">' + day.menu.map(function(m){ return '<li>'+escapeHtml(m)+'</li>'; }).join("") + '</ul>' +
+                  (day.calorie ? '<div class="cal-row"><span>열량</span><b>'+escapeHtml(day.calorie)+'</b></div>' : "") +
+                  '<div class="nutri-wrap">' + donutSvg(day.nutrients) + nutriLegendHtml(day.nutrients) + '</div>';
+      } else {
+            body = '<div class="no-meal">급식 정보가 없습니다.</div>';
+      }
+
+      overlay.innerHTML =
+            '<div class="modal-card" role="dialog" aria-modal="true">' +
+                  '<h3>'+escapeHtml(day.dateLabel || day.date)+'</h3>' +
+                  body +
+                  '<div class="modal-actions"><button type="button" class="primary" id="mealDetailClose">닫기</button></div>' +
+            '</div>';
+      document.body.appendChild(overlay);
+
+      function close(){ overlay.remove(); }
+      overlay.querySelector("#mealDetailClose").addEventListener("click", close);
+      overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  }
+
+  /* 이번 주 급식(나이스 자동 갱신) — 주간/월간 전환, 이전·다음 주/달 탐색 가능.
+     각 날짜의 실제 급식 데이터는 Cloud Function이 매일 status/meals_YYYY-MM 문서에 저장해둔 것을 구독해서 씀. */
+  function renderMealSection(panel, cfg){
+      var todayDate = new Date();
+      var mode = "week"; // "week" | "month"
+
+      function startOfWeek(d){
+            var day = d.getDay();
+            var diff = (day === 0) ? -6 : (1 - day);
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
+      }
+      function isoOf(d){
+            return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+      }
+      function monthKeyOf(y, m){ return y + "-" + String(m+1).padStart(2,"0"); } // m: 0-indexed
+
+      var weekStart = startOfWeek(todayDate);
+      var viewYear = todayDate.getFullYear();
+      var viewMonth = todayDate.getMonth(); // 0-indexed (월간보기용)
+
+      var mealsCache = {}; // monthKey -> { byDate: {"YYYY-MM-DD": {name,menu,calorie,nutrients}} }
+      var mealsSubs = {};
+
+      function ensureMonthSub(monthKey){
+            if (mealsSubs[monthKey] || !db) return;
+            mealsSubs[monthKey] = db.doc("status/meals_" + monthKey).onSnapshot(function(snap){
+                  if (snap.exists){
+                        var d = snap.data();
+                        var parsed = d && typeof d.daysJson === "string" ? safeJsonParse(d.daysJson) : null;
+                        mealsCache[monthKey] = { byDate: parsed || {} };
+                  } else {
+                        mealsCache[monthKey] = { byDate: {} };
+                  }
+                  paint();
+            }, function(){ mealsCache[monthKey] = { byDate: {} }; paint(); });
+            unsubs.push(mealsSubs[monthKey]);
+      }
+
+      function getDayEntry(iso){
+            var mk = iso.slice(0, 7);
+            ensureMonthSub(mk);
+            var cached = mealsCache[mk];
+            if (!cached) return { loading: true };
+            var entry = cached.byDate[iso];
+            if (!entry) return { loading: false, hasMeal: false };
+            return { loading: false, hasMeal: true, name: entry.name, menu: entry.menu, calorie: entry.calorie, nutrients: entry.nutrients };
+      }
+
+      function toggleHtml(){
+            return '<div class="meal-toggle">' +
+                  '<button type="button" data-mode="week" class="'+(mode==="week"?"active":"")+'">주간</button>' +
+                  '<button type="button" data-mode="month" class="'+(mode==="month"?"active":"")+'">월간</button>' +
+                '</div>';
+      }
+
+      function bindCommon(){
+            panel.querySelectorAll(".meal-toggle button").forEach(function(btn){
+                  btn.addEventListener("click", function(){
+                        var newMode = btn.getAttribute("data-mode");
+                        if (newMode === mode) return;
+                        mode = newMode;
+                        paint();
+                  });
+            });
+      }
+
+      function paintWeek(){
+            var days = [];
+            var loadingAny = false;
+            for (var i = 0; i < 5; i++){
+                  var d = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + i);
+                  var iso = isoOf(d);
+                  var entry = getDayEntry(iso);
+                  if (entry.loading) loadingAny = true;
+                  days.push({
+                        date: iso,
+                        weekday: MEAL_WEEKDAY_KO[d.getDay()],
+                        shortDate: (d.getMonth()+1) + "/" + d.getDate(),
+                        hasMeal: !!entry.hasMeal,
+                        name: entry.name || null,
+                        menu: entry.menu || [],
+                        calorie: entry.calorie || "",
+                        nutrients: entry.nutrients || null
+                  });
+            }
+            var todayIso = isoOf(todayDate);
+            var cards = days.map(function(day){ return dayCardHtml(day, day.date === todayIso); }).join("");
+            var rangeLabel = days[0].shortDate + " ~ " + days[4].shortDate;
+
+            panel.innerHTML =
+                  '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+                  '<p class="desc">월~금 급식 · 주간·월간으로 지난 주(달)·다음 주(달)까지 둘러볼 수 있어요</p>' +
+                  '<div class="meal-toolbar">' + toggleHtml() +
+                        '<div class="meal-nav">' +
+                              '<button type="button" id="mealPrev">‹ 이전 주</button>' +
+                              '<span class="range">'+escapeHtml(rangeLabel)+'</span>' +
+                              '<button type="button" id="mealToday">이번 주</button>' +
+                              '<button type="button" id="mealNext">다음 주 ›</button>' +
+                        '</div>' +
+                  '</div>' +
+                  (loadingAny ? '<p class="meal-loading">급식 정보를 불러오는 중…</p>' : "") +
+                  '<div class="week-meal-scroll"><div class="week-meal-grid">' + cards + '</div></div>';
+
+            bindCommon();
+            panel.querySelector("#mealPrev").addEventListener("click", function(){
+                  weekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() - 7);
+                  paint();
+            });
+            panel.querySelector("#mealNext").addEventListener("click", function(){
+                  weekStart = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 7);
+                  paint();
+            });
+            panel.querySelector("#mealToday").addEventListener("click", function(){
+                  weekStart = startOfWeek(new Date());
+                  paint();
+            });
+      }
+
+      function paintMonth(){
+            var monthKey = monthKeyOf(viewYear, viewMonth);
+            ensureMonthSub(monthKey);
+            var cached = mealsCache[monthKey];
+            var loading = !cached;
+
+            var firstOfMonth = new Date(viewYear, viewMonth, 1);
+            var startDow = firstOfMonth.getDay();
+            var gridStart = new Date(viewYear, viewMonth, 1 - startDow);
+            var lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+            var endDow = lastOfMonth.getDay();
+            var gridEnd = new Date(viewYear, viewMonth, lastOfMonth.getDate() + (6 - endDow));
+            var totalDays = Math.round((gridEnd - gridStart) / 86400000) + 1;
+            var todayIso = isoOf(todayDate);
+
+            var dowHtml = ["일","월","화","수","목","금","토"].map(function(n, i){
+                  var cls = i === 0 ? "sun" : (i === 6 ? "sat" : "");
+                  return '<span class="'+cls+'">'+n+'</span>';
+            }).join("");
+
+            var dayMeta = {}; // iso -> 상세 팝업에 넘길 day 객체
+            var cellsHtml = "";
+            for (var i = 0; i < totalDays; i++){
+                  var d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+                  var iso = isoOf(d);
+                  var inMonth = d.getMonth() === viewMonth;
+                  var dow = d.getDay();
+                  var numCls = dow === 0 ? "sun" : (dow === 6 ? "sat" : "");
+                  var entry = (inMonth && cached) ? (cached.byDate[iso] || null) : null;
+                  var hasMeal = !!(entry && entry.menu && entry.menu.length);
+                  var dayObj = {
+                        date: iso,
+                        dateLabel: d.getFullYear() + "년 " + (d.getMonth()+1) + "월 " + d.getDate() + "일",
+                        hasMeal: hasMeal,
+                        name: entry ? entry.name : null,
+                        menu: entry ? entry.menu : [],
+                        calorie: entry ? entry.calorie : "",
+                        nutrients: entry ? entry.nutrients : null
+                  };
+                  if (inMonth) dayMeta[iso] = dayObj;
+
+                  var innerHtml = '<div class="mdnum '+numCls+'">'+d.getDate()+'</div>';
+                  if (inMonth && hasMeal){
+                        innerHtml += '<div class="mmenu">'+dayObj.menu.map(function(m){ return '<div>'+escapeHtml(m)+'</div>'; }).join("")+'</div>';
+                  } else if (inMonth && cached){
+                        innerHtml += '<div class="mmenu">급식 없음</div>';
+                  }
+                  cellsHtml += '<div class="meal-month-cell'+(inMonth?'':' otherMonth')+(iso===todayIso?' today':'')+(inMonth && hasMeal?' has-meal':'')+'" data-iso="'+iso+'">'+innerHtml+'</div>';
+            }
+
+            var rangeLabel = viewYear + "년 " + (viewMonth+1) + "월";
+
+            panel.innerHTML =
+                  '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+                  '<p class="desc">월별 급식 한눈에 보기 · 날짜를 누르면 메뉴 상세를 볼 수 있어요</p>' +
+                  '<div class="meal-toolbar">' + toggleHtml() +
+                        '<div class="meal-nav">' +
+                              '<button type="button" id="mealPrev">‹ 이전 달</button>' +
+                              '<span class="range">'+escapeHtml(rangeLabel)+'</span>' +
+                              '<button type="button" id="mealToday">이번 달</button>' +
+                              '<button type="button" id="mealNext">다음 달 ›</button>' +
+                        '</div>' +
+                  '</div>' +
+                  (loading ? '<p class="meal-loading">급식 정보를 불러오는 중…</p>' : "") +
+                  '<div class="calwrap"><div class="dowrow">'+dowHtml+'</div><div class="meal-month-grid">'+cellsHtml+'</div></div>';
+
+            bindCommon();
+            panel.querySelector("#mealPrev").addEventListener("click", function(){
+                  viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } paint();
+            });
+            panel.querySelector("#mealNext").addEventListener("click", function(){
+                  viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } paint();
+            });
+            panel.querySelector("#mealToday").addEventListener("click", function(){
+                  var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); paint();
+            });
+            panel.querySelectorAll(".meal-month-cell.has-meal").forEach(function(cell){
+                  cell.addEventListener("click", function(){
+                        var iso = cell.getAttribute("data-iso");
+                        if (dayMeta[iso]) showMealDetailModal(dayMeta[iso]);
+                  });
+            });
+      }
+
+      function paint(){
+            if (mode === "week") paintWeek(); else paintMonth();
+      }
+
+      paint();
+  }
+
+/* ---- 시간표 (전체 학년/반 선택, 나이스 자동 갱신) ---- */
+function renderTimetableSection(panel, cfg){
+  var data = STATUS_SEED;
+
+  function paint(){
+    var grades = Object.keys(data.classList || {}).sort(function(a,b){ return a - b; });
+    var savedGrade = safeGet("ojeong_grade");
+    var grade = (savedGrade && data.classList[savedGrade]) ? savedGrade : grades[0];
+    var classes = data.classList[grade] || [1];
+    var savedClass = safeGet("ojeong_class");
+    var klass = (savedClass && classes.indexOf(Number(savedClass)) > -1) ? savedClass : String(classes[0]);
+
+    var periods = data.timetable ? data.timetable[grade + "-" + klass] : null;
+    var periodsHtml = (periods && periods.length)
+      ? periods.map(function(subj, i){ return '<li><span class="pnum">'+(i+1)+'</span><span class="psub">'+escapeHtml(subj)+'</span></li>'; }).join("")
+      : '<li class="tt-empty">이 날짜의 시간표 정보가 없습니다 (휴업일이거나 미등록).</li>';
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<p class="desc">'+escapeHtml(data.dateDisplay || "")+' 기준</p>' +
+      '<div class="tt-selects">' +
+        '<select id="ttGrade" aria-label="학년 선택">' + grades.map(function(g){ return '<option value="'+g+'"'+(g===grade?' selected':'')+'>'+g+'학년</option>'; }).join("") + '</select>' +
+        '<select id="ttClass" aria-label="반 선택">' + classes.map(function(c){ return '<option value="'+c+'"'+(String(c)===klass?' selected':'')+'>'+c+'반</option>'; }).join("") + '</select>' +
+      '</div>' +
+      '<ul class="tt-periods">'+periodsHtml+'</ul>' +
+      syncLineHtml(data);
+
+    panel.querySelector("#ttGrade").addEventListener("change", function(e){
+      safeSet("ojeong_grade", e.target.value);
+      safeSet("ojeong_class", "");
+      paint();
+    });
+    panel.querySelector("#ttClass").addEventListener("change", function(e){
+      safeSet("ojeong_class", e.target.value);
+      paint();
+    });
+  }
+
+  paint();
+  subscribeStatusDoc(function(d){ data = d; paint(); });
+}
+
+/* ---- 다가오는 일정 (D-day, 나이스 자동 갱신) ---- */
+/* "다가오는 일정"은 "학사일정" 탭(sections/calendar)의 내용 중 토요휴업일·재량휴업일류를 제외하고
+   오늘부터 1년 뒤까지의 일정만 뽑아서 보여줌(입학식/여름방학식/여름방학/개학식/겨울방학 등). */
+var UPCOMING_EXCLUDE_PATTERN = /토요휴업|재량휴업/;
+
+function parseKoreanCalPeriod(periodStr){
+  var re = /(\d{4})\.(\d{1,2})\.(\d{1,2})\.?/g;
+  var m, dates = [];
+  while ((m = re.exec(periodStr || "")) !== null){
+    var y = m[1], mo = String(m[2]).padStart(2,"0"), d = String(m[3]).padStart(2,"0");
+    dates.push(y + "-" + mo + "-" + d);
+  }
+  if (!dates.length) return { start: null };
+  return { start: dates[0] };
+}
+
+function renderUpcomingSection(panel, cfg){
+  var calDef = findSectionDef("calendar");
+  var rows = calDef ? rowsFromSeed(calDef.columns, calDef.seed) : [];
+
+  function computeItems(){
+    var todayD = new Date(); todayD.setHours(0,0,0,0);
+    var limitD = new Date(todayD); limitD.setFullYear(limitD.getFullYear() + 1);
+    var out = [];
+    rows.forEach(function(row){
+      var name = row.event || "";
+      if (!name || UPCOMING_EXCLUDE_PATTERN.test(name)) return;
+      var parsed = parseKoreanCalPeriod(row.period || "");
+      if (!parsed.start) return;
+      var sd = new Date(parsed.start + "T00:00:00");
+      if (isNaN(sd.getTime()) || sd < todayD || sd > limitD) return;
+      out.push({ name: name, date: parsed.start });
+    });
+    out.sort(function(a,b){ return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+    return out;
+  }
+
+  function paint(){
+    var items = computeItems();
+    var body = items.length
+      ? '<div class="sched-scroll">' + items.map(function(ev){
+          var d = daysBetween(ev.date);
+          var ddayLabel = d === 0 ? "D-DAY" : ("D-" + d);
+          var urgentClass = d <= 3 ? " urgent" : "";
+          var md = ev.date.slice(5).replace("-", ".");
+          return '<div class="sched-chip'+urgentClass+'">' +
+            '<span class="dday">'+ddayLabel+'</span>' +
+            '<span class="d">'+md+'</span>' +
+            '<span class="n">'+escapeHtml(ev.name)+'</span>' +
+          '</div>';
+        }).join("") + '</div>'
+      : '<div class="tt-empty">예정된 학사일정이 없습니다.</div>';
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<p class="desc">"학사일정" 탭 기준(토요휴업일 제외) · 오늘부터 1년 이내 일정만 표시 · 전체 일정은 "학사일정" 탭에서 확인하세요</p>' +
+      body;
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/calendar").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.rows) { rows = data.rows; paint(); }
+      }
+    }, function(){ /* ignore */ });
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- generic table section (정기용역 / 공사업체 / 거래처 / 학사일정) ---- */
+function renderTableSection(panel, cfg){
+  var state = { rows: rowsFromSeed(cfg.columns, cfg.seed), note: cfg.note || "" };
+
+  function paint(){
+    var head = '<tr>' + cfg.columns.map(function(c){
+      return '<th style="min-width:'+c[2]+'">'+escapeHtml(c[1])+'</th>';
+    }).join("") + '<th style="width:34px"></th></tr>';
+
+    var body = state.rows.map(function(row, ri){
+      var cells = cfg.columns.map(function(c){
+        return '<td><input type="text" data-r="'+ri+'" data-c="'+c[0]+'" value="'+escapeHtml(row[c[0]])+'"></td>';
+      }).join("");
+      return '<tr>' + cells + '<td><button class="rowdel" data-del="'+ri+'" title="행 삭제">✕</button></td></tr>';
+    }).join("");
+
+    var noteHtml = cfg.note != null ? (
+      '<div class="note-area"><label>참고</label><textarea id="noteField">'+escapeHtml(state.note)+'</textarea></div>'
+    ) : "";
+
+    panel.innerHTML =
+      '<h2>'+cfg.icon+' '+escapeHtml(cfg.title)+'</h2>' +
+      '<div class="tablewrap"><table class="datagrid"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>' +
+      '<button class="addrow" id="addBtn">+ 행 추가</button>' +
+      noteHtml;
+
+    panel.querySelectorAll("input[data-r]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var ri = Number(inp.getAttribute("data-r")), key = inp.getAttribute("data-c");
+        state.rows[ri][key] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-del]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var ri = Number(btn.getAttribute("data-del"));
+        state.rows.splice(ri, 1);
+        paint();
+        saveNow();
+      });
+    });
+    panel.querySelector("#addBtn").addEventListener("click", function(){
+      var o = {}; cfg.columns.forEach(function(c){ o[c[0]] = ""; });
+      state.rows.push(o);
+      paint();
+      panel.querySelector('input[data-r="'+(state.rows.length-1)+'"]').focus();
+    });
+    var nf = panel.querySelector("#noteField");
+    if (nf) nf.addEventListener("input", function(){ state.note = nf.value; scheduleSave(); });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    var payload = { rows: state.rows };
+    if (cfg.note != null) payload.note = state.note;
+    db.doc("sections/" + cfg.key).update(payload).catch(function(){
+      db.doc("sections/" + cfg.key).set(payload).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/" + cfg.key).onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.rows) {
+          state.rows = data.rows;
+          if (cfg.note != null && typeof data.note === "string") state.note = data.note;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){ /* ignore */ });
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- staff schedule (month calendar) ---- */
+function renderScheduleSection(panel, cfg){
+  var days = JSON.parse(JSON.stringify(STAFF_SCHEDULE_SEED));
+  var dayNames = ["일","월","화","수","목","금","토"];
+  var today0 = new Date();
+  var viewYear = today0.getFullYear();
+  var viewMonth = today0.getMonth(); // 0-indexed
+
+  var dutySyncByDate = {}; // ymd -> [{name,type,period,destination,pending}] (나이스 확장에서 동기화)
+  var dutySyncMeta = null; // {monthKey, syncedAt, scope}
+  var dutySyncUnsub = null;
+
+  function fmt(d){
+    var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+    return y + "-" + m + "-" + dd;
+  }
+  function isToday(d){
+    var t = new Date();
+    return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+  }
+  function currentMonthKey(){
+    return viewYear + "-" + String(viewMonth+1).padStart(2,"0");
+  }
+
+  function paint(){
+    var firstOfMonth = new Date(viewYear, viewMonth, 1);
+    var startDow = firstOfMonth.getDay();
+    var gridStart = new Date(viewYear, viewMonth, 1 - startDow);
+    var lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+    var endDow = lastOfMonth.getDay();
+    var gridEnd = new Date(viewYear, viewMonth, lastOfMonth.getDate() + (6 - endDow));
+    var totalDays = Math.round((gridEnd - gridStart) / 86400000) + 1;
+
+    var dowHtml = dayNames.map(function(n, i){
+      var cls = i === 0 ? "sun" : (i === 6 ? "sat" : "");
+      return '<span class="'+cls+'">'+n+'</span>';
+    }).join("");
+
+    var cellsHtml = "";
+    for (var i=0;i<totalDays;i++){
+      var d = new Date(gridStart); d.setDate(d.getDate() + i);
+      var key = fmt(d);
+      var list = days[key] || [];
+      var inMonth = d.getMonth() === viewMonth;
+      var dow = d.getDay();
+      var numCls = dow === 0 ? "sun" : (dow === 6 ? "sat" : "");
+      var entries = list.map(function(txt, idx){
+        return '<div class="entry"><input type="text" data-date="'+key+'" data-idx="'+idx+'" value="'+escapeHtml(txt)+'">' +
+          '<button data-deldate="'+key+'" data-delidx="'+idx+'">✕</button></div>';
+      }).join("");
+      var syncedRows = inMonth ? (dutySyncByDate[key] || []) : [];
+      var syncedHtml = syncedRows.map(function(item){
+        var titleParts = [];
+        if (item.period) titleParts.push(item.period);
+        if (item.destination) titleParts.push(item.destination);
+        var titleAttr = "나이스 연동" + (titleParts.length ? " · " + titleParts.join(" · ") : "");
+        var label = escapeHtml(item.name || "") + " " + escapeHtml(item.type || "복무") + (item.pending ? " (결재중)" : "");
+        return '<div class="entry synced" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">🔄</span>'+label+'</div>';
+      }).join("");
+      cellsHtml +=
+        '<div class="daycell'+(inMonth ? '' : ' otherMonth')+(isToday(d) ? ' today' : '')+'">' +
+          '<div class="dnum '+numCls+'">'+d.getDate()+'</div>' +
+          entries +
+          syncedHtml +
+          '<button class="addentry" data-adddate="'+key+'">+ 추가</button>' +
+        '</div>';
+    }
+
+    var dutySyncLine = (dutySyncMeta && dutySyncMeta.syncedAt)
+      ? '<p class="duty-sync-line">🔄 나이스 복무 동기화: '+escapeHtml(dutySyncMeta.scope || "")+' · '+escapeHtml(formatUpdated(dutySyncMeta.syncedAt))+' 기준 ('+escapeHtml(dutySyncMeta.monthKey)+') · <button type="button" class="linklike" id="dutySyncInfoBtn">동기화 방법 안내</button></p>'
+      : '<p class="duty-sync-line">🔄 '+escapeHtml(currentMonthKey())+'월은 아직 나이스 복무 동기화 데이터가 없습니다 · <button type="button" class="linklike" id="dutySyncInfoBtn">동기화 방법 보기</button></p>';
+
+    panel.innerHTML =
+      '<div class="sec-head-row"><h2>🗓️ 직원 일정표</h2><button type="button" class="neis-sync-btn" id="neisSyncOpenBtn">🔄 나이스 동기화</button></div>' +
+      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다. 점선 테두리(🔄🕐) 항목은 나이스에서 자동 동기화된 내용이라 직접 수정할 수 없어요.</p>' +
+      '<div class="monthnav">' +
+        '<button id="prevMonth">‹ 이전 달</button>' +
+        '<span class="range">'+viewYear+'년 '+(viewMonth+1)+'월</span>' +
+        '<button id="nextMonth">다음 달 ›</button>' +
+        '<button id="todayMonth">이번 달</button>' +
+      '</div>' +
+      '<div class="calwrap">' +
+        '<div class="dowrow">'+dowHtml+'</div>' +
+        '<div class="monthgrid">'+cellsHtml+'</div>' +
+      '</div>' +
+      dutySyncLine;
+
+    panel.querySelector("#neisSyncOpenBtn").addEventListener("click", showNeisSyncModal);
+    var dutySyncInfoBtn = panel.querySelector("#dutySyncInfoBtn");
+    if (dutySyncInfoBtn) dutySyncInfoBtn.addEventListener("click", showNeisSyncModal);
+
+    panel.querySelector("#prevMonth").addEventListener("click", function(){
+      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } subscribeDutySync(); paint();
+    });
+    panel.querySelector("#nextMonth").addEventListener("click", function(){
+      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } subscribeDutySync(); paint();
+    });
+    panel.querySelector("#todayMonth").addEventListener("click", function(){
+      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); subscribeDutySync(); paint();
+    });
+
+    panel.querySelectorAll("input[data-date]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var k = inp.getAttribute("data-date"), idx = Number(inp.getAttribute("data-idx"));
+        days[k][idx] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-deldate]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var k = btn.getAttribute("data-deldate"), idx = Number(btn.getAttribute("data-delidx"));
+        days[k].splice(idx,1);
+        paint(); saveNow();
+      });
+    });
+    panel.querySelectorAll("button[data-adddate]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var k = btn.getAttribute("data-adddate");
+        if (!days[k]) days[k] = [];
+        days[k].push("");
+        paint();
+        var inputs = panel.querySelectorAll('input[data-date="'+k+'"]');
+        if (inputs.length) inputs[inputs.length-1].focus();
+      });
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    db.doc("sections/schedule").update({ days: days }).catch(function(){
+      db.doc("sections/schedule").set({ days: days }).catch(function(){});
+    });
+  }
+
+  /* 나이스 "부서 복무 달력" 확장(v1.7+)에서 "사이버행정실로 동기화"를 누르면 채워지는 문서를 구독.
+     보고 있는 달이 바뀌면 그 달에 해당하는 문서로 다시 구독한다. 수동 입력(days)과는 완전히 별도 저장소라
+     동기화가 수동으로 적어둔 내용을 절대 덮어쓰지 않는다. */
+  function subscribeDutySync(){
+    if (dutySyncUnsub) { dutySyncUnsub(); dutySyncUnsub = null; }
+    dutySyncByDate = {};
+    dutySyncMeta = null;
+    if (!db) return;
+    var monthKey = currentMonthKey();
+    dutySyncUnsub = db.doc("status/duty_sync_" + monthKey).onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        var parsed = data && typeof data.byDateJson === "string" ? safeJsonParse(data.byDateJson) : null;
+        dutySyncByDate = parsed || {};
+        dutySyncMeta = { monthKey: monthKey, syncedAt: data && data.syncedAt, scope: data && data.scope };
+      } else {
+        dutySyncByDate = {};
+        dutySyncMeta = null;
+      }
+      paint();
+    }, function(){ /* ignore */ });
+    unsubs.push(dutySyncUnsub);
+  }
+
+  paint();
+  subscribeDutySync();
+
+  if (db) {
+    var unsub = db.doc("sections/schedule").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.days) { days = data.days; markSynced(); paint(); }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- periods (시정표) ---- */
+function renderPeriodsSection(panel, cfg){
+  var groups = JSON.parse(JSON.stringify(cfg.groups));
+
+  function paint(){
+    var groupsHtml = groups.map(function(g, gi){
+      var rows = g.rows.map(function(r, ri){
+        return '<tr>' +
+          '<td><input data-g="'+gi+'" data-r="'+ri+'" data-c="0" value="'+escapeHtml(r[0])+'"></td>' +
+          '<td><input data-g="'+gi+'" data-r="'+ri+'" data-c="1" value="'+escapeHtml(r[1])+'"></td>' +
+          '<td><button class="rowdel" data-delg="'+gi+'" data-delr="'+ri+'">✕</button></td>' +
+        '</tr>';
+      }).join("");
+      return '<div class="periodgroup"><h3>'+escapeHtml(g.label)+'</h3>' +
+        '<table class="datagrid"><tbody>'+rows+'</tbody></table>' +
+        '<button class="addrow" data-addg="'+gi+'">+ 행 추가</button></div>';
+    }).join("");
+
+    panel.innerHTML = '<h2>⏰ 시정표</h2><div class="periodgroups">'+groupsHtml+'</div>';
+
+    panel.querySelectorAll("input[data-g]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var g = Number(inp.getAttribute("data-g")), r = Number(inp.getAttribute("data-r")), c = Number(inp.getAttribute("data-c"));
+        groups[g].rows[r][c] = inp.value;
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-delg]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var g = Number(btn.getAttribute("data-delg")), r = Number(btn.getAttribute("data-delr"));
+        groups[g].rows.splice(r,1); paint(); saveNow();
+      });
+    });
+    panel.querySelectorAll("button[data-addg]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var g = Number(btn.getAttribute("data-addg"));
+        groups[g].rows.push(["",""]); paint(); saveNow();
+      });
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    db.doc("sections/periods").update({ groups: groups }).catch(function(){
+      db.doc("sections/periods").set({ groups: groups }).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/periods").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.groups) { groups = data.groups; markSynced(); paint(); }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- classroom map (image upload via assets) ---- */
+function renderMapSection(panel, cfg){
+  var state = { assetId: null, url: null, note: "" };
+
+  function paint(){
+    var body;
+    if (state.url) {
+      body = '<div class="mapbox"><img src="'+state.url+'" alt="교실배치도"></div>';
+    } else {
+      body = '<div class="placeholder">아직 등록된 교실배치도 이미지가 없습니다. 시트에서는 그림(도면)으로만 되어 있어 자동으로 가져오지 못했어요 — 아래 버튼으로 사진이나 스캔본을 올려주시면 모두에게 바로 보입니다.</div>';
+    }
+    panel.innerHTML =
+      '<h2>🗺️ 교실배치도</h2>' +
+      body +
+      '<div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+        '<input type="file" id="mapFile" accept="image/*" style="display:none">' +
+        '<button class="uploadbtn" id="mapUploadBtn">'+(state.url ? "이미지 교체" : "이미지 업로드")+'</button>' +
+        '<span class="desc" id="mapStatus" style="margin:0;"></span>' +
+      '</div>' +
+      '<div class="note-area"><label>비고</label><textarea id="mapNote">'+escapeHtml(state.note)+'</textarea></div>';
+
+    var fileInp = panel.querySelector("#mapFile");
+    panel.querySelector("#mapUploadBtn").addEventListener("click", function(){
+      if (!assets) {
+        panel.querySelector("#mapStatus").textContent = "이 화면에서는 업로드 권한이 없어요 (이미 있는 이미지는 볼 수 있어요).";
+        return;
+      }
+      fileInp.click();
+    });
+    fileInp.addEventListener("change", function(){
+      var f = fileInp.files && fileInp.files[0];
+      if (!f || !assets) return;
+      panel.querySelector("#mapStatus").textContent = "업로드 중…";
+      assets.upload(f).then(function(res){
+        state.assetId = res.id; state.url = res.url;
+        saveNow();
+        paint();
+      }).catch(function(){
+        panel.querySelector("#mapStatus").textContent = "업로드에 실패했어요. 다시 시도해주세요.";
+      });
+    });
+    panel.querySelector("#mapNote").addEventListener("input", function(){
+      state.note = panel.querySelector("#mapNote").value;
+      scheduleSave();
+    });
+  }
+
+  var scheduleSave = debounce(saveNow, 600);
+  function saveNow(){
+    if (!db) return;
+    var payload = { assetId: state.assetId, url: state.url, note: state.note };
+    db.doc("sections/classroom_map").update(payload).catch(function(){
+      db.doc("sections/classroom_map").set(payload).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/classroom_map").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data) {
+          state.assetId = data.assetId || null;
+          state.url = data.url || null;
+          state.note = data.note || "";
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- 공사 현장 사진 아카이브 (사업명 카테고리 → 공사전/중/후 → 날짜별 그룹, 사진만, Firebase Storage 업로드) ----
+   휴대폰에서 사진을 보내는 화면은 이 사이트가 아니라 별도 파일(gongsa-sajin-upload.html)이며,
+   같은 Firestore 문서(sections/construction_archive)를 공유해서 카테고리·사진이 서로 실시간 연동됨. */
+var ARCHIVE_MAX_BYTES = 12 * 1024 * 1024; // 사진 1장당 12MB 상한 (용량 관리)
+var ARCHIVE_PHASES = [
+  { key:"before", label:"공사전" },
+  { key:"during", label:"공사중" },
+  { key:"after", label:"공사후" }
+];
+function archivePhaseLabel(key){
+  for (var i=0;i<ARCHIVE_PHASES.length;i++){ if (ARCHIVE_PHASES[i].key === key) return ARCHIVE_PHASES[i].label; }
+  return key;
+}
+function todayDateValue(){
+  var d = new Date();
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+}
+function formatArchiveDate(dateStr){
+  if (!dateStr) return "(날짜 미기입)";
+  var days = ["일","월","화","수","목","금","토"];
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return dateStr;
+  return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일 ("+days[d.getDay()]+")";
+}
+function formatArchiveDateNoWeekday(dateStr){
+  if (!dateStr) return "";
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return dateStr;
+  return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일";
+}
+function addOneMonth(dateStr){
+  var d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d.getTime())) return null;
+  var nd = new Date(d.getFullYear(), d.getMonth()+1, d.getDate());
+  var pad = function(n){ return String(n).padStart(2,"0"); };
+  return nd.getFullYear()+"-"+pad(nd.getMonth()+1)+"-"+pad(nd.getDate());
+}
+function archiveCategoryLabel(categories, id){
+  for (var i=0;i<categories.length;i++){ if (categories[i].id === id) return categories[i].label; }
+  return "(알 수 없음)";
+}
+function groupByDate(list){
+  var map = {}, order = [];
+  list.forEach(function(p){
+    var key = p.date || "(날짜 미기입)";
+    if (!map[key]) { map[key] = []; order.push(key); }
+    map[key].push(p);
+  });
+  order.sort(function(a,b){ return a < b ? 1 : (a > b ? -1 : 0); }); // 최신 날짜가 위로
+  return order.map(function(key){ return { date: key, items: map[key] }; });
+}
+
+var ARCHIVE_CONTACT_COLUMNS = [
+  ["role","직","90px"],
+  ["name","상호","170px"],
+  ["companyPhone","전화번호(회사)","160px"],
+  ["personalPhone","전화번호(개인)","160px"],
+  ["note","비고","200px"]
+];
+
+function renderConstructionArchiveSection(panel, cfg){
+  var state = { categories: [], photos: [], contacts: [], activeCategory: null, phaseFilter: "all" };
+
+  function visiblePhotos(){
+    var list = state.photos;
+    if (state.activeCategory){
+      list = list.filter(function(p){ return p.categoryId === state.activeCategory; });
+      if (state.phaseFilter !== "all") list = list.filter(function(p){ return p.phase === state.phaseFilter; });
+    }
+    return list;
+  }
+
+  function lastAfterDate(categoryId){
+    var maxDate = null;
+    state.photos.forEach(function(p){
+      if (p.categoryId === categoryId && p.phase === "after" && p.date){
+        if (!maxDate || p.date > maxDate) maxDate = p.date;
+      }
+    });
+    return maxDate;
+  }
+
+  function isCategoryCompleted(categoryId){
+    var last = lastAfterDate(categoryId);
+    if (!last) return false;
+    var threshold = addOneMonth(last);
+    if (!threshold) return false;
+    return todayDateValue() >= threshold;
+  }
+
+  function paint(){
+    var activeCategories = state.categories.filter(function(c){ return !isCategoryCompleted(c.id); });
+    var completedCategories = state.categories.filter(function(c){ return isCategoryCompleted(c.id); })
+      .map(function(c){ return { id:c.id, label:c.label, lastDate: lastAfterDate(c.id) }; })
+      .sort(function(a,b){ return (b.lastDate||"") < (a.lastDate||"") ? -1 : ((b.lastDate||"") > (a.lastDate||"") ? 1 : 0); });
+
+    var catTabsHtml = '<button data-cat="" class="'+(!state.activeCategory?"active":"")+'">전체</button>' +
+      '<button type="button" id="archiveAddCatBtn" title="사업명 추가">＋</button>' +
+      activeCategories.map(function(c){
+        return '<span class="archive-cat-wrap">' +
+          '<button data-cat="'+escapeHtml(c.id)+'" class="'+(state.activeCategory===c.id?"active":"")+'">'+escapeHtml(c.label)+'</button>' +
+          '<button type="button" class="archive-cat-x" data-delcat="'+escapeHtml(c.id)+'" title="이 사업명 삭제">✕</button>' +
+        '</span>';
+      }).join("");
+
+    var completedDropdownHtml = completedCategories.length
+      ? '<select id="archiveCompletedSelect" class="other-tab-select" title="공사후 마지막 사진 1개월 뒤 자동으로 여기에 모입니다">' +
+          '<option value="">✅ 공사완료 ('+completedCategories.length+')</option>' +
+          completedCategories.map(function(c){
+            return '<option value="'+escapeHtml(c.id)+'"'+(state.activeCategory===c.id?" selected":"")+'>'+
+              escapeHtml(formatArchiveDateNoWeekday(c.lastDate))+' '+escapeHtml(c.label)+'</option>';
+          }).join("") +
+        '</select>'
+      : '';
+
+    var phaseTabsHtml = "";
+    if (state.activeCategory){
+      phaseTabsHtml = '<div class="archive-phase-tabs" id="archivePhaseTabs" style="margin-top:8px;">' +
+        '<button data-f="all" class="'+(state.phaseFilter==="all"?"active":"")+'">전체</button>' +
+        ARCHIVE_PHASES.map(function(ph){
+          return '<button data-f="'+ph.key+'" class="'+(state.phaseFilter===ph.key?"active":"")+'">'+ph.label+'</button>';
+        }).join("") +
+        '<button data-f="contacts" class="'+(state.phaseFilter==="contacts"?"active":"")+'">📇 연락처</button>' +
+      '</div>';
+    }
+
+    var isContactsView = state.activeCategory && state.phaseFilter === "contacts";
+    var bodyHtml;
+    if (!state.categories.length){
+      bodyHtml = '<div class="placeholder archive-empty">아직 등록된 사업명이 없습니다. 위 ＋ 버튼으로 "공간드림사업"처럼 진행 중인 사업명을 먼저 추가해 주세요.</div>';
+    } else if (isContactsView){
+      bodyHtml = contactsTableHtml();
+    } else {
+      var groups = groupByDate(visiblePhotos());
+      if (!groups.length){
+        bodyHtml = '<div class="placeholder archive-empty">아직 등록된 사진이 없습니다. "사진 추가" 버튼으로 올려주세요.</div>';
+      } else {
+        bodyHtml = groups.map(function(g){
+          var cardsHtml = g.items.map(function(p){
+            return '<div class="archive-card" data-id="'+escapeHtml(p.id)+'">' +
+              '<img src="'+escapeHtml(p.url)+'" alt="공사 현장 사진" loading="lazy">' +
+              (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(p.id)+'" title="삭제">✕</button>' : '') +
+              '<div class="meta">' +
+                '<span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span>' +
+                (!state.activeCategory ? '<div class="loc" style="color:var(--accent);">'+escapeHtml(archiveCategoryLabel(state.categories, p.categoryId))+'</div>' : '') +
+                '<div class="loc">'+escapeHtml(p.location || "(장소 미기입)")+'</div>' +
+              '</div>' +
+            '</div>';
+          }).join("");
+          return '<div class="archive-date-group">' +
+            '<div class="archive-date-heading">'+escapeHtml(formatArchiveDate(g.date))+'</div>' +
+            '<div class="archive-grid">'+cardsHtml+'</div>' +
+          '</div>';
+        }).join("");
+      }
+    }
+
+    panel.innerHTML =
+      '<h2>📷 공사 현장 사진</h2>' +
+      '<p class="desc">공사후 마지막 사진 이후 1개월이 지나면 "공사완료" 목록으로 자동으로 옮겨집니다. <a href="gongsa-sajin-upload.html" target="_blank" rel="noopener">📱 공사 현장 사진 모바일 제보 페이지</a> (비밀번호: 0000)</p>' +
+      '<div class="archive-toolbar">' +
+        '<div class="archive-phase-tabs" id="archiveCatTabs">'+catTabsHtml+'</div>' +
+        completedDropdownHtml +
+        (isContactsView ? '' : '<button type="button" class="archive-addbtn" id="archiveAddBtn">＋ 사진 추가</button>') +
+      '</div>' +
+      phaseTabsHtml +
+      '<div id="archiveBody" style="margin-top:12px;">'+bodyHtml+'</div>';
+
+    var completedSelectEl = panel.querySelector("#archiveCompletedSelect");
+    if (completedSelectEl){
+      completedSelectEl.addEventListener("change", function(e){
+        var val = e.target.value;
+        if (!val) return;
+        state.activeCategory = val;
+        state.phaseFilter = "all";
+        paint();
+      });
+    }
+
+    panel.querySelector("#archiveCatTabs").addEventListener("click", function(e){
+      if (e.target.closest("#archiveAddCatBtn")) { openAddCategoryForm(); return; }
+      var delXBtn = e.target.closest("button[data-delcat]");
+      if (delXBtn) {
+        e.stopPropagation();
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        var catId = delXBtn.getAttribute("data-delcat");
+        var label = archiveCategoryLabel(state.categories, catId);
+        var photoCount = state.photos.filter(function(p){ return p.categoryId === catId; }).length;
+        var msg = '"' + label + '" 사업명을 삭제할까요?';
+        msg += photoCount ? ('\n이 사업명에 속한 사진 ' + photoCount + '장(및 연락처)도 함께 영구 삭제되며, 되돌릴 수 없습니다.') : '\n되돌릴 수 없습니다.';
+        if (!confirm(msg)) return;
+        removeCategory(catId);
+        return;
+      }
+      var btn = e.target.closest("button[data-cat]");
+      if (!btn) return;
+      state.activeCategory = btn.getAttribute("data-cat") || null;
+      state.phaseFilter = "all";
+      paint();
+    });
+
+    var phaseTabsEl = panel.querySelector("#archivePhaseTabs");
+    if (phaseTabsEl){
+      phaseTabsEl.addEventListener("click", function(e){
+        var btn = e.target.closest("button[data-f]");
+        if (!btn) return;
+        state.phaseFilter = btn.getAttribute("data-f");
+        paint();
+      });
+    }
+
+    if (isContactsView){
+      wireContactsTable(panel);
+    } else {
+      panel.querySelector("#archiveAddBtn").addEventListener("click", function(){
+        if (!assets) { alert("아직 사진 저장소 연결 중입니다. 잠시 후 다시 시도해 주세요."); return; }
+        if (!state.categories.length) { alert("먼저 위 ＋ 버튼으로 사업명을 추가해 주세요."); return; }
+        if (isArchiveUploadUnlocked()) openArchiveUploadForm();
+        else showArchiveUploadLockModal(openArchiveUploadForm);
+      });
+    }
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-del]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute("data-del");
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        if (!confirm("이 사진을 삭제할까요? 되돌릴 수 없습니다.")) return;
+        var target = null;
+        for (var i=0;i<state.photos.length;i++){ if (state.photos[i].id === id){ target = state.photos[i]; break; } }
+        if (target) removeArchivePhoto(target);
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
+      img.addEventListener("click", function(){
+        var card = img.closest(".archive-card");
+        var id = card.getAttribute("data-id");
+        var p = null;
+        for (var i=0;i<state.photos.length;i++){ if (state.photos[i].id === id){ p = state.photos[i]; break; } }
+        if (p) showArchiveLightbox(p);
+      });
+    });
+  }
+
+  function showArchiveLightbox(p){
+    var overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
+        '<img class="archive-lightbox-img" src="'+escapeHtml(p.url)+'" alt="공사 현장 사진">' +
+        '<div><span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span> ' +
+          '<span class="badge" style="background:var(--surface-2);color:var(--ink);">'+escapeHtml(archiveCategoryLabel(state.categories, p.categoryId))+'</span></div>' +
+        '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(p.date))+'</div>' +
+        '<div class="dt">'+escapeHtml(p.location || "")+'</div>' +
+        (p.note ? '<div class="desc" style="margin-top:8px;">'+escapeHtml(p.note)+'</div>' : '') +
+        '<div class="modal-actions"><button type="button" id="archiveLightboxClose">닫기</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close(){ overlay.remove(); }
+    overlay.querySelector("#archiveLightboxClose").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  }
+
+  function contactsTableHtml(){
+    var rows = state.contacts.filter(function(c){ return c.categoryId === state.activeCategory; });
+    var head = '<tr>' + ARCHIVE_CONTACT_COLUMNS.map(function(c){
+      return '<th style="min-width:'+c[2]+'">'+escapeHtml(c[1])+'</th>';
+    }).join("") + '<th style="width:34px"></th></tr>';
+    var body = rows.map(function(row){
+      var cells = ARCHIVE_CONTACT_COLUMNS.map(function(c){
+        return '<td><input type="text" data-cid="'+escapeHtml(row.id)+'" data-c="'+c[0]+'" value="'+escapeHtml(row[c[0]]||"")+'"></td>';
+      }).join("");
+      return '<tr>' + cells + '<td><button class="rowdel" data-delcid="'+escapeHtml(row.id)+'" title="행 삭제">✕</button></td></tr>';
+    }).join("");
+    return '<div class="tablewrap"><table class="datagrid"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>' +
+      '<button class="addrow" id="archiveContactAddBtn">+ 연락처 추가</button>';
+  }
+
+  function wireContactsTable(panel){
+    Array.prototype.forEach.call(panel.querySelectorAll("input[data-cid]"), function(inp){
+      inp.addEventListener("input", function(){
+        var cid = inp.getAttribute("data-cid"), key = inp.getAttribute("data-c");
+        for (var i=0;i<state.contacts.length;i++){
+          if (state.contacts[i].id === cid){ state.contacts[i][key] = inp.value; break; }
+        }
+        scheduleContactsSave();
+      });
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-delcid]"), function(btn){
+      btn.addEventListener("click", function(){
+        var cid = btn.getAttribute("data-delcid");
+        state.contacts = state.contacts.filter(function(c){ return c.id !== cid; });
+        paint();
+        saveContacts();
+      });
+    });
+    var addBtn = panel.querySelector("#archiveContactAddBtn");
+    if (addBtn){
+      addBtn.addEventListener("click", function(){
+        var row = { id: "ct_" + Date.now() + "_" + Math.random().toString(36).slice(2,7), categoryId: state.activeCategory };
+        ARCHIVE_CONTACT_COLUMNS.forEach(function(c){ row[c[0]] = ""; });
+        state.contacts.push(row);
+        paint();
+        var firstInput = panel.querySelector('input[data-cid="'+row.id+'"]');
+        if (firstInput) firstInput.focus();
+      });
+    }
+  }
+
+  function openAddCategoryForm(){
+    if (!isEditUnlocked()) { showEditLockModal(); return; }
+    if (document.getElementById("archiveCatOverlay")) return;
+    var overlay = document.createElement("div");
+    overlay.id = "archiveCatOverlay";
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true">' +
+        '<h3>＋ 사업명 추가</h3>' +
+        '<p class="modal-desc">예: 공간드림사업, 화장실 개선공사 등 진행 중인 사업 이름을 적어주세요.</p>' +
+        '<input type="text" class="editlock-input" id="archiveCatInput" placeholder="사업명" autocomplete="off">' +
+        '<div class="archive-form-error" id="archiveCatError">사업명을 입력해 주세요.</div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" id="archiveCatCancel">취소</button>' +
+          '<button type="button" class="primary" id="archiveCatConfirm">확인</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var input = overlay.querySelector("#archiveCatInput");
+    function close(){ overlay.remove(); }
+    function confirmAdd(){
+      var label = input.value.trim();
+      if (!label) { overlay.querySelector("#archiveCatError").style.display = "block"; return; }
+      var cat = { id: "cat_" + Date.now() + "_" + Math.random().toString(36).slice(2,7), label: label, createdAt: new Date().toISOString() };
+      state.categories.push(cat);
+      state.activeCategory = cat.id;
+      state.phaseFilter = "all";
+      saveCategoryAdd(cat);
+      close();
+      paint();
+    }
+    overlay.querySelector("#archiveCatCancel").addEventListener("click", close);
+    overlay.querySelector("#archiveCatConfirm").addEventListener("click", confirmAdd);
+    input.addEventListener("keydown", function(e){ if (e.key === "Enter") confirmAdd(); });
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+    setTimeout(function(){ input.focus(); }, 30);
+  }
+
+  function openArchiveUploadForm(){
+    if (document.getElementById("archiveUploadOverlay")) return;
+    var overlay = document.createElement("div");
+    overlay.id = "archiveUploadOverlay";
+    overlay.className = "modal-overlay";
+    var defaultCat = state.activeCategory || (state.categories[0] && state.categories[0].id) || "";
+    var defaultPhase = state.phaseFilter !== "all" ? state.phaseFilter : "before";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true">' +
+        '<h3>📷 공사 현장 사진 추가</h3>' +
+        '<div class="archive-form-row"><label>사업명</label>' +
+          '<select id="archiveCatSelect">' +
+            state.categories.map(function(c){ return '<option value="'+escapeHtml(c.id)+'"'+(c.id===defaultCat?" selected":"")+'>'+escapeHtml(c.label)+'</option>'; }).join("") +
+          '</select>' +
+        '</div>' +
+        '<div class="archive-form-row"><label>공사 단계</label>' +
+          '<select id="archivePhaseInput">' +
+            ARCHIVE_PHASES.map(function(ph){ return '<option value="'+ph.key+'"'+(ph.key===defaultPhase?" selected":"")+'>'+ph.label+'</option>'; }).join("") +
+          '</select>' +
+        '</div>' +
+        '<div class="archive-form-row"><label>날짜</label>' +
+          '<input type="date" id="archiveDateInput" value="'+todayDateValue()+'">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>사진 선택</label>' +
+          '<input type="file" id="archiveFileInput" accept="image/*">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>장소 (선택)</label>' +
+          '<input type="text" id="archiveLocationInput" placeholder="예: 본관 3층 복도">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>메모 (선택)</label>' +
+          '<textarea id="archiveNoteInput" placeholder="특이사항이 있으면 적어주세요"></textarea>' +
+        '</div>' +
+        '<div class="archive-form-error" id="archiveFormError"></div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" id="archiveFormCancel">취소</button>' +
+          '<button type="button" class="primary" id="archiveFormSave">저장</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    function close(){ overlay.remove(); }
+    function showError(msg){
+      var el = overlay.querySelector("#archiveFormError");
+      el.textContent = msg; el.style.display = "block";
+    }
+
+    overlay.querySelector("#archiveFormCancel").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+
+    overlay.querySelector("#archiveFormSave").addEventListener("click", function(){
+      var fileInp = overlay.querySelector("#archiveFileInput");
+      var f = fileInp.files && fileInp.files[0];
+      if (!f) { showError("사진을 선택해 주세요."); return; }
+      if (f.type.indexOf("image/") !== 0) { showError("이미지 파일만 올릴 수 있어요."); return; }
+      if (f.size > ARCHIVE_MAX_BYTES) { showError("사진 용량이 너무 큽니다(12MB 이하로 올려주세요)."); return; }
+
+      var saveBtn = overlay.querySelector("#archiveFormSave");
+      saveBtn.disabled = true; saveBtn.textContent = "업로드 중…";
+
+      var entry = {
+        categoryId: overlay.querySelector("#archiveCatSelect").value,
+        phase: overlay.querySelector("#archivePhaseInput").value,
+        date: overlay.querySelector("#archiveDateInput").value || todayDateValue(),
+        location: overlay.querySelector("#archiveLocationInput").value.trim(),
+        note: overlay.querySelector("#archiveNoteInput").value.trim()
+      };
+
+      assets.upload(f).then(function(res){
+        entry.id = res.id;
+        entry.url = res.url;
+        entry.uploadedAt = new Date().toISOString();
+        state.photos.push(entry);
+        addArchivePhoto(entry);
+        close();
+        paint();
+      }).catch(function(){
+        saveBtn.disabled = false; saveBtn.textContent = "저장";
+        showError("업로드에 실패했어요. 네트워크 상태를 확인하고 다시 시도해 주세요.");
+      });
+    });
+  }
+
+  function archiveDocRef(){ return firebase.firestore().collection("sections").doc("construction_archive"); }
+
+  var scheduleContactsSave = debounce(saveContacts, 500);
+  function saveContacts(){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ contacts: state.contacts }).catch(function(){
+      ref.set({ contacts: state.contacts }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function saveCategoryAdd(cat){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ categories: firebase.firestore.FieldValue.arrayUnion(cat) }).catch(function(){
+      ref.set({ categories: [cat] }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function addArchivePhoto(entry){
+    if (!db) return;
+    var ref = archiveDocRef();
+    ref.update({ photos: firebase.firestore.FieldValue.arrayUnion(entry) }).catch(function(){
+      ref.set({ photos: [entry] }, { merge: true }).catch(function(){});
+    });
+  }
+
+  function removeArchivePhoto(entry){
+    state.photos = state.photos.filter(function(p){ return p.id !== entry.id; });
+    paint();
+    if (db) archiveDocRef().update({ photos: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
+    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+  }
+
+  // 사업명(탭) 삭제 — 사업명 자체와 함께, 그 사업명에 속한 사진(Storage 파일 포함)·연락처도 전부 영구 삭제한다.
+  function removeCategory(catId){
+    var removedPhotos = state.photos.filter(function(p){ return p.categoryId === catId; });
+    state.categories = state.categories.filter(function(c){ return c.id !== catId; });
+    state.photos = state.photos.filter(function(p){ return p.categoryId !== catId; });
+    state.contacts = state.contacts.filter(function(c){ return c.categoryId !== catId; });
+    state.activeCategory = null;
+    state.phaseFilter = "all";
+    paint();
+    if (db) {
+      archiveDocRef().update({
+        categories: state.categories,
+        photos: state.photos,
+        contacts: state.contacts
+      }).catch(function(){});
+    }
+    removedPhotos.forEach(function(p){
+      if (assets && assets.remove) assets.remove(p.id).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/construction_archive").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data) {
+          if (Array.isArray(data.categories)) state.categories = data.categories;
+          if (Array.isArray(data.photos)) state.photos = data.photos;
+          if (Array.isArray(data.contacts)) state.contacts = data.contacts;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- 시설 보수 현황 (교직원이 휴대폰으로 고장·보수 요청 사진 전송 → 시설주무관이 처리) ----
+   휴대폰에서 요청을 보내는 화면은 이 사이트가 아니라 별도 파일(sisul-bosu-jeonsong.html)이며,
+   같은 Firestore 문서(sections/facility_repair)를 공유해서 실시간 연동됨.
+   처리중/처리완료/처리불가 구분은 이 홈페이지(데스크톱)에서만 보이고 조작할 수 있으며,
+   교직원 전송 화면에는 이 구분이 전혀 노출되지 않음(모든 요청은 전송 시 자동으로 "처리중"이 됨). */
+var REPAIR_STATUSES = [
+  { key:"processing", label:"처리중" },
+  { key:"done", label:"처리완료" },
+  { key:"rejected", label:"처리불가" }
+];
+function repairStatusLabel(key){
+  for (var i=0;i<REPAIR_STATUSES.length;i++){ if (REPAIR_STATUSES[i].key === key) return REPAIR_STATUSES[i].label; }
+  return key;
+}
+
+function renderFacilityRepairSection(panel, cfg){
+  var state = { reports: [], statusFilter: "processing" };
+
+  function visibleReports(){
+    if (state.statusFilter === "all") return state.reports;
+    return state.reports.filter(function(r){ return r.status === state.statusFilter; });
+  }
+
+  function repairDocRef(){ return firebase.firestore().collection("sections").doc("facility_repair"); }
+
+  function paint(){
+    var tabsHtml = '<div class="archive-phase-tabs" id="repairStatusTabs">' +
+      '<button data-f="all" class="'+(state.statusFilter==="all"?"active":"")+'">전체</button>' +
+      REPAIR_STATUSES.map(function(s){
+        return '<button data-f="'+s.key+'" class="'+(state.statusFilter===s.key?"active":"")+'">'+s.label+'</button>';
+      }).join("") +
+    '</div>';
+
+    var groups = groupByDate(visibleReports());
+    var bodyHtml;
+    if (!groups.length){
+      bodyHtml = '<div class="placeholder archive-empty">'+
+        (state.statusFilter === "all" ? "아직 접수된 시설 보수 요청이 없습니다." : "해당 상태의 요청이 없습니다.") +
+      '</div>';
+    } else {
+      bodyHtml = groups.map(function(g){
+        var cardsHtml = g.items.map(function(r){
+          var actionsHtml = r.status === "processing"
+            ? '<div class="repair-actions">' +
+                '<button type="button" class="repair-donebtn" data-done="'+escapeHtml(r.id)+'">✅ 처리 완료</button>' +
+                '<button type="button" class="repair-rejectbtn" data-reject="'+escapeHtml(r.id)+'">🚫 처리 불가</button>' +
+              '</div>'
+            : '';
+          return '<div class="archive-card" data-id="'+escapeHtml(r.id)+'">' +
+            '<img src="'+escapeHtml(r.url)+'" alt="시설 보수 사진" loading="lazy">' +
+            (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(r.id)+'" title="삭제">✕</button>' : '') +
+            '<div class="meta">' +
+              '<span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span>' +
+              '<div class="loc">'+escapeHtml(r.location || "(장소 미기입)")+'</div>' +
+              '<div class="dt">👤 신청자: '+escapeHtml(r.applicant || "(미기입)")+'</div>' +
+              (r.note ? '<div class="dt">'+escapeHtml(r.note)+'</div>' : '') +
+              actionsHtml +
+            '</div>' +
+          '</div>';
+        }).join("");
+        return '<div class="archive-date-group">' +
+          '<div class="archive-date-heading">'+escapeHtml(formatArchiveDate(g.date))+'</div>' +
+          '<div class="archive-grid">'+cardsHtml+'</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    panel.innerHTML =
+      '<h2>🛠️ 시설 보수 현황</h2>' +
+      '<p class="desc">교직원이 휴대폰으로 보낸 시설 고장·보수 요청 사진입니다. <a href="sisul-bosu-jeonsong.html" target="_blank" rel="noopener">📱 시설 보수 현황 모바일 제보 페이지</a> (비밀번호: 0000)</p>' +
+      '<div class="archive-toolbar">' + tabsHtml + '</div>' +
+      '<div id="repairBody" style="margin-top:12px;">'+bodyHtml+'</div>';
+
+    panel.querySelector("#repairStatusTabs").addEventListener("click", function(e){
+      var btn = e.target.closest("button[data-f]");
+      if (!btn) return;
+      state.statusFilter = btn.getAttribute("data-f");
+      paint();
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-del]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute("data-del");
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        if (!confirm("이 요청을 삭제할까요? 되돌릴 수 없습니다.")) return;
+        var target = null;
+        for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ target = state.reports[i]; break; } }
+        if (target) removeRepairReport(target);
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-done]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        updateRepairStatus(btn.getAttribute("data-done"), "done");
+      });
+    });
+    Array.prototype.forEach.call(panel.querySelectorAll("[data-reject]"), function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        updateRepairStatus(btn.getAttribute("data-reject"), "rejected");
+      });
+    });
+
+    Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
+      img.addEventListener("click", function(){
+        var card = img.closest(".archive-card");
+        var id = card.getAttribute("data-id");
+        var r = null;
+        for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ r = state.reports[i]; break; } }
+        if (r) showRepairLightbox(r);
+      });
+    });
+  }
+
+  function showRepairLightbox(r){
+    var overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
+        '<img class="archive-lightbox-img" src="'+escapeHtml(r.url)+'" alt="시설 보수 사진">' +
+        '<div><span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span></div>' +
+        '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(r.date))+'</div>' +
+        '<div class="dt">'+escapeHtml(r.location || "")+'</div>' +
+        '<div class="dt">👤 신청자: '+escapeHtml(r.applicant || "(미기입)")+'</div>' +
+        (r.note ? '<div class="desc" style="margin-top:8px;">'+escapeHtml(r.note)+'</div>' : '') +
+        '<div class="modal-actions"><button type="button" id="repairLightboxClose">닫기</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close(){ overlay.remove(); }
+    overlay.querySelector("#repairLightboxClose").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+  }
+
+  function updateRepairStatus(id, status){
+    var idx = -1;
+    for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ idx = i; break; } }
+    if (idx === -1) return;
+    var oldEntry = state.reports[idx];
+    var newEntry = {};
+    for (var k in oldEntry) { if (Object.prototype.hasOwnProperty.call(oldEntry, k)) newEntry[k] = oldEntry[k]; }
+    newEntry.status = status;
+    newEntry.resolvedAt = new Date().toISOString();
+    state.reports[idx] = newEntry;
+    paint();
+    if (db){
+      var ref = repairDocRef();
+      ref.update({ reports: firebase.firestore.FieldValue.arrayRemove(oldEntry) }).then(function(){
+        return ref.update({ reports: firebase.firestore.FieldValue.arrayUnion(newEntry) });
+      }).catch(function(){
+        ref.set({ reports: state.reports }, { merge: true }).catch(function(){});
+      });
+    }
+  }
+
+  function removeRepairReport(entry){
+    state.reports = state.reports.filter(function(r){ return r.id !== entry.id; });
+    paint();
+    if (db) repairDocRef().update({ reports: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
+    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/facility_repair").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && Array.isArray(data.reports)) {
+          state.reports = data.reports;
+          markSynced();
+          paint();
+        }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---------------- sync indicator ---------------- */
+function markSynced(){
+  var dot = document.getElementById("syncDot"), txt = document.getElementById("syncText");
+  if (!dot) return;
+  dot.classList.add("on");
+  txt.textContent = "실시간 동기화됨";
+}
+
+/* ---------------- clock ---------------- */
+function tickClock(){
+  var now = new Date();
+  var h = String(now.getHours()).padStart(2,"0");
+  var m = String(now.getMinutes()).padStart(2,"0");
+  var clockTime = document.getElementById("clockTime");
+  var clockDate = document.getElementById("clockDate");
+  if (!clockTime || !clockDate) return;
+  clockTime.textContent = h + ":" + m;
+  var days = ["일","월","화","수","목","금","토"];
+  clockDate.textContent = now.getFullYear()+"년 "+(now.getMonth()+1)+"월 "+now.getDate()+"일 ("+days[now.getDay()]+")";
+}
+
+/* ---------------- 라이트/다크 모드 전환 ---------------- */
+var THEME_KEY = "ojeong_theme";
+function effectiveTheme(){
+  var attr = document.documentElement.getAttribute("data-theme");
+  if (attr === "light" || attr === "dark") return attr;
+  try {
+    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
+  } catch(e){}
+  return "light";
+}
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  try { localStorage.setItem(THEME_KEY, t); } catch(e){}
+  paintThemeBtn();
+}
+function paintThemeBtn(){
+  var btn = document.getElementById("themeToggleBtn");
+  if (!btn) return;
+  var cur = effectiveTheme();
+  btn.textContent = cur === "dark" ? "☀️" : "🌙";
+  btn.title = cur === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환";
+}
+function initThemeToggle(){
+  var btn = document.getElementById("themeToggleBtn");
+  if (!btn) return;
+  paintThemeBtn();
+  btn.addEventListener("click", function(){
+    applyTheme(effectiveTheme() === "dark" ? "light" : "dark");
+  });
+}
+
+/* ---------------- Firebase 연결 (로그인 없이 익명 인증으로 접속) ----------------
+   아래 firebaseConfig 값을 본인의 Firebase 프로젝트 값으로 반드시 교체하세요.
+   Firebase 콘솔 > 프로젝트 설정(톱니바퀴) > 일반 탭 > 내 앱(웹 앱)에서 그대로 복사하면 됩니다.
+   이 값들은 원래 공개되어도 안전하도록 설계된 값입니다(비밀키가 아닙니다) —
+   실제 보안(로그인 없이도 함부로 지우거나 훼손하지 못하게)은 Firestore/Storage 규칙이 담당합니다.
+   같이 보내드린 "설정가이드.md" 파일을 따라하면 이 값을 채우는 방법이 자세히 나와 있습니다. */
+var firebaseConfig = {
+  apiKey: "AIzaSyB_-sP0EpjtuVgV4ufF2WpaDbGfBChdyQI",
+  authDomain: "ojeong-office.firebaseapp.com",
+  projectId: "ojeong-office",
+  storageBucket: "ojeong-office.firebasestorage.app",
+  messagingSenderId: "459186984437",
+  appId: "1:459186984437:web:036d4de2efb9de1d8a3cbc"
+};
+
+/* db/assets 어댑터: 기존 Claude 아티팩트의 db/assets 기능과 거의 같은 모양(doc().set/update/onSnapshot,
+   assets.upload)으로 감싸서, 위의 모든 render*Section 함수를 그대로 재사용할 수 있게 합니다. */
+function makeDbAdapter(firestoreDb){
+  return {
+    doc: function(path){
+      var parts = path.split("/");
+      var ref = firestoreDb.collection(parts[0]).doc(parts[1]);
+      return {
+        set: function(data){ return ref.set(data); },
+        update: function(data){ return ref.update(data); },
+        onSnapshot: function(onNext, onError){
+          return ref.onSnapshot(function(snap){
+            onNext({ exists: snap.exists, data: function(){ return snap.data(); } });
+          }, onError || function(){});
+        }
+      };
+    }
+  };
+}
+
+function makeAssetsAdapter(storageInstance){
+  return {
+    upload: function(file){
+      var safeName = (file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "_");
+      var id = Date.now() + "_" + Math.random().toString(36).slice(2) + "_" + safeName;
+      var ref = storageInstance.ref().child("uploads/" + id);
+      return ref.put(file).then(function(snap){
+        return snap.ref.getDownloadURL().then(function(url){
+          return { id: id, url: url, sizeBytes: file.size, contentType: file.type };
+        });
+      });
+    },
+    remove: function(id){
+      return storageInstance.ref().child("uploads/" + id).delete();
+    }
+  };
+}
+
+/* ---------------- boot ---------------- */
+buildTabs();
+buildPanels();
+tickClock();
+setInterval(tickClock, 15000);
+initThemeToggle();
+
+(function bootFirebase(){
+  var syncTxt = document.getElementById("syncText");
+  var banner = document.getElementById("setupBanner");
+  var notConfigured = !firebaseConfig.apiKey || firebaseConfig.apiKey.indexOf("여기에") === 0;
+
+  if (typeof firebase === "undefined" || notConfigured){
+    if (syncTxt) syncTxt.textContent = "설정 필요 (firebaseConfig 미입력)";
+    if (banner) banner.classList.add("show");
+    return;
+  }
+
+  try {
+    firebase.initializeApp(firebaseConfig);
+  } catch(e){
+    if (syncTxt) syncTxt.textContent = "Firebase 연결 실패";
+    if (banner) banner.classList.add("show");
+    return;
+  }
+
+  firebase.auth().signInAnonymously().then(function(){
+    db = makeDbAdapter(firebase.firestore());
+    assets = makeAssetsAdapter(firebase.storage());
+    buildPanels(); // db가 준비됐으니 실시간 구독을 붙여서 다시 그림
+  }).catch(function(err){
+    if (syncTxt) syncTxt.textContent = "연결 대기 중 (오프라인 모드)";
+    if (banner) banner.classList.add("show");
+    console.error("Firebase 익명 로그인 실패:", err);
+  });
+})();
+
+})();
+</script>
+</body>
+</html>
