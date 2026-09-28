@@ -977,7 +977,7 @@ function showEdufineSyncModal(){
   overlay.innerHTML =
     '<div class="modal-card neis-modal-card" role="dialog" aria-modal="true">' +
       '<h3>🔍 에듀파인 화면 진단 캡처 <span style="font-size:11px;font-weight:700;color:var(--ink-dim);">(실험용)</span></h3>' +
-      '<p class="modal-desc">엑셀 없이 화면에서 바로 예산 데이터를 가져올 수 있는지 알아보기 위한 <b>진단 도구</b>예요. 에듀파인 화면에서 오가는 요청들을 그대로 캡처해서 사이버행정실로 보내주기만 해요(최대 60건, 화면에는 아무것도 안 뜸) — 이걸로 실제 어떤 요청이 오가는지 확인한 뒤, 잘 잡히면 나이스 동기화처럼 엑셀 없이 바로 되는 기능을 만들 수 있어요.<br>※ <b>"사업관리 → 사업관리카드 → 사업관리카드(예산)"</b> 화면에서 먼저 시도해 주세요(엑셀 저장 화면보다 이 화면이 될 가능성이 더 높아요).</p>' +
+      '<p class="modal-desc">엑셀 없이 화면에서 바로 예산 데이터를 가져올 수 있는지 알아보기 위한 <b>진단 도구</b>예요. 에듀파인 화면에서 오가는 요청들을 그대로 캡처해서 사이버행정실로 보내주기만 해요(최대 60건, 화면에는 아무것도 안 뜸).<br>※ <b>"사업관리 → 사업관리카드 → 사업관리카드(전체)"</b> 화면에서 시도해 주세요. (조회구분 "사업별" + <b>"모든사업" 체크</b> 후 조회 — 트리로 접혀있지 않고 세부사업이 한 번에 전부 펼쳐져서 나오는 화면이라 데이터가 빠짐없이 잡힐 가능성이 높아요. "사업관리카드(예산)" 화면은 트리가 접혀있어서 일부만 잡히는 문제가 확인됐어요.)</p>' +
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DRAG + '</div>' +
@@ -992,7 +992,7 @@ function showEdufineSyncModal(){
       '<div class="neis-visual-steps">' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_CLICK + '</div>' +
-          '<div class="neis-visual-text"><div class="t">② "사업관리카드(예산)" 화면을 열고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 그 화면을 열고, 즐겨찾기를 한 번 누르면 캡처가 시작돼요. 그다음 "조회" 버튼을 눌러서 예산 데이터가 화면에 뜨게 해주세요.</div></div>' +
+          '<div class="neis-visual-text"><div class="t">② "사업관리카드(전체)" 화면을 열고 즐겨찾기 클릭</div><div class="d">에듀파인에 로그인한 채로 [사업관리 → 사업관리카드 → 사업관리카드(전체)] 화면을 열고, 즐겨찾기를 한 번 누르면 캡처가 시작돼요. 그다음 조회구분 "사업별"에서 <b>"모든사업"을 체크</b>하고 "조회" 버튼을 눌러서 세부사업 전체 목록이 화면에 뜨게 해주세요.</div></div>' +
         '</div>' +
         '<div class="neis-visual-step">' +
           '<div class="neis-visual-icon">' + ICON_DONE + '</div>' +
