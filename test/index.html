@@ -1319,7 +1319,7 @@ function renderWorkshopSection(panel, cfg){
   function renderBudgetConnectBtn(row){
     row.innerHTML =
       '<button type="button" class="budget-upload-label" id="budgetConnectFolderBtn">📁 다운로드 폴더 연결</button>' +
-      '<div class="budget-upload-note">처음 한 번만 다운로드 폴더 접근을 허용하면, 다음부턴 버튼 한 번으로 최신 파일을 가져와요.</div>';
+      '<div class="budget-upload-note">처음 한 번만 다운로드 폴더 접근을 허용하면, 다음부턴 버튼 한 번으로 최신 파일을 가져와요. (만약 "폴더를 열 수 없음" 오류가 뜨면, 다운로드 폴더 안에 새 폴더를 하나 만들어서 그 폴더를 대신 연결해 보세요 — 윈도우가 다운로드 폴더 자체를 시스템 폴더로 인식하는 경우가 있어요.)</div>';
     var btn = document.getElementById("budgetConnectFolderBtn");
     if (btn) btn.addEventListener("click", connectBudgetFolder);
   }
@@ -1337,7 +1337,7 @@ function renderWorkshopSection(panel, cfg){
 
   function connectBudgetFolder(){
     if (!("showDirectoryPicker" in window)) return;
-    window.showDirectoryPicker({ mode: "read" }).then(function(handle){
+    window.showDirectoryPicker({ mode: "read", startIn: "downloads" }).then(function(handle){
       return saveBudgetDirHandle(handle).then(function(){ return handle; });
     }).then(function(handle){
       budgetDirHandle = handle;
