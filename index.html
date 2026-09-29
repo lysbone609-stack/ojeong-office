@@ -407,6 +407,38 @@
   .daycell .addentry{font:inherit;font-size:10px;font-weight:700;color:var(--good);background:transparent;
     border:1px dashed var(--good);border-radius:6px;padding:2px;cursor:pointer;margin-top:auto;}
 
+  /* 공사 공정표 (캘린더형 간트) */
+  .constr-week{margin-bottom:8px;}
+  .constr-daynum-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;min-width:640px;}
+  .constr-daynum{background:var(--surface-2);border-radius:8px 8px 0 0;padding:5px 6px 3px;min-width:0;}
+  .constr-daynum.otherMonth{opacity:.42;}
+  .constr-daynum.today{box-shadow:inset 0 0 0 2px var(--accent);}
+  .constr-daynum .dnum{font-size:11px;font-weight:700;color:var(--ink-dim);}
+  .constr-daynum .dnum.sun{color:var(--danger);}
+  .constr-daynum .dnum.sat{color:var(--accent);}
+  .constr-daynum.today .dnum{color:var(--accent);}
+  .constr-events-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px 6px;min-width:640px;
+    background:var(--surface-2);border-radius:0 0 8px 8px;padding:3px 0 5px;}
+  .constr-bar{border-radius:5px;padding:2px 7px;font-size:10.5px;font-weight:700;overflow:hidden;
+    white-space:nowrap;text-overflow:ellipsis;cursor:pointer;line-height:18px;height:18px;}
+  .constr-legend-title{margin:16px 0 8px;font-size:13px;font-weight:700;}
+  .constr-legend{display:flex;flex-direction:column;gap:8px;}
+  .constr-legend-item{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;}
+  .constr-legend-dot{width:13px;height:13px;border-radius:4px;flex:none;}
+  .constr-legend-text{flex:1;min-width:0;}
+  .constr-legend-name{font-weight:700;font-size:13px;overflow-wrap:break-word;}
+  .constr-legend-range{font-size:11.5px;color:var(--ink-dim);margin-top:2px;overflow-wrap:break-word;}
+  .constr-legend-actions{display:flex;gap:10px;flex:none;}
+  .constr-legend-actions button{font:inherit;font-size:12px;font-weight:700;color:var(--accent);background:none;
+    border:none;padding:0;cursor:pointer;text-decoration:underline;white-space:nowrap;}
+  .constr-legend-actions button[data-delid]{color:var(--danger);}
+  .constr-color-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
+  .constr-color-dot{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;flex:none;}
+  .constr-color-dot.selected{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface);}
+  .constr-color-row input[type="color"]{width:30px;height:26px;border:1px solid var(--line);border-radius:6px;
+    padding:0;cursor:pointer;background:var(--surface);flex:none;}
+
   /* periods */
   .periodgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
   .periodgroup{background:var(--surface-2);border-radius:10px;padding:12px;}
@@ -481,7 +513,7 @@
 
 <div class="wrap">
   <header class="top">
-    <h1 id="siteTitle">오정초등학교 사이버 행정실 <span class="beta-badge">beta v1</span></h1>
+    <h1 id="siteTitle">오정초등학교 사이버 행정실 <span class="beta-badge">beta v1.1</span></h1>
     <div class="meta">
       <div class="clockwrap">
         <span class="clock-time" id="clockTime">--:--</span>
@@ -495,7 +527,7 @@
   <script>
     // 테스트 배포(test/ 경로)에서만 제목에 "(테스트)"와 버전 표시를 붙임. 운영(index.html 루트)에는 안 붙음.
     (function(){
-      var APP_VERSION = "v37";
+      var APP_VERSION = "v39";
       if (location.pathname.indexOf("/test/") !== -1){
         var titleEl = document.getElementById("siteTitle");
         if (titleEl){
@@ -718,6 +750,7 @@ var ALL_SECTION_DEFS = [
     ]},
   { key:"classroom_map", title:"교실배치도", icon:"🗺️", kind:"map" },
   { key:"construction_archive", title:"공사 현장 사진", icon:"📷", kind:"construction_archive" },
+  { key:"construction_schedule", title:"공사 공정표", icon:"🚧", kind:"construction_schedule" },
   { key:"facility_repair", title:"시설 보수 현황", icon:"🛠️", kind:"facility_repair" },
   { key:"budget_dashboard", title:"예산 대시보드", icon:"💰", kind:"budget_dashboard" }
 ];
@@ -725,7 +758,7 @@ var ALL_SECTION_DEFS = [
 /* 메뉴 탭 노출 순서: 자주 쓰는 것만 상단에 두고, 나머지는 "기타" 탭 안에서 드롭다운으로 고르게 함.
    기존 섹션 정의(ALL_SECTION_DEFS)와 Firestore 저장 경로(sections/<key>)는 그대로 두고,
    화면에 보여줄 순서만 이 두 목록으로 다시 배치함. */
-var MAIN_TAB_ORDER = ["schedule","budget_dashboard","meal","construction_archive","facility_repair","vendors_regular","vendors_misc","classroom_map"];
+var MAIN_TAB_ORDER = ["schedule","budget_dashboard","meal","construction_archive","construction_schedule","facility_repair","vendors_regular","vendors_misc","classroom_map"];
 var OTHER_TAB_ORDER = ["timetable","upcoming","periods","contractors","calendar"];
 function findSectionDef(key){
   for (var i=0;i<ALL_SECTION_DEFS.length;i++){ if (ALL_SECTION_DEFS[i].key === key) return ALL_SECTION_DEFS[i]; }
@@ -1682,6 +1715,7 @@ function renderSectionByKind(panel, s){
   else if (s.kind === "timetable") renderTimetableSection(panel, s);
   else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
   else if (s.kind === "construction_archive") renderConstructionArchiveSection(panel, s);
+  else if (s.kind === "construction_schedule") renderConstructionScheduleSection(panel, s);
   else if (s.kind === "facility_repair") renderFacilityRepairSection(panel, s);
   else if (s.kind === "budget_dashboard") renderBudgetDashboardSection(panel, s);
 }
@@ -2388,6 +2422,276 @@ function renderScheduleSection(panel, cfg){
       if (snap.exists) {
         var data = snap.data();
         if (data && data.days) { days = data.days; markSynced(); paint(); }
+      }
+    }, function(){});
+    unsubs.push(unsub);
+  }
+}
+
+/* ---- 공사 공정표 (캘린더형 간트 — 공사별로 색을 지정해, 기간을 달력 위에 막대로 표시) ----
+   Firestore sections/construction_schedule 문서에 projects 배열({id,name,start,end,color,note})로 저장,
+   로그인 없이 이 링크를 보는 누구나 추가·수정·삭제 가능(사이트의 다른 표/일정표와 동일한 방식). */
+var CONSTR_COLOR_PALETTE = ["#2255a4","#b8492f","#2f8a5b","#a3690f","#7c3aed","#0e7490","#c2410c","#be185d","#4d7c0f","#475569"];
+
+function constrTextColorFor(hex){
+  var h = String(hex || "").replace("#", "");
+  if (h.length === 3) h = h.split("").map(function(c){ return c + c; }).join("");
+  if (h.length !== 6) return "#fff";
+  var r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+  var lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+  return lum > 0.62 ? "#1b212c" : "#ffffff";
+}
+
+function renderConstructionScheduleSection(panel, cfg){
+  var projects = []; // [{id,name,start,end,color,note}]
+  var dayNames = ["일","월","화","수","목","금","토"];
+  var today0 = new Date();
+  var viewYear = today0.getFullYear();
+  var viewMonth = today0.getMonth(); // 0-indexed
+
+  function fmt(d){
+    var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+    return y + "-" + m + "-" + dd;
+  }
+  function isToday(d){
+    var t = new Date();
+    return d.getFullYear()===t.getFullYear() && d.getMonth()===t.getMonth() && d.getDate()===t.getDate();
+  }
+  function fmtDisplay(ymd){
+    if (!ymd) return "";
+    var p = String(ymd).split("-");
+    return p.length === 3 ? (p[0] + "." + p[1] + "." + p[2]) : ymd;
+  }
+  function overlapsWeek(p, weekStartStr, weekEndStr){
+    return p.start <= weekEndStr && p.end >= weekStartStr;
+  }
+
+  function paint(){
+    var firstOfMonth = new Date(viewYear, viewMonth, 1);
+    var startDow = firstOfMonth.getDay();
+    var gridStart = new Date(viewYear, viewMonth, 1 - startDow);
+    var lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+    var endDow = lastOfMonth.getDay();
+    var gridEnd = new Date(viewYear, viewMonth, lastOfMonth.getDate() + (6 - endDow));
+    var totalDays = Math.round((gridEnd - gridStart) / 86400000) + 1;
+    var totalWeeks = totalDays / 7;
+
+    var dowHtml = dayNames.map(function(n, i){
+      var cls = i === 0 ? "sun" : (i === 6 ? "sat" : "");
+      return '<span class="'+cls+'">'+n+'</span>';
+    }).join("");
+
+    var sortedProjects = projects.slice().sort(function(a,b){ return a.start < b.start ? -1 : (a.start > b.start ? 1 : 0); });
+
+    var weeksHtml = "";
+    for (var w=0; w<totalWeeks; w++){
+      var weekDays = [];
+      for (var i=0;i<7;i++){
+        var d = new Date(gridStart); d.setDate(d.getDate() + w*7 + i);
+        weekDays.push(d);
+      }
+      var weekStartStr = fmt(weekDays[0]), weekEndStr = fmt(weekDays[6]);
+
+      var daynumHtml = weekDays.map(function(d){
+        var inMonth = d.getMonth() === viewMonth;
+        var dow = d.getDay();
+        var numCls = dow === 0 ? "sun" : (dow === 6 ? "sat" : "");
+        return '<div class="constr-daynum'+(inMonth?'':' otherMonth')+(isToday(d)?' today':'')+'"><span class="dnum '+numCls+'">'+d.getDate()+'</span></div>';
+      }).join("");
+
+      // 이 주에 걸치는 공사만 골라, 서로 겹치지 않도록 레인(줄)을 배정 — 겹치는 공사는 다른 줄에 쌓임
+      var weekProjects = sortedProjects.filter(function(p){ return overlapsWeek(p, weekStartStr, weekEndStr); });
+      var lanes = []; // lanes[i] = 그 레인에서 마지막으로 사용한 endCol
+      var placed = weekProjects.map(function(p){
+        var startCol = p.start <= weekStartStr ? 0 : Math.round((new Date(p.start + "T00:00:00") - weekDays[0]) / 86400000);
+        var endCol = p.end >= weekEndStr ? 6 : Math.round((new Date(p.end + "T00:00:00") - weekDays[0]) / 86400000);
+        if (startCol < 0) startCol = 0;
+        if (endCol > 6) endCol = 6;
+        if (endCol < startCol) endCol = startCol;
+        var lane = -1;
+        for (var li=0; li<lanes.length; li++){ if (lanes[li] < startCol){ lane = li; break; } }
+        if (lane === -1){ lane = lanes.length; lanes.push(endCol); } else { lanes[lane] = endCol; }
+        return { p:p, startCol:startCol, endCol:endCol, lane:lane };
+      });
+      var laneCount = lanes.length;
+
+      var barsHtml = placed.map(function(pl){
+        var startsHere = pl.p.start >= weekStartStr;
+        var endsHere = pl.p.end <= weekEndStr;
+        var rangeLabel = fmtDisplay(pl.p.start) + " ~ " + fmtDisplay(pl.p.end);
+        var titleAttr = pl.p.name + " (" + rangeLabel + ")" + (pl.p.note ? " · " + pl.p.note : "");
+        var radiusCss = (startsHere ? "" : "border-top-left-radius:0;border-bottom-left-radius:0;") +
+          (endsHere ? "" : "border-top-right-radius:0;border-bottom-right-radius:0;");
+        return '<div class="constr-bar" data-editid="'+escapeHtml(pl.p.id)+'" title="'+escapeHtml(titleAttr)+'" ' +
+          'style="grid-column:'+(pl.startCol+1)+' / '+(pl.endCol+2)+';grid-row:'+(pl.lane+1)+';background:'+pl.p.color+';color:'+constrTextColorFor(pl.p.color)+';'+radiusCss+'">' +
+          (startsHere ? escapeHtml(pl.p.name) : '') +
+        '</div>';
+      }).join("");
+
+      weeksHtml +=
+        '<div class="constr-week">' +
+          '<div class="constr-daynum-grid">'+daynumHtml+'</div>' +
+          '<div class="constr-events-grid" style="grid-template-rows:repeat('+Math.max(laneCount,1)+',22px);">'+barsHtml+'</div>' +
+        '</div>';
+    }
+
+    var legendHtml = !projects.length
+      ? '<div class="budget-empty">등록된 공사 일정이 없어요.<br>위 "+ 공사 일정 추가" 버튼으로 첫 공사를 등록해보세요.</div>'
+      : '<div class="constr-legend">' +
+          sortedProjects.map(function(p){
+            return '<div class="constr-legend-item">' +
+              '<span class="constr-legend-dot" style="background:'+p.color+';"></span>' +
+              '<div class="constr-legend-text">' +
+                '<div class="constr-legend-name">'+escapeHtml(p.name)+'</div>' +
+                '<div class="constr-legend-range">'+fmtDisplay(p.start)+' ~ '+fmtDisplay(p.end)+(p.note ? ' · '+escapeHtml(p.note) : '')+'</div>' +
+              '</div>' +
+              '<div class="constr-legend-actions">' +
+                '<button type="button" class="linklike" data-editid="'+escapeHtml(p.id)+'">수정</button>' +
+                '<button type="button" class="linklike" data-delid="'+escapeHtml(p.id)+'">삭제</button>' +
+              '</div>' +
+            '</div>';
+          }).join("") +
+        '</div>';
+
+    panel.innerHTML =
+      '<div class="sec-head-row"><h2>🚧 공사 공정표</h2><button type="button" class="neis-sync-btn" id="constrAddBtn">+ 공사 일정 추가</button></div>' +
+      '<p class="desc">진행 중이거나 예정된 공사를 등록하면, 공사마다 지정한 색으로 달력에 기간이 막대로 표시돼요.<br>누구나 추가·수정·삭제할 수 있고, 바뀐 내용은 실시간으로 함께 보여요.</p>' +
+      '<div class="monthnav">' +
+        '<button id="constrPrevMonth">‹ 이전 달</button>' +
+        '<span class="range">'+viewYear+'년 '+(viewMonth+1)+'월</span>' +
+        '<button id="constrNextMonth">다음 달 ›</button>' +
+        '<button id="constrTodayMonth">이번 달</button>' +
+      '</div>' +
+      '<div class="calwrap">' +
+        '<div class="dowrow">'+dowHtml+'</div>' +
+        weeksHtml +
+      '</div>' +
+      '<h3 class="constr-legend-title">등록된 공사 목록</h3>' +
+      legendHtml;
+
+    panel.querySelector("#constrAddBtn").addEventListener("click", function(){ openConstrForm(null); });
+    panel.querySelector("#constrPrevMonth").addEventListener("click", function(){
+      viewMonth--; if (viewMonth < 0){ viewMonth = 11; viewYear--; } paint();
+    });
+    panel.querySelector("#constrNextMonth").addEventListener("click", function(){
+      viewMonth++; if (viewMonth > 11){ viewMonth = 0; viewYear++; } paint();
+    });
+    panel.querySelector("#constrTodayMonth").addEventListener("click", function(){
+      var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); paint();
+    });
+    panel.querySelectorAll("[data-editid]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var id = el.getAttribute("data-editid");
+        var target = null;
+        for (var i=0;i<projects.length;i++){ if (projects[i].id === id){ target = projects[i]; break; } }
+        if (target) openConstrForm(target);
+      });
+    });
+    panel.querySelectorAll("[data-delid]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var id = el.getAttribute("data-delid");
+        if (!confirm("이 공사 일정을 삭제할까요?")) return;
+        projects = projects.filter(function(p){ return p.id !== id; });
+        paint();
+        saveNow();
+      });
+    });
+  }
+
+  function openConstrForm(existing){
+    if (document.getElementById("constrFormOverlay")) return;
+    var overlay = document.createElement("div");
+    overlay.id = "constrFormOverlay";
+    overlay.className = "modal-overlay";
+    var isEdit = !!existing;
+    var initColor = (existing && existing.color) || CONSTR_COLOR_PALETTE[projects.length % CONSTR_COLOR_PALETTE.length];
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true">' +
+        '<h3>🚧 '+(isEdit ? "공사 일정 수정" : "공사 일정 추가")+'</h3>' +
+        '<div class="archive-form-row"><label>공사명</label>' +
+          '<input type="text" id="constrNameInput" placeholder="예: 방수공사(후관)" value="'+escapeHtml(existing ? existing.name : "")+'">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>시작일</label>' +
+          '<input type="date" id="constrStartInput" value="'+escapeHtml(existing ? existing.start : todayDateValue())+'">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>종료일</label>' +
+          '<input type="date" id="constrEndInput" value="'+escapeHtml(existing ? existing.end : todayDateValue())+'">' +
+        '</div>' +
+        '<div class="archive-form-row"><label>색상</label>' +
+          '<div class="constr-color-row" id="constrColorRow">' +
+            CONSTR_COLOR_PALETTE.map(function(c){
+              return '<button type="button" class="constr-color-dot'+(c===initColor?' selected':'')+'" data-color="'+c+'" style="background:'+c+';"></button>';
+            }).join("") +
+            '<input type="color" id="constrCustomColor" value="'+initColor+'" title="직접 색 고르기">' +
+          '</div>' +
+        '</div>' +
+        '<div class="archive-form-row"><label>비고 (선택)</label>' +
+          '<textarea id="constrNoteInput" placeholder="예: 담당업체, 연락처 등">'+escapeHtml(existing ? (existing.note||"") : "")+'</textarea>' +
+        '</div>' +
+        '<div class="archive-form-error" id="constrFormError"></div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" id="constrFormCancel">취소</button>' +
+          '<button type="button" class="primary" id="constrFormSave">저장</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    var selectedColor = initColor;
+    function close(){ overlay.remove(); }
+    function showError(msg){
+      var el = overlay.querySelector("#constrFormError");
+      el.textContent = msg; el.style.display = "block";
+    }
+    overlay.querySelector("#constrFormCancel").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
+
+    overlay.querySelectorAll(".constr-color-dot").forEach(function(dot){
+      dot.addEventListener("click", function(){
+        selectedColor = dot.getAttribute("data-color");
+        overlay.querySelectorAll(".constr-color-dot").forEach(function(d){ d.classList.remove("selected"); });
+        dot.classList.add("selected");
+        overlay.querySelector("#constrCustomColor").value = selectedColor;
+      });
+    });
+    overlay.querySelector("#constrCustomColor").addEventListener("input", function(e){
+      selectedColor = e.target.value;
+      overlay.querySelectorAll(".constr-color-dot").forEach(function(d){ d.classList.remove("selected"); });
+    });
+
+    overlay.querySelector("#constrFormSave").addEventListener("click", function(){
+      var name = overlay.querySelector("#constrNameInput").value.trim();
+      var start = overlay.querySelector("#constrStartInput").value;
+      var end = overlay.querySelector("#constrEndInput").value;
+      if (!name) { showError("공사명을 입력해 주세요."); return; }
+      if (!start || !end) { showError("시작일과 종료일을 입력해 주세요."); return; }
+      if (start > end) { showError("종료일이 시작일보다 빠를 수 없어요."); return; }
+      var note = overlay.querySelector("#constrNoteInput").value.trim();
+
+      if (isEdit){
+        existing.name = name; existing.start = start; existing.end = end; existing.color = selectedColor; existing.note = note;
+      } else {
+        projects.push({ id: "c" + Date.now() + Math.floor(Math.random()*1000), name: name, start: start, end: end, color: selectedColor, note: note });
+      }
+      close();
+      paint();
+      saveNow();
+    });
+  }
+
+  function saveNow(){
+    if (!db) return;
+    db.doc("sections/construction_schedule").update({ projects: projects }).catch(function(){
+      db.doc("sections/construction_schedule").set({ projects: projects }).catch(function(){});
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = db.doc("sections/construction_schedule").onSnapshot(function(snap){
+      if (snap.exists) {
+        var data = snap.data();
+        if (data && data.projects) { projects = data.projects; markSynced(); paint(); }
       }
     }, function(){});
     unsubs.push(unsub);
