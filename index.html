@@ -527,7 +527,7 @@
   <script>
     // 테스트 배포(test/ 경로)에서만 제목에 "(테스트)"와 버전 표시를 붙임. 운영(index.html 루트)에는 안 붙음.
     (function(){
-      var APP_VERSION = "v39";
+      var APP_VERSION = "v40";
       if (location.pathname.indexOf("/test/") !== -1){
         var titleEl = document.getElementById("siteTitle");
         if (titleEl){
@@ -3096,11 +3096,9 @@ function renderConstructionArchiveSection(panel, cfg){
     if (isContactsView){
       wireContactsTable(panel);
     } else {
+      // "사진 추가" → 모바일 제보 페이지로 이동 (사이트 안에서 직접 올리지 않음)
       panel.querySelector("#archiveAddBtn").addEventListener("click", function(){
-        if (!assets) { alert("아직 사진 저장소 연결 중입니다. 잠시 후 다시 시도해 주세요."); return; }
-        if (!state.categories.length) { alert("먼저 위 ＋ 버튼으로 사업명을 추가해 주세요."); return; }
-        if (isArchiveUploadUnlocked()) openArchiveUploadForm();
-        else showArchiveUploadLockModal(openArchiveUploadForm);
+        window.open("gongsa-sajin-upload.html", "_blank", "noopener");
       });
     }
 
@@ -3463,8 +3461,14 @@ function renderFacilityRepairSection(panel, cfg){
     panel.innerHTML =
       '<h2>🛠️ 시설 보수 현황</h2>' +
       '<p class="desc">교직원이 휴대폰으로 보낸 시설 고장·보수 요청 사진입니다. <a href="sisul-bosu-jeonsong.html" target="_blank" rel="noopener">📱 시설 보수 현황 모바일 제보 페이지</a> (비밀번호: 0000)</p>' +
-      '<div class="archive-toolbar">' + tabsHtml + '</div>' +
+      '<div class="archive-toolbar">' + tabsHtml +
+        '<button type="button" class="archive-addbtn" id="repairAddBtn">＋ 사진 추가</button>' +
+      '</div>' +
       '<div id="repairBody" style="margin-top:12px;">'+bodyHtml+'</div>';
+
+    panel.querySelector("#repairAddBtn").addEventListener("click", function(){
+      window.open("sisul-bosu-jeonsong.html", "_blank", "noopener");
+    });
 
     panel.querySelector("#repairStatusTabs").addEventListener("click", function(e){
       var btn = e.target.closest("button[data-f]");
