@@ -493,6 +493,20 @@
   .archive-date-heading{font-size:12.5px;font-weight:700;color:var(--ink-dim);margin:0 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line);}
   .archive-phase-tabs #archiveAddCatBtn{color:var(--accent);}
   .archive-lightbox-img{display:block;width:100%;border-radius:10px;margin-bottom:10px;}
+  /* 여러 장 슬라이드 */
+  .slider{position:relative;overflow:hidden;}
+  .slider-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .slider-track::-webkit-scrollbar{display:none;}
+  .slider-track img{flex:0 0 100%;width:100%;min-width:0;scroll-snap-align:center;scroll-snap-stop:always;}
+  .slider-track img.archive-lightbox-img{margin-bottom:0;border-radius:0;}
+  .slider-nav{position:absolute;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;border:none;
+    background:rgba(15,23,42,.55);color:#fff;font-size:15px;line-height:1;cursor:pointer;padding:0;z-index:2;}
+  .slider-nav:hover{background:rgba(15,23,42,.8);}
+  .slider-nav.prev{left:6px;}
+  .slider-nav.next{right:6px;}
+  .slider-count{position:absolute;right:6px;bottom:6px;background:rgba(15,23,42,.6);color:#fff;font-size:11px;font-weight:700;
+    border-radius:999px;padding:2px 8px;z-index:2;pointer-events:none;font-variant-numeric:tabular-nums;}
+  .slider-wrap-lb{border-radius:10px;overflow:hidden;margin-bottom:10px;}
   .archive-form-row{margin-bottom:10px;}
   .archive-form-row label{display:block;font-size:11px;font-weight:700;color:var(--ink-dim);margin-bottom:4px;}
   .archive-form-row input[type="text"],.archive-form-row input[type="datetime-local"],.archive-form-row select,.archive-form-row textarea{
@@ -527,7 +541,7 @@
   <script>
     // 테스트 배포(test/ 경로)에서만 제목에 "(테스트)"와 버전 표시를 붙임. 운영(index.html 루트)에는 안 붙음.
     (function(){
-      var APP_VERSION = "v40";
+      var APP_VERSION = "v41";
       if (location.pathname.indexOf("/test/") !== -1){
         var titleEl = document.getElementById("siteTitle");
         if (titleEl){
@@ -2933,6 +2947,47 @@ function groupByDate(list){
   return order.map(function(key){ return { date: key, items: map[key] }; });
 }
 
+// 한 번에 여러 장 올린 경우 images 배열에 전부 들어 있음. 예전 데이터(사진 1장: id/url만 있음)도 그대로 지원.
+function entryImages(e){
+  if (e && Array.isArray(e.images) && e.images.length){
+    return e.images.filter(function(im){ return im && im.url; });
+  }
+  return (e && e.url) ? [{ id: e.id, url: e.url }] : [];
+}
+function sliderHtml(imgs, alt, imgClass, startIdx){
+  var multi = imgs.length > 1;
+  return '<div class="slider" data-start="'+(startIdx||0)+'">' +
+    '<div class="slider-track">' +
+      imgs.map(function(im){ return '<img'+(imgClass?' class="'+imgClass+'"':'')+' src="'+escapeHtml(im.url)+'" alt="'+alt+'" loading="lazy">'; }).join("") +
+    '</div>' +
+    (multi ? '<button type="button" class="slider-nav prev" aria-label="이전 사진">‹</button>' +
+             '<button type="button" class="slider-nav next" aria-label="다음 사진">›</button>' +
+             '<span class="slider-count">'+((startIdx||0)+1)+' / '+imgs.length+'</span>' : '') +
+  '</div>';
+}
+function wireSliders(root){
+  Array.prototype.forEach.call(root.querySelectorAll(".slider"), function(sl){
+    var track = sl.querySelector(".slider-track");
+    var count = sl.querySelector(".slider-count");
+    var total = track.children.length;
+    var start = parseInt(sl.getAttribute("data-start"), 10) || 0;
+    function cur(){ return Math.max(0, Math.min(total-1, Math.round(track.scrollLeft / (track.clientWidth || 1)))); }
+    function go(i){ track.scrollTo({ left: i * track.clientWidth, behavior: "smooth" }); }
+    if (start) setTimeout(function(){ track.scrollLeft = start * track.clientWidth; }, 0);
+    if (count) track.addEventListener("scroll", function(){ count.textContent = (cur()+1) + " / " + total; });
+    var prev = sl.querySelector(".slider-nav.prev"), next = sl.querySelector(".slider-nav.next");
+    if (prev) prev.addEventListener("click", function(e){ e.stopPropagation(); go(Math.max(0, cur()-1)); });
+    if (next) next.addEventListener("click", function(e){ e.stopPropagation(); go(Math.min(total-1, cur()+1)); });
+  });
+}
+function removeEntryImages(assetsRef, entry){
+  if (!assetsRef || !assetsRef.remove) return;
+  var ids = {};
+  entryImages(entry).forEach(function(im){ if (im.id) ids[im.id] = 1; });
+  if (entry && entry.id) ids[entry.id] = 1;
+  Object.keys(ids).forEach(function(id){ assetsRef.remove(id).catch(function(){}); });
+}
+
 var ARCHIVE_CONTACT_COLUMNS = [
   ["role","직","90px"],
   ["name","상호","170px"],
@@ -3021,7 +3076,7 @@ function renderConstructionArchiveSection(panel, cfg){
         bodyHtml = groups.map(function(g){
           var cardsHtml = g.items.map(function(p){
             return '<div class="archive-card" data-id="'+escapeHtml(p.id)+'">' +
-              '<img src="'+escapeHtml(p.url)+'" alt="공사 현장 사진" loading="lazy">' +
+              sliderHtml(entryImages(p), "공사 현장 사진") +
               (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(p.id)+'" title="삭제">✕</button>' : '') +
               '<div class="meta">' +
                 '<span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span>' +
@@ -3114,23 +3169,25 @@ function renderConstructionArchiveSection(panel, cfg){
       });
     });
 
+    wireSliders(panel);
     Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
       img.addEventListener("click", function(){
         var card = img.closest(".archive-card");
         var id = card.getAttribute("data-id");
         var p = null;
         for (var i=0;i<state.photos.length;i++){ if (state.photos[i].id === id){ p = state.photos[i]; break; } }
-        if (p) showArchiveLightbox(p);
+        var idx = Array.prototype.indexOf.call(img.parentNode.children, img);
+        if (p) showArchiveLightbox(p, idx);
       });
     });
   }
 
-  function showArchiveLightbox(p){
+  function showArchiveLightbox(p, startIdx){
     var overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML =
       '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
-        '<img class="archive-lightbox-img" src="'+escapeHtml(p.url)+'" alt="공사 현장 사진">' +
+        '<div class="slider-wrap-lb">'+sliderHtml(entryImages(p), "공사 현장 사진", "archive-lightbox-img", startIdx)+'</div>' +
         '<div><span class="badge '+escapeHtml(p.phase)+'">'+escapeHtml(archivePhaseLabel(p.phase))+'</span> ' +
           '<span class="badge" style="background:var(--surface-2);color:var(--ink);">'+escapeHtml(archiveCategoryLabel(state.categories, p.categoryId))+'</span></div>' +
         '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(p.date))+'</div>' +
@@ -3139,6 +3196,7 @@ function renderConstructionArchiveSection(panel, cfg){
         '<div class="modal-actions"><button type="button" id="archiveLightboxClose">닫기</button></div>' +
       '</div>';
     document.body.appendChild(overlay);
+    wireSliders(overlay);
     function close(){ overlay.remove(); }
     overlay.querySelector("#archiveLightboxClose").addEventListener("click", close);
     overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
@@ -3348,7 +3406,7 @@ function renderConstructionArchiveSection(panel, cfg){
     state.photos = state.photos.filter(function(p){ return p.id !== entry.id; });
     paint();
     if (db) archiveDocRef().update({ photos: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
-    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+    removeEntryImages(assets, entry);
   }
 
   // 사업명(탭) 삭제 — 사업명 자체와 함께, 그 사업명에 속한 사진(Storage 파일 포함)·연락처도 전부 영구 삭제한다.
@@ -3367,9 +3425,7 @@ function renderConstructionArchiveSection(panel, cfg){
         contacts: state.contacts
       }).catch(function(){});
     }
-    removedPhotos.forEach(function(p){
-      if (assets && assets.remove) assets.remove(p.id).catch(function(){});
-    });
+    removedPhotos.forEach(function(p){ removeEntryImages(assets, p); });
   }
 
   paint();
@@ -3440,7 +3496,7 @@ function renderFacilityRepairSection(panel, cfg){
               '</div>'
             : '';
           return '<div class="archive-card" data-id="'+escapeHtml(r.id)+'">' +
-            '<img src="'+escapeHtml(r.url)+'" alt="시설 보수 사진" loading="lazy">' +
+            sliderHtml(entryImages(r), "시설 보수 사진") +
             (isEditUnlocked() ? '<button type="button" class="delbtn" data-del="'+escapeHtml(r.id)+'" title="삭제">✕</button>' : '') +
             '<div class="meta">' +
               '<span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span>' +
@@ -3504,23 +3560,25 @@ function renderFacilityRepairSection(panel, cfg){
       });
     });
 
+    wireSliders(panel);
     Array.prototype.forEach.call(panel.querySelectorAll(".archive-card img"), function(img){
       img.addEventListener("click", function(){
         var card = img.closest(".archive-card");
         var id = card.getAttribute("data-id");
         var r = null;
         for (var i=0;i<state.reports.length;i++){ if (state.reports[i].id === id){ r = state.reports[i]; break; } }
-        if (r) showRepairLightbox(r);
+        var idx = Array.prototype.indexOf.call(img.parentNode.children, img);
+        if (r) showRepairLightbox(r, idx);
       });
     });
   }
 
-  function showRepairLightbox(r){
+  function showRepairLightbox(r, startIdx){
     var overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML =
       '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(560px,100%);">' +
-        '<img class="archive-lightbox-img" src="'+escapeHtml(r.url)+'" alt="시설 보수 사진">' +
+        '<div class="slider-wrap-lb">'+sliderHtml(entryImages(r), "시설 보수 사진", "archive-lightbox-img", startIdx)+'</div>' +
         '<div><span class="badge '+escapeHtml(r.status)+'">'+escapeHtml(repairStatusLabel(r.status))+'</span></div>' +
         '<div class="loc" style="margin-top:8px;">'+escapeHtml(formatArchiveDate(r.date))+'</div>' +
         '<div class="dt">'+escapeHtml(r.location || "")+'</div>' +
@@ -3529,6 +3587,7 @@ function renderFacilityRepairSection(panel, cfg){
         '<div class="modal-actions"><button type="button" id="repairLightboxClose">닫기</button></div>' +
       '</div>';
     document.body.appendChild(overlay);
+    wireSliders(overlay);
     function close(){ overlay.remove(); }
     overlay.querySelector("#repairLightboxClose").addEventListener("click", close);
     overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
@@ -3559,7 +3618,7 @@ function renderFacilityRepairSection(panel, cfg){
     state.reports = state.reports.filter(function(r){ return r.id !== entry.id; });
     paint();
     if (db) repairDocRef().update({ reports: firebase.firestore.FieldValue.arrayRemove(entry) }).catch(function(){});
-    if (assets && assets.remove) assets.remove(entry.id).catch(function(){});
+    removeEntryImages(assets, entry);
   }
 
   paint();
