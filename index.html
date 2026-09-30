@@ -185,6 +185,31 @@
     background:var(--surface);border:1px solid var(--line);border-radius:999px;
     padding:7px 10px;cursor:pointer;white-space:nowrap;max-width:180px;}
 
+  nav.tabs{overflow:visible;flex-wrap:nowrap;gap:6px;margin-bottom:12px;}
+  .tabgroup{position:relative;flex:1 1 0;min-width:0;}
+  nav.tabs .tabgroup-btn{width:100%;text-align:center;padding:9px 6px;}
+  nav.tabs .tabgroup-btn .caret{font-size:10px;opacity:.7;}
+  .tabmenu{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:86vw;z-index:50;
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px;
+    display:flex;flex-direction:column;gap:2px;}
+  .tabmenu[hidden]{display:none;}
+  nav.tabs .tabmenu .tabmenu-item{flex:none;display:block;width:100%;text-align:left;font:inherit;font-size:13.5px;font-weight:600;
+    color:var(--ink);background:transparent;border:none;border-radius:8px;padding:9px 12px;cursor:pointer;white-space:nowrap;}
+  nav.tabs .tabmenu .tabmenu-item:hover{background:var(--surface-2);}
+  nav.tabs .tabmenu .tabmenu-item.on{background:var(--accent-soft,var(--surface-2));color:var(--accent);}
+  .tabgroup:last-child .tabmenu{left:auto;right:0;}
+  .supp-rounds{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px;}
+  .supp-round{font:inherit;font-size:13px;font-weight:700;color:var(--ink-dim);background:var(--surface-2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;cursor:pointer;}
+  .supp-round.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .supp-round.add{border-style:dashed;background:transparent;}
+  .supp-round .rd{font-size:11px;font-weight:700;margin-left:4px;opacity:.9;}
+  .supp-round .rd.urgent{color:var(--danger);} .supp-round.active .rd.urgent{color:#ffd9cf;}
+  .supp-dl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--ink-dim);}
+  .supp-dl input{font:inherit;font-size:13px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;}
+  .supp-dday{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--good-soft);color:var(--good);}
+  .supp-dday.urgent,.supp-dday.past{background:var(--danger-soft);color:var(--danger);}
+  .supp-delround{font:inherit;font-size:12px;font-weight:700;color:var(--danger);background:transparent;border:1px solid var(--danger);border-radius:8px;padding:6px 10px;cursor:pointer;}
   section.panel{display:none;background:var(--surface);border:1px solid var(--line);
     border-radius:14px;box-shadow:var(--shadow);padding:16px;}
   section.panel.active{display:block;}
@@ -402,10 +427,46 @@
   .entry button:hover{color:var(--danger);}
   .entry.synced{background:var(--accent-soft);border:1px dashed var(--accent);color:var(--accent);word-break:keep-all;}
   .entry.synced .sync-tag{flex:none;}
+  .entry.synced{cursor:pointer;}
+  .entry.synced:hover{filter:brightness(1.08);}
+  .duty-detail-row{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5;}
+  .duty-detail-row:first-of-type{border-top:none;}
+  .duty-detail-row .k{flex:none;width:74px;color:var(--ink-dim);font-weight:700;font-size:12.5px;}
+  .duty-detail-row .v{flex:1;min-width:0;overflow-wrap:break-word;font-weight:500;}
   .duty-sync-line{color:var(--ink-dim);font-size:12px;margin:12px 0 0;}
   .duty-sync-line .linklike{font:inherit;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;}
   .daycell .addentry{font:inherit;font-size:10px;font-weight:700;color:var(--good);background:transparent;
     border:1px dashed var(--good);border-radius:6px;padding:2px;cursor:pointer;margin-top:auto;}
+
+
+  /* 추경 예산 */
+  .supp-titlebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;}
+  .supp-titlebar input{flex:1 1 260px;min-width:0;font:inherit;font-weight:700;font-size:14px;color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  .supp-kpis{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px;}
+  .supp-kpi{flex:1 1 130px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .supp-kpi .kl{font-size:11px;font-weight:700;color:var(--ink-dim);margin-bottom:3px;}
+  .supp-kpi .kv{font-size:15.5px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .supp-kpi .kv.plus{color:var(--good);}
+  .supp-kpi .kv.minus{color:var(--danger);}
+  table.datagrid.supp-tbl td input{font-size:12.5px;}
+  table.datagrid.supp-tbl input.num{text-align:right;font-variant-numeric:tabular-nums;}
+  table.datagrid.supp-tbl input.neg{color:var(--danger);font-weight:700;}
+  table.datagrid.supp-tbl input.pos{color:var(--good);font-weight:700;}
+  table.datagrid.supp-tbl input.dirc{text-align:center;font-weight:800;}
+  .supp-negwrap{margin-top:22px;padding-top:16px;border-top:2px solid var(--line);}
+  .supp-negwrap h3{margin:0 0 4px;font-size:15px;}
+  .supp-neglist{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .supp-negitem{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .supp-negitem .info{flex:1 1 240px;min-width:0;}
+  .supp-negitem .t{font-weight:700;font-size:13px;overflow-wrap:break-word;}
+  .supp-negitem .s{font-size:11.5px;color:var(--ink-dim);margin-top:2px;overflow-wrap:break-word;}
+  .supp-negitem .amt{font-weight:800;color:var(--danger);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px;}
+  .supp-chip{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;}
+  .supp-chip.ok{background:var(--good-soft);color:var(--good);}
+  .supp-chip.no{background:var(--warn-soft);color:var(--warn);}
+  .supp-addbtn{font:inherit;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border:1px solid var(--accent);
+    border-radius:999px;padding:5px 11px;cursor:pointer;white-space:nowrap;}
 
   /* 공사 공정표 (캘린더형 간트) */
   .constr-week{margin-bottom:8px;}
@@ -519,6 +580,8 @@
   .setup-banner{background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:10px 14px;
     font-size:12px;font-weight:600;margin-bottom:12px;display:none;}
   .setup-banner.show{display:block;}
+  tr.supp-locked input{background:var(--surface-2,#f3f5f9);opacity:.85;cursor:not-allowed;}
+  tr.supp-locked td.lockmark{text-align:center;font-size:13px;}
 </style>
 </head>
 <body>
@@ -527,7 +590,7 @@
 
 <div class="wrap">
   <header class="top">
-    <h1 id="siteTitle">오정초등학교 사이버 행정실 <span class="beta-badge">beta v1.1</span></h1>
+    <h1 id="siteTitle">오정초등학교 사이버 행정실 <span class="beta-badge">beta v1.2</span></h1>
     <div class="meta">
       <div class="clockwrap">
         <span class="clock-time" id="clockTime">--:--</span>
@@ -541,7 +604,7 @@
   <script>
     // 테스트 배포(test/ 경로)에서만 제목에 "(테스트)"와 버전 표시를 붙임. 운영(index.html 루트)에는 안 붙음.
     (function(){
-      var APP_VERSION = "v41";
+      var APP_VERSION = "v46";
       if (location.pathname.indexOf("/test/") !== -1){
         var titleEl = document.getElementById("siteTitle");
         if (titleEl){
@@ -578,6 +641,7 @@ var ALL_SECTION_DEFS = [
   { key:"timetable", title:"시간표", icon:"🕘", kind:"timetable" },
   { key:"upcoming", title:"다가오는 일정", icon:"📅", kind:"upcoming" },
   { key:"schedule", title:"직원 일정표", icon:"🗓️", kind:"schedule" },
+  { key:"supplementary_budget", title:"추경 예산", icon:"📝", kind:"supplementary_budget" },
   { key:"vendors_regular", title:"정기용역", icon:"🔧", kind:"table",
     columns:[["seq","순번","48px"],["name","상호(사업자번호)","220px"],["item","건명","220px"],["phone","전화번호","190px"],["note","비고","220px"]],
     seed:[
@@ -772,8 +836,19 @@ var ALL_SECTION_DEFS = [
 /* 메뉴 탭 노출 순서: 자주 쓰는 것만 상단에 두고, 나머지는 "기타" 탭 안에서 드롭다운으로 고르게 함.
    기존 섹션 정의(ALL_SECTION_DEFS)와 Firestore 저장 경로(sections/<key>)는 그대로 두고,
    화면에 보여줄 순서만 이 두 목록으로 다시 배치함. */
-var MAIN_TAB_ORDER = ["schedule","budget_dashboard","meal","construction_archive","construction_schedule","facility_repair","vendors_regular","vendors_misc","classroom_map"];
+var TAB_GROUPS = [
+  { key:"g_school",   title:"학교", icon:"🏫", items:["schedule","meal"] },
+  { key:"g_budget",   title:"예산", icon:"💰", items:["budget_dashboard","supplementary_budget"] },
+  { key:"g_facility", title:"시설", icon:"🏗️", items:["construction_archive","construction_schedule","facility_repair","vendors_regular","vendors_misc","classroom_map"] },
+  { key:"g_other",    title:"기타", icon:"📁", items:null /* OTHER_TAB_ORDER */ }
+];
+var MAIN_TAB_ORDER = [].concat(TAB_GROUPS[0].items, TAB_GROUPS[1].items, TAB_GROUPS[2].items);
 var OTHER_TAB_ORDER = ["timetable","upcoming","periods","contractors","calendar"];
+TAB_GROUPS[3].items = OTHER_TAB_ORDER;
+var otherCurrentKey = OTHER_TAB_ORDER[0];
+var otherGo = null;
+var activeGroup = "g_school";
+var subSel = {};
 function findSectionDef(key){
   for (var i=0;i<ALL_SECTION_DEFS.length;i++){ if (ALL_SECTION_DEFS[i].key === key) return ALL_SECTION_DEFS[i]; }
   return null;
@@ -1700,21 +1775,65 @@ function subscribeStatusDoc(handler){
   unsubs.push(unsub);
 }
 
+function groupByKey(gk){ for (var i=0;i<TAB_GROUPS.length;i++){ if (TAB_GROUPS[i].key === gk) return TAB_GROUPS[i]; } return TAB_GROUPS[0]; }
+
 function buildTabs(){
   var nav = document.getElementById("tabs");
-  nav.innerHTML = SECTIONS.map(function(s){
-    return '<button data-key="'+s.key+'" class="'+(s.key===activeKey?'active':'')+'">'+s.icon+' '+escapeHtml(s.title)+'</button>';
+  nav.innerHTML = TAB_GROUPS.map(function(g){
+    var cur = subSel[g.key] || g.items[0];
+    var menu = g.items.map(function(k){
+      var d = findSectionDef(k); if (!d) return "";
+      return '<button type="button" class="tabmenu-item'+(g.key===activeGroup && k===cur?' on':'')+'" data-sub="'+k+'" role="menuitem">'+d.icon+' '+escapeHtml(d.title)+'</button>';
+    }).join("");
+    return '<div class="tabgroup" data-group="'+g.key+'">' +
+      '<button type="button" class="tabgroup-btn'+(g.key===activeGroup?' active':'')+'" data-group="'+g.key+'" aria-haspopup="menu" aria-expanded="false">'+g.icon+' '+escapeHtml(g.title)+' <span class="caret">▾</span></button>' +
+      '<div class="tabmenu" role="menu" hidden>'+menu+'</div></div>';
   }).join("");
-  Array.prototype.forEach.call(nav.querySelectorAll("button"), function(btn){
-    btn.addEventListener("click", function(){ setActive(btn.getAttribute("data-key")); });
+  Array.prototype.forEach.call(nav.querySelectorAll(".tabgroup-btn"), function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var grp = btn.parentNode, menu = grp.querySelector(".tabmenu");
+      var willOpen = menu.hidden;
+      closeTabMenus();
+      if (willOpen){ menu.hidden = false; btn.setAttribute("aria-expanded","true"); }
+    });
   });
+  Array.prototype.forEach.call(nav.querySelectorAll(".tabmenu-item"), function(it){
+    it.addEventListener("click", function(e){
+      e.stopPropagation();
+      var gk = it.parentNode.parentNode.getAttribute("data-group");
+      closeTabMenus();
+      activeGroup = gk;
+      goSub(it.getAttribute("data-sub"));
+    });
+  });
+}
+
+function closeTabMenus(){
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tabmenu"), function(m){ m.hidden = true; });
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tabgroup-btn"), function(b){ b.setAttribute("aria-expanded","false"); });
+}
+document.addEventListener("click", closeTabMenus);
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeTabMenus(); });
+
+function goSub(key){
+  subSel[activeGroup] = key;
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tabgroup-btn"), function(b){
+    b.classList.toggle("active", b.getAttribute("data-group") === activeGroup);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs .tabmenu-item"), function(it){
+    var gk = it.parentNode.parentNode.getAttribute("data-group");
+    it.classList.toggle("on", gk === activeGroup && it.getAttribute("data-sub") === key);
+  });
+  if (activeGroup === "g_other"){
+    otherCurrentKey = key;
+    setActive("other");
+    if (otherGo) otherGo();
+  } else setActive(key);
 }
 
 function setActive(key){
   activeKey = key;
-  Array.prototype.forEach.call(document.querySelectorAll("nav.tabs button"), function(b){
-    b.classList.toggle("active", b.getAttribute("data-key") === key);
-  });
   Array.prototype.forEach.call(document.querySelectorAll("section.panel"), function(p){
     p.classList.toggle("active", p.id === "panel-" + key);
   });
@@ -1730,6 +1849,7 @@ function renderSectionByKind(panel, s){
   else if (s.kind === "upcoming") renderUpcomingSection(panel, s);
   else if (s.kind === "construction_archive") renderConstructionArchiveSection(panel, s);
   else if (s.kind === "construction_schedule") renderConstructionScheduleSection(panel, s);
+    else if (s.kind === "supplementary_budget") renderSupplementaryBudgetSection(panel, s);
   else if (s.kind === "facility_repair") renderFacilityRepairSection(panel, s);
   else if (s.kind === "budget_dashboard") renderBudgetDashboardSection(panel, s);
 }
@@ -1740,34 +1860,22 @@ function renderSectionByKind(panel, s){
    피드백을 받아, 드롭다운을 다시 패널 안으로 옮김 — 상단 탭 바에는 "기타" 버튼 하나만 보이고,
    그 안에 들어가야 시간표/공사업체/학사일정을 고르는 선택창이 보이는 구조. */
 function renderOtherSection(panel, cfg){
-  var current = OTHER_SECTIONS.length ? OTHER_SECTIONS[0].key : null;
   var localUnsub = null;
 
   function renderCurrent(){
     if (localUnsub) { try { localUnsub(); } catch(e){} localUnsub = null; }
     var target = null;
-    for (var i=0;i<OTHER_SECTIONS.length;i++){ if (OTHER_SECTIONS[i].key === current){ target = OTHER_SECTIONS[i]; break; } }
-
-    var selectHtml = '<div class="other-select-row"><select id="otherTabSelect" class="other-tab-select">' +
-      OTHER_SECTIONS.map(function(s){
-        return '<option value="'+s.key+'"'+(s.key===current?" selected":"")+'>'+s.icon+' '+escapeHtml(s.title)+'</option>';
-      }).join("") +
-      '</select></div><div id="otherBody"></div>';
-    panel.innerHTML = selectHtml;
-
-    panel.querySelector("#otherTabSelect").addEventListener("change", function(e){
-      current = e.target.value;
-      renderCurrent();
-    });
-
+    for (var i=0;i<OTHER_SECTIONS.length;i++){ if (OTHER_SECTIONS[i].key === otherCurrentKey){ target = OTHER_SECTIONS[i]; break; } }
+    panel.innerHTML = '<div id="otherBody"></div>';
     if (target){
       var body = panel.querySelector("#otherBody");
       var before = unsubs.length;
       renderSectionByKind(body, target);
-      if (unsubs.length > before) localUnsub = unsubs.pop(); // 드롭다운 전환 시 이전 실시간 구독 정리
+      if (unsubs.length > before) localUnsub = unsubs.pop(); // 세부 메뉴 전환 시 이전 실시간 구독 정리
     }
   }
 
+  otherGo = renderCurrent;
   renderCurrent();
 }
 
@@ -2320,13 +2428,13 @@ function renderScheduleSection(panel, cfg){
           '<button data-deldate="'+key+'" data-delidx="'+idx+'">✕</button></div>';
       }).join("");
       var syncedRows = inMonth ? (dutySyncByDate[key] || []) : [];
-      var syncedHtml = syncedRows.map(function(item){
+      var syncedHtml = syncedRows.map(function(item, sidx){
         var titleParts = [];
         if (item.period) titleParts.push(item.period);
         if (item.destination) titleParts.push(item.destination);
         var titleAttr = "나이스 연동" + (titleParts.length ? " · " + titleParts.join(" · ") : "");
         var label = escapeHtml(item.name || "") + " " + escapeHtml(item.type || "복무") + (item.pending ? " (결재중)" : "");
-        return '<div class="entry synced" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">🔄</span>'+label+'</div>';
+        return '<div class="entry synced" role="button" tabindex="0" data-sdate="'+key+'" data-sidx="'+sidx+'" title="'+escapeHtml(titleAttr)+'"><span class="sync-tag">🔄</span>'+label+'</div>';
       }).join("");
       cellsHtml +=
         '<div class="daycell'+(inMonth ? '' : ' otherMonth')+(isToday(d) ? ' today' : '')+'">' +
@@ -2344,7 +2452,7 @@ function renderScheduleSection(panel, cfg){
     panel.innerHTML =
       '<div class="sec-head-row"><h2>🗓️ 직원 일정표</h2><button type="button" class="neis-sync-btn" id="neisSyncOpenBtn">🔄 나이스 동기화</button></div>' +
       dutySyncLine +
-      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다.<br>점선 테두리(🔄🕐) 항목은 나이스에서 자동 동기화된 내용이라 직접 수정할 수 없어요.</p>' +
+      '<p class="desc">출장·연가·재택·병가 등을 날짜 칸에 적어두면 다 함께 실시간으로 봅니다.<br>점선 테두리(🔄) 항목은 나이스에서 자동 동기화된 내용이라 직접 수정할 수 없어요. 누르면 시간과 출장지를 볼 수 있어요.</p>' +
       '<div class="monthnav">' +
         '<button id="prevMonth">‹ 이전 달</button>' +
         '<span class="range">'+viewYear+'년 '+(viewMonth+1)+'월</span>' +
@@ -2368,6 +2476,16 @@ function renderScheduleSection(panel, cfg){
     });
     panel.querySelector("#todayMonth").addEventListener("click", function(){
       var t = new Date(); viewYear = t.getFullYear(); viewMonth = t.getMonth(); subscribeDutySync(); paint();
+    });
+
+    panel.querySelectorAll(".entry.synced[data-sdate]").forEach(function(el){
+      function open(){
+        var k = el.getAttribute("data-sdate"), i = Number(el.getAttribute("data-sidx"));
+        var item = (dutySyncByDate[k] || [])[i];
+        if (item) showDutyDetail(k, item);
+      }
+      el.addEventListener("click", open);
+      el.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } });
     });
 
     panel.querySelectorAll("input[data-date]").forEach(function(inp){
@@ -2402,6 +2520,42 @@ function renderScheduleSection(panel, cfg){
     db.doc("sections/schedule").update({ days: days }).catch(function(){
       db.doc("sections/schedule").set({ days: days }).catch(function(){});
     });
+  }
+
+  // "2026-09-18 08:40 ~ 2026-09-18 17:40" 같은 나이스 기간 문자열을 보기 좋게 바꾼다.
+  function formatDutyPeriod(period, dateKey){
+    var txt = String(period || "").trim();
+    if (!txt) return "종일 / 시간 정보 없음";
+    var m = txt.match(/(\d{4})-(\d{2})-(\d{2})\s*(\d{1,2}:\d{2})?\s*~\s*(?:(\d{4})-(\d{2})-(\d{2}))?\s*(\d{1,2}:\d{2})?/);
+    if (!m) return txt;
+    function md(y, mo, d){ var dt = new Date(Number(y), Number(mo)-1, Number(d)); return Number(mo) + "월 " + Number(d) + "일(" + dayNames[dt.getDay()] + ")"; }
+    var startDate = md(m[1], m[2], m[3]);
+    var sameDay = !m[5] || (m[5] === m[1] && m[6] === m[2] && m[7] === m[3]);
+    if (sameDay){
+      var t = (m[4] || "") + (m[4] || m[8] ? " ~ " : "") + (m[8] || "");
+      return startDate + (t ? " " + t : "");
+    }
+    return startDate + " " + (m[4] || "") + " ~ " + md(m[5], m[6], m[7]) + " " + (m[8] || "");
+  }
+
+  function showDutyDetail(dateKey, item){
+    var overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    var dest = String(item.destination || "").trim();
+    overlay.innerHTML =
+      '<div class="modal-card" role="dialog" aria-modal="true" style="width:min(400px,100%);">' +
+        '<h3>🔄 '+escapeHtml(item.name || "")+' · '+escapeHtml(item.type || "복무")+(item.pending ? ' (결재중)' : '')+'</h3>' +
+        '<p class="modal-desc">나이스에서 동기화된 복무 내용이에요.</p>' +
+        '<div class="duty-detail-row"><div class="k">🕐 시간</div><div class="v">'+escapeHtml(formatDutyPeriod(item.period, dateKey))+'</div></div>' +
+        '<div class="duty-detail-row"><div class="k">📍 출장지·행선지</div><div class="v">'+(dest ? escapeHtml(dest) : '<span style="color:var(--ink-dim)">입력된 내용 없음</span>')+'</div></div>' +
+        '<div class="modal-actions"><button type="button" class="primary" id="dutyDetailClose">닫기</button></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    function close(){ overlay.remove(); document.removeEventListener("keydown", onKey); }
+    function onKey(e){ if (e.key === "Escape") close(); }
+    document.addEventListener("keydown", onKey);
+    overlay.querySelector("#dutyDetailClose").addEventListener("click", close);
+    overlay.addEventListener("mousedown", function(e){ if (e.target === overlay) close(); });
   }
 
   /* 나이스 "부서 복무 달력" 확장(v1.7+)에서 "사이버행정실로 동기화"를 누르면 채워지는 문서를 구독.
@@ -2709,6 +2863,315 @@ function renderConstructionScheduleSection(panel, cfg){
       }
     }, function(){});
     unsubs.push(unsub);
+  }
+}
+
+/* ---- 추경 예산 (직접 수정 + 예산 대시보드 마이너스 잔액 연동) ---- */
+var SUPP_COLUMNS = [
+  ["dept","부서명","90px"],["biz","세부사업명","120px"],["item","세부항목명","190px"],["stat","원가통계비목명","120px"],
+  ["basis","산출내역","190px"],["formula","산출식(변경할 금액) 단가×물량×횟수","170px"],["amount","요구금액(원)","110px"],
+  ["owner","사업담당자","80px"],["dir","증/감","54px"],["note","비고","200px"]
+];
+var SUPP_LOCKED_ROWS = [{"dept":"교육행정실","biz":"학교시설장비유지","item":"[초]공공요금및제세공과금","stat":"상하수도료","basis":"수도요금","formula":"2,300,000원 * 2회","amount":"4,600,000","owner":"주지영","dir":"증","note":"예시 (수정·삭제 불가)"}];
+
+function suppParseAmount(v){
+  var t = String(v == null ? "" : v).replace(/[,\s원]/g, "");
+  if (!t || t === "-") return 0;
+  var n = Number(t);
+  return isNaN(n) ? 0 : n;
+}
+// "1,500,000원 * 10회" → 15000000, "-200,000 * 1" → -200000. 숫자 덩어리들을 곱한다(숫자가 없으면 null).
+function suppCalcFormula(f){
+  var m = String(f || "").match(/-?\d[\d,]*(?:\.\d+)?/g);
+  if (!m || !m.length) return null;
+  var prod = 1;
+  for (var i=0;i<m.length;i++){ var n = Number(m[i].replace(/,/g,"")); if (isNaN(n)) return null; prod *= n; }
+  return prod;
+}
+function suppFmt(n){
+  var v = Number(n) || 0;
+  try { return v.toLocaleString("ko-KR"); } catch(e){ return String(v); }
+}
+function suppNorm(s){
+  return String(s || "").replace(/[\s()\[\]（）]/g, "").replace(/\(목\)|목\)/g, "").toLowerCase();
+}
+
+function suppNewRound(no, id){
+  return { id: id || ("r" + Date.now().toString(36) + Math.random().toString(36).slice(2,5)), no: no,
+    title: "제 (" + no + ")차 교육행정실 추가경정예산요구서", deadline: "", rows: [] };
+}
+
+function renderSupplementaryBudgetSection(panel, cfg){
+  var state = { rounds: [ suppNewRound(1, "r1") ] };
+  var sel = "r1";              // 지금 보고 있는 차수 (보는 사람마다 따로)
+  var budgetItems = [];
+  var budgetCapturedAt = "";
+
+  function docRef(){ return db.doc("sections/" + cfg.key); }
+  function cur(){
+    for (var i=0;i<state.rounds.length;i++){ if (state.rounds[i].id === sel) return state.rounds[i]; }
+    sel = state.rounds[0].id; return state.rounds[0];
+  }
+
+  var scheduleSave = debounce(saveNow, 500);
+  function saveNow(){
+    if (!db) return;
+    var payload = { rounds: state.rounds };
+    docRef().update(payload).catch(function(){ docRef().set(payload).catch(function(){}); });
+  }
+
+  // 예시(고정) 행은 합계·항목 수에서 제외
+  function totals(){
+    var plus = 0, minus = 0;
+    cur().rows.forEach(function(r){
+      var a = suppParseAmount(r.amount);
+      if (a > 0) plus += a; else if (a < 0) minus += a;
+    });
+    return { plus: plus, minus: minus, net: plus + minus };
+  }
+  function amountClass(v){ var a = suppParseAmount(v); return a < 0 ? "neg" : (a > 0 ? "pos" : ""); }
+  function dirClass(v){ v = String(v || "").trim(); return v === "감" ? "neg" : (v === "증" ? "pos" : ""); }
+
+  function kpiHtml(){
+    var t = totals();
+    return '<div class="supp-kpi"><div class="kl">증액 합계</div><div class="kv plus">+'+suppFmt(t.plus)+'원</div></div>' +
+      '<div class="supp-kpi"><div class="kl">감액 합계</div><div class="kv minus">'+suppFmt(t.minus)+'원</div></div>' +
+      '<div class="supp-kpi"><div class="kl">순증감</div><div class="kv '+(t.net<0?'minus':(t.net>0?'plus':''))+'">'+(t.net>0?'+':'')+suppFmt(t.net)+'원</div></div>' +
+      '<div class="supp-kpi"><div class="kl">항목 수</div><div class="kv">'+cur().rows.length+'건</div></div>';
+  }
+  function refreshKpi(){
+    var host = panel.querySelector("#suppKpis");
+    if (host) host.innerHTML = kpiHtml();
+    renderNegList();
+  }
+
+  function ddayText(dl){
+    if (!dl) return "";
+    var d = daysBetween(dl);
+    if (isNaN(d)) return "";
+    return d > 0 ? "D-" + d : (d === 0 ? "D-day" : "마감 지남");
+  }
+  function ddayCls(dl){
+    if (!dl) return "";
+    var d = daysBetween(dl);
+    return d < 0 ? "past" : (d <= 3 ? "urgent" : "");
+  }
+
+  function rowCells(row, locked, ri){
+    return SUPP_COLUMNS.map(function(c){
+      var k = c[0], v = row[k] == null ? "" : row[k];
+      var cls = "";
+      if (k === "amount") cls = "num " + amountClass(v);
+      else if (k === "dir") cls = "dirc " + dirClass(v);
+      if (locked) return '<td><input type="text" class="'+cls+'" value="'+escapeHtml(v)+'" disabled readonly tabindex="-1"></td>';
+      var extra = k === "dir" ? ' list="suppDirList"' : "";
+      return '<td><input type="text" class="'+cls+'" data-r="'+ri+'" data-c="'+k+'"'+extra+' value="'+escapeHtml(v)+'"></td>';
+    }).join("");
+  }
+
+  function paint(){
+    var round = cur();
+    var head = '<tr>' + SUPP_COLUMNS.map(function(c){ return '<th style="min-width:'+c[2]+'">'+escapeHtml(c[1])+'</th>'; }).join("") + '<th style="width:34px"></th></tr>';
+    var lockedBody = SUPP_LOCKED_ROWS.map(function(row){
+      return '<tr class="supp-locked">' + rowCells(row, true) + '<td class="lockmark" title="예시 행 (수정·삭제 불가, 합계에서 제외)">🔒</td></tr>';
+    }).join("");
+    var body = lockedBody + round.rows.map(function(row, ri){
+      return '<tr>' + rowCells(row, false, ri) + '<td><button class="rowdel" data-del="'+ri+'" title="행 삭제">✕</button></td></tr>';
+    }).join("");
+
+    var chips = state.rounds.slice().sort(function(a,b){ return a.no - b.no; }).map(function(r){
+      var dd = ddayText(r.deadline);
+      return '<button type="button" class="supp-round'+(r.id===round.id?' active':'')+'" data-rid="'+escapeHtml(r.id)+'">제 '+r.no+'차' +
+        (dd ? ' <span class="rd '+ddayCls(r.deadline)+'">'+escapeHtml(dd)+'</span>' : '') + '</button>';
+    }).join("");
+
+    panel.innerHTML =
+      '<h2>📝 추경 예산</h2>' +
+      '<p class="desc">추가경정예산 요구 내용을 다 함께 실시간으로 적고 고치는 표예요. 차수(1차·2차…)를 골라 보거나 새 차수를 추가할 수 있고, 산출식을 고치면 요구금액과 증/감이 자동으로 바뀌어요(예: <b>1,500,000원 * 10회</b> → 15,000,000).<br>맨 위 🔒 행은 예시라서 합계에는 들어가지 않아요. 아래쪽에는 예산 대시보드에서 <b>산출내역 잔액이 마이너스</b>인 항목이 자동으로 모여요.</p>' +
+      '<div class="supp-rounds">' + chips + '<button type="button" class="supp-round add" id="suppAddRound">＋ 차수 추가</button></div>' +
+      '<div class="supp-titlebar"><input type="text" id="suppTitle" value="'+escapeHtml(round.title)+'" aria-label="추경 요구서 제목">' +
+        '<label class="supp-dl">마감기한 <input type="date" id="suppDeadline" value="'+escapeHtml(round.deadline || "")+'"></label>' +
+        (round.deadline ? '<span class="supp-dday '+ddayCls(round.deadline)+'">'+escapeHtml(ddayText(round.deadline))+'</span>' : '') +
+        '<button type="button" class="supp-delround" id="suppDelRound">이 차수 삭제</button></div>' +
+      '<div class="supp-kpis" id="suppKpis">'+kpiHtml()+'</div>' +
+      '<div class="tablewrap"><table class="datagrid supp-tbl"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>' +
+      '<datalist id="suppDirList"><option value="증"></option><option value="감"></option></datalist>' +
+      '<button class="addrow" id="suppAddBtn">+ 행 추가</button>' +
+      '<div class="supp-negwrap"><h3>⚠️ 예산 대시보드 · 산출내역 잔액이 마이너스인 항목</h3>' +
+        '<div class="desc" id="suppNegMeta" style="margin:0;"></div>' +
+        '<div class="supp-neglist" id="suppNegList"></div></div>';
+
+    panel.querySelectorAll("button[data-rid]").forEach(function(b){
+      b.addEventListener("click", function(){ sel = b.getAttribute("data-rid"); paint(); });
+    });
+    panel.querySelector("#suppAddRound").addEventListener("click", function(){
+      if (!isEditUnlocked()) { showEditLockModal(); return; }
+      var max = 0; state.rounds.forEach(function(r){ if (r.no > max) max = r.no; });
+      var nr = suppNewRound(max + 1);
+      state.rounds.push(nr); sel = nr.id;
+      paint(); saveNow();
+    });
+    panel.querySelector("#suppDelRound").addEventListener("click", function(){
+      if (!isEditUnlocked()) { showEditLockModal(); return; }
+      var r = cur();
+      if (!confirm("제 " + r.no + "차 추경(입력한 " + r.rows.length + "행)을 삭제할까요? 되돌릴 수 없습니다.")) return;
+      state.rounds = state.rounds.filter(function(x){ return x.id !== r.id; });
+      if (!state.rounds.length) state.rounds = [ suppNewRound(1, "r1") ];
+      sel = state.rounds[0].id;
+      paint(); saveNow();
+    });
+    var titleInp = panel.querySelector("#suppTitle");
+    titleInp.addEventListener("input", function(){ cur().title = titleInp.value; scheduleSave(); });
+    var dlInp = panel.querySelector("#suppDeadline");
+    dlInp.addEventListener("change", function(){
+      cur().deadline = dlInp.value; saveNow(); paint();
+    });
+
+    panel.querySelectorAll("input[data-r]").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var ri = Number(inp.getAttribute("data-r")), key = inp.getAttribute("data-c");
+        var row = cur().rows[ri];
+        if (!row) return;
+        row[key] = inp.value;
+        var tr = inp.closest("tr");
+        if (key === "formula"){
+          var calc = suppCalcFormula(inp.value);
+          if (calc !== null){
+            var amtInp = tr.querySelector('input[data-c="amount"]');
+            amtInp.value = suppFmt(calc);
+            row.amount = suppFmt(calc);
+            if (calc !== 0){
+              row.dir = calc < 0 ? "감" : "증";
+              var dInp = tr.querySelector('input[data-c="dir"]'); dInp.value = row.dir;
+              dInp.className = "dirc " + dirClass(row.dir);
+            }
+          }
+        }
+        if (key === "formula" || key === "amount"){
+          var a = tr.querySelector('input[data-c="amount"]');
+          a.className = "num " + amountClass(row.amount);
+        }
+        if (key === "dir") inp.className = "dirc " + dirClass(inp.value);
+        refreshKpi();
+        scheduleSave();
+      });
+    });
+    panel.querySelectorAll("button[data-del]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        cur().rows.splice(Number(btn.getAttribute("data-del")), 1);
+        paint(); saveNow();
+      });
+    });
+    panel.querySelector("#suppAddBtn").addEventListener("click", function(){
+      var o = {}; SUPP_COLUMNS.forEach(function(c){ o[c[0]] = ""; });
+      cur().rows.push(o);
+      paint(); saveNow();
+      var last = panel.querySelector('input[data-r="'+(cur().rows.length-1)+'"]');
+      if (last) last.focus();
+    });
+    renderNegList();
+  }
+
+  function negativeItems(){
+    return budgetItems.filter(function(it){ return (Number(it.bgtBlce) || 0) < 0; })
+      .sort(function(a,b){ return (Number(a.bgtBlce)||0) - (Number(b.bgtBlce)||0); });
+  }
+  // 모든 차수의 표에서 같은 산출내역을 찾음 (예시 행은 제외)
+  function findSuppRow(it){
+    var nb = suppNorm(it.cptBasisCn);
+    if (!nb) return null;
+    var hit = null;
+    state.rounds.slice().sort(function(a,b){ return a.no - b.no; }).forEach(function(rd){
+      rd.rows.forEach(function(r){
+        if (hit) return;
+        var nr = suppNorm(r.basis);
+        if (!nr) return;
+        if (nr === nb || (nb.length >= 4 && nr.indexOf(nb) !== -1) || (nr.length >= 4 && nb.indexOf(nr) !== -1)) hit = { row: r, no: rd.no };
+      });
+    });
+    return hit;
+  }
+
+  function renderNegList(){
+    var list = panel.querySelector("#suppNegList");
+    var meta = panel.querySelector("#suppNegMeta");
+    if (!list) return;
+    if (!budgetItems.length){
+      if (meta) meta.textContent = "";
+      list.innerHTML = '<div class="budget-empty" style="margin-top:0;">아직 예산 대시보드 데이터가 없어요.<br>💰 예산 대시보드 탭에서 에듀파인 동기화를 하면 여기에 자동으로 나타나요.</div>';
+      return;
+    }
+    var neg = negativeItems();
+    var covered = 0;
+    var html = neg.map(function(it, i){
+      var hit = findSuppRow(it);
+      if (hit) covered++;
+      var chip = hit
+        ? '<span class="supp-chip ok">✅ 제 '+hit.no+'차 추경 반영됨 ('+escapeHtml(String(hit.row.amount || "0"))+'원)</span>'
+        : '<span class="supp-chip no">추경 미반영</span>';
+      var sub = (it.prmpcStatsExpitmNm ? '목: <b>'+escapeHtml(it.prmpcStatsExpitmNm)+'</b> · ' : '') +
+        '예산현액 '+suppFmt(it.bgtCrntam)+'원 · 집행액 '+suppFmt(it.epnsAmt)+'원';
+      return '<div class="supp-negitem">' +
+        '<div class="info"><div class="t">'+escapeHtml(it.cptBasisCn || "(산출내역 없음)")+'</div>' +
+          '<div class="s">'+escapeHtml(it.schlDetlBizNm || "")+'</div><div class="s">'+sub+'</div></div>' +
+        '<div class="amt">잔액 '+suppFmt(it.bgtBlce)+'원</div>' + chip +
+        (hit ? '' : '<button type="button" class="supp-addbtn" data-negi="'+i+'">＋ 제 '+cur().no+'차 표에 추가</button>') +
+      '</div>';
+    }).join("");
+    list.innerHTML = html || '<div class="budget-empty" style="margin-top:0;">잔액이 마이너스인 산출내역이 없어요 👍</div>';
+    if (meta) meta.textContent = '총 ' + neg.length + '건 (추경 반영 ' + covered + '건 · 미반영 ' + (neg.length - covered) + '건) · 예산 대시보드 마지막 동기화: ' + (budgetCapturedAt ? formatUpdated(budgetCapturedAt) : "-");
+    list.querySelectorAll("button[data-negi]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        if (!isEditUnlocked()) { showEditLockModal(); return; }
+        var it = neg[Number(btn.getAttribute("data-negi"))];
+        if (!it) return;
+        var parts = String(it.schlDetlBizNm || "").split(" · ");
+        var need = Math.abs(Number(it.bgtBlce) || 0);
+        cur().rows.push({
+          dept: "", biz: parts[0] || "", item: parts.slice(1).join(" · "), stat: it.prmpcStatsExpitmNm || "",
+          basis: it.cptBasisCn || "", formula: suppFmt(need) + "원 * 1회", amount: suppFmt(need), owner: "", dir: "증",
+          note: "예산부족 (대시보드 잔액 " + suppFmt(it.bgtBlce) + "원)"
+        });
+        paint(); saveNow();
+      });
+    });
+  }
+
+  paint();
+
+  if (db) {
+    var unsub = docRef().onSnapshot(function(snap){
+      if (!snap.exists) return;
+      var data = snap.data() || {};
+      var rounds = null;
+      if (Array.isArray(data.rounds) && data.rounds.length) rounds = data.rounds;
+      else if (Array.isArray(data.rows)) { // 예전 형식(차수 없음) → 1개 차수로 옮김
+        var r0 = suppNewRound(1, "r1");
+        if (typeof data.title === "string") r0.title = data.title;
+        r0.rows = data.rows;
+        rounds = [r0];
+      }
+      if (!rounds) return;
+      rounds.forEach(function(r){ if (!Array.isArray(r.rows)) r.rows = []; if (typeof r.no !== "number") r.no = Number(r.no) || 1; });
+      state.rounds = rounds;
+      markSynced();
+      var active = document.activeElement;
+      var editing = active && panel.contains(active) && active.tagName === "INPUT";
+      if (editing) { refreshKpi(); }
+      else paint();
+    }, function(){ /* ignore */ });
+    unsubs.push(unsub);
+
+    var bu = db.doc("status/budget_snapshot").onSnapshot(function(snap){
+      if (!snap.exists) return;
+      var d = snap.data() || {};
+      var items = [];
+      try { items = JSON.parse(d.itemsJson || "[]"); } catch(e){ items = []; }
+      budgetItems = items;
+      budgetCapturedAt = d.capturedAt || "";
+      renderNegList();
+    }, function(){ /* ignore */ });
+    unsubs.push(bu);
   }
 }
 
