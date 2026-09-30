@@ -44,6 +44,18 @@
   .lockcard button{width:100%;font:inherit;font-weight:700;font-size:15px;color:#fff;background:var(--accent);
     border:none;border-radius:10px;padding:13px;cursor:pointer;}
   .lockerr{color:var(--danger);font-size:12.5px;margin:-2px 0 10px;display:none;}
+  .filehint{font-size:12px;color:var(--ink-dim);margin-top:6px;}
+  .mine-title{font-size:14px;font-weight:700;margin:0 0 10px;}
+  .mine-empty{font-size:12.5px;color:var(--ink-dim);text-align:center;padding:6px 0;}
+  .mine-item{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);}
+  .mine-item:first-of-type{border-top:none;}
+  .mine-thumb{position:relative;flex:none;width:64px;height:64px;border-radius:9px;overflow:hidden;background:var(--surface-2);}
+  .mine-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .mine-thumb .cnt{position:absolute;right:3px;bottom:3px;background:rgba(15,23,42,.65);color:#fff;font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 6px;}
+  .mine-info{min-width:0;flex:1;font-size:12.5px;line-height:1.5;}
+  .mine-info .t{font-weight:700;overflow-wrap:break-word;}
+  .mine-info .d{color:var(--ink-dim);overflow-wrap:break-word;}
+  .mine-badge{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:1px 8px;background:var(--accent-soft);color:var(--accent);margin-right:4px;}
   .hint{font-size:12px;color:var(--ink-dim);margin-top:14px;line-height:1.6;}
   #statusLine{font-size:12.5px;color:var(--ink-dim);text-align:center;margin-top:10px;}
 </style>
@@ -65,7 +77,8 @@
       <input type="date" id="dateInput">
     </div>
     <div class="row"><label>사진 선택</label>
-      <input type="file" id="fileInput" accept="image/*">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="filehint" id="fileHint">여러 장을 한 번에 선택할 수 있어요.</div>
     </div>
     <div class="row"><label>장소 (선택)</label>
       <input type="text" id="locationInput" placeholder="예: 본관 3층 복도 형광등">
@@ -75,6 +88,11 @@
     </div>
     <button type="button" class="savebtn" id="saveBtn">전송</button>
     <div class="msg" id="formMsg"></div>
+  </div>
+
+  <div class="card" id="mineCard">
+    <div class="mine-title">📋 오늘 내가 올린 내역 <span id="mineCount"></span></div>
+    <div id="mineList"><div class="mine-empty">연결 중…</div></div>
   </div>
 
   <div id="statusLine">연결 중…</div>
@@ -102,6 +120,43 @@
   };
 
   var db = null, storage = null;
+  var myUid = null, mineSource = [];
+  function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function isToday(iso){
+    if (!iso) return false;
+    var d = new Date(iso); if (isNaN(d.getTime())) return false;
+    var n = new Date();
+    return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+  }
+  function entryImgs(e){
+    if (e && Array.isArray(e.images) && e.images.length) return e.images;
+    return (e && e.url) ? [{ id: e.id, url: e.url }] : [];
+  }
+  function renderMine(){
+    var box = document.getElementById("mineList");
+    var cnt = document.getElementById("mineCount");
+    if (!myUid){ box.innerHTML = '<div class="mine-empty">연결 중…</div>'; return; }
+    var mine = mineSource.filter(function(e){ return e && e.uploaderUid === myUid && isToday(e.uploadedAt); });
+    mine.sort(function(a,b){ return a.uploadedAt < b.uploadedAt ? 1 : -1; });
+    cnt.textContent = mine.length ? "(" + mine.length + "건)" : "";
+    if (!mine.length){ box.innerHTML = '<div class="mine-empty">오늘 이 기기에서 올린 내역이 아직 없어요.</div>'; return; }
+    box.innerHTML = mine.map(function(e){
+      var imgs = entryImgs(e);
+      var t = new Date(e.uploadedAt);
+      var time = String(t.getHours()).padStart(2,"0") + ":" + String(t.getMinutes()).padStart(2,"0");
+      return '<div class="mine-item">' +
+        '<div class="mine-thumb">' + (imgs[0] ? '<img src="'+esc(imgs[0].url)+'" alt="">' : '') +
+          (imgs.length > 1 ? '<span class="cnt">'+imgs.length+'장</span>' : '') + '</div>' +
+        '<div class="mine-info">' + mineInfoHtml(e) + '<div class="d">' + time + ' 등록</div></div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function mineInfoHtml(e){
+    return '<div class="t">'+esc(e.location||"(장소 미기입)")+'</div>' +
+      (e.note ? '<div class="d">'+esc(e.note)+'</div>' : '');
+  }
+
 
   function pad(n){ return String(n).padStart(2,"0"); }
   function todayDateValue(){
@@ -149,6 +204,12 @@
       db = firebase.firestore();
       storage = firebase.storage();
       setStatus("연결됨");
+      myUid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+      db.collection("sections").doc("facility_repair").onSnapshot(function(snap){
+        var data = snap.exists ? snap.data() : null;
+        mineSource = (data && Array.isArray(data.reports)) ? data.reports : [];
+        renderMine();
+      }, function(){});
     }).catch(function(){ setStatus("연결 대기 중 (오프라인)"); });
   }
 
@@ -173,10 +234,12 @@
     document.getElementById("saveBtn").addEventListener("click", function(){
       if (!db || !storage) { showMsg("아직 연결 중입니다. 잠시 후 다시 시도해 주세요.", false); return; }
       var fileInp = document.getElementById("fileInput");
-      var f = fileInp.files && fileInp.files[0];
-      if (!f) { showMsg("사진을 선택해 주세요.", false); return; }
-      if (f.type.indexOf("image/") !== 0) { showMsg("이미지 파일만 올릴 수 있어요.", false); return; }
-      if (f.size > MAX_BYTES) { showMsg("사진 용량이 너무 큽니다(12MB 이하로 올려주세요).", false); return; }
+      var files = fileInp.files ? Array.prototype.slice.call(fileInp.files) : [];
+      if (!files.length) { showMsg("사진을 선택해 주세요.", false); return; }
+      for (var fi = 0; fi < files.length; fi++){
+        if (files[fi].type.indexOf("image/") !== 0) { showMsg("이미지 파일만 올릴 수 있어요.", false); return; }
+        if (files[fi].size > MAX_BYTES) { showMsg("사진 용량이 너무 큽니다(한 장당 12MB 이하로 올려주세요).", false); return; }
+      }
 
       var saveBtn = document.getElementById("saveBtn");
       saveBtn.disabled = true; saveBtn.textContent = "전송 중…";
@@ -188,10 +251,23 @@
         note: document.getElementById("noteInput").value.trim()
       };
 
-      uploadPhoto(f).then(function(res){
+      var doneCount = 0;
+      var total = files.length;
+      if (total > 1) saveBtn.textContent = "업로드 중… (0/" + total + ")";
+      Promise.all(files.map(function(f){
+        return uploadPhoto(f).then(function(r){
+          doneCount++;
+          if (total > 1) saveBtn.textContent = "업로드 중… (" + doneCount + "/" + total + ")";
+          return r;
+        });
+      })).then(function(results){
+        // 첫 사진의 id/url은 예전 방식 그대로 유지(기존 화면·데이터와 호환), 전체 사진은 images에 저장
+        var res = results[0];
         entry.id = res.id;
         entry.url = res.url;
+        if (results.length > 1) entry.images = results.map(function(r){ return { id: r.id, url: r.url }; });
         entry.uploadedAt = new Date().toISOString();
+        if (myUid) entry.uploaderUid = myUid;
         var ref = db.collection("sections").doc("facility_repair");
         return ref.update({ reports: firebase.firestore.FieldValue.arrayUnion(entry) }).catch(function(){
           return ref.set({ reports: [entry] }, { merge: true });
